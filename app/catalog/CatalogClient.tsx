@@ -28,7 +28,7 @@ export default function CatalogClient({ preloaded }: CatalogClientProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="flex h-full w-full flex-1 flex-col">
       <ProductFilters />
       <ProductGrid filters={filters} />
     </div>

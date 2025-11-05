@@ -1,16 +1,28 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import {
+  CreditCard,
+  DollarSign,
+  Home,
+  Mail,
+  MapPin,
+  Package,
+  Store,
+  Truck,
+  User,
+  Wallet,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { api } from "../../convex/_generated/api";
 import {
   getWhatsAppLink,
   PAYMENT_CONFIG,
   STORE_INFO,
   WHATSAPP_MESSAGES,
-} from "../../lib/config";
+} from "../../constants/config";
+import { api } from "../../convex/_generated/api";
 import { useGuestCart } from "../../lib/guestCart";
 
 type PaymentMethod = "full_online" | "partial_online" | "cash";
@@ -37,7 +49,7 @@ export default function CheckoutPage() {
 
   // Use appropriate cart based on authentication
   const itemsToDisplay = isAuthenticated ? cartItems : guestItems;
-  const total = isAuthenticated ? (cartTotal?.total ?? 0) : guestTotal;
+  const cartOnlyTotal = isAuthenticated ? (cartTotal?.total ?? 0) : guestTotal;
 
   // Helper to get item details regardless of cart type
   const getItemDetails = (item: any) => {
@@ -67,15 +79,37 @@ export default function CheckoutPage() {
   });
 
   const [deliveryType, setDeliveryType] = useState<DeliveryType>("pickup");
+
+  // Calculate total including delivery cost
+  const deliveryCost =
+    deliveryType === "delivery" ? STORE_INFO.delivery.cost : 0;
+  const total = cartOnlyTotal + deliveryCost;
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("full_online");
   const [whatsappConfirmed, setWhatsappConfirmed] = useState(false);
   const [pickupDateTime, setPickupDateTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Email validation regex
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Check if all required fields are filled and valid
+  const isFormValid =
+    formData.customerName.trim() !== "" &&
+    formData.customerEmail.trim() !== "" &&
+    isValidEmail(formData.customerEmail) &&
+    formData.shippingAddress.trim() !== "" &&
+    (deliveryType === "delivery" || pickupDateTime.trim() !== "");
+
   const handleWhatsAppConfirm = () => {
     const message = WHATSAPP_MESSAGES.orderConfirmation(
       formData.customerName,
+      formData.customerEmail,
+      formData.shippingAddress,
+      deliveryType,
       pickupDateTime,
     );
     const whatsappLink = getWhatsAppLink(message);
@@ -154,7 +188,10 @@ export default function CheckoutPage() {
               <div className="grid gap-8 md:grid-cols-2">
                 <div className="space-y-4">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="h-12 rounded bg-gray-200"></div>
+                    <div
+                      key={`auth-skeleton-${i}`}
+                      className="h-12 rounded bg-gray-200"
+                    ></div>
                   ))}
                 </div>
                 <div className="h-64 rounded bg-gray-200"></div>
@@ -247,10 +284,15 @@ export default function CheckoutPage() {
                     </h3>
                     <div className="space-y-3 sm:space-y-4">
                       <div>
-                        <label className="text-deep mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm">
+                        <label
+                          htmlFor="customerName"
+                          className="text-deep mb-1.5 flex items-center gap-2 text-xs font-medium sm:mb-2 sm:text-sm"
+                        >
+                          <User className="h-4 w-4" />
                           Full Name
                         </label>
                         <input
+                          id="customerName"
                           type="text"
                           value={formData.customerName}
                           onChange={(e) =>
@@ -259,16 +301,21 @@ export default function CheckoutPage() {
                               customerName: e.target.value,
                             })
                           }
-                          className="focus:border-secondary focus:ring-secondary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 sm:px-4 sm:py-3 sm:text-base"
+                          className="focus:border-secondary focus:ring-secondary/20 w-full rounded-lg border px-3 py-2 text-base outline-none focus:ring-2 sm:px-4 sm:py-3"
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="text-deep mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm">
+                        <label
+                          htmlFor="customerEmail"
+                          className="text-deep mb-1.5 flex items-center gap-2 text-xs font-medium sm:mb-2 sm:text-sm"
+                        >
+                          <Mail className="h-4 w-4" />
                           Email
                         </label>
                         <input
+                          id="customerEmail"
                           type="email"
                           value={formData.customerEmail}
                           onChange={(e) =>
@@ -277,16 +324,32 @@ export default function CheckoutPage() {
                               customerEmail: e.target.value,
                             })
                           }
-                          className="focus:border-secondary focus:ring-secondary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 sm:px-4 sm:py-3 sm:text-base"
+                          className={`focus:ring-secondary/20 w-full rounded-lg border px-3 py-2 text-base outline-none focus:ring-2 sm:px-4 sm:py-3 ${
+                            formData.customerEmail &&
+                            !isValidEmail(formData.customerEmail)
+                              ? "border-red-500 focus:border-red-500"
+                              : "focus:border-secondary"
+                          }`}
                           required
                         />
+                        {formData.customerEmail &&
+                          !isValidEmail(formData.customerEmail) && (
+                            <p className="mt-1 text-xs text-red-500">
+                              Please enter a valid email address
+                            </p>
+                          )}
                       </div>
 
                       <div>
-                        <label className="text-deep mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm">
+                        <label
+                          htmlFor="shippingAddress"
+                          className="text-deep mb-1.5 flex items-center gap-2 text-xs font-medium sm:mb-2 sm:text-sm"
+                        >
+                          <MapPin className="h-4 w-4" />
                           Address
                         </label>
                         <textarea
+                          id="shippingAddress"
                           value={formData.shippingAddress}
                           onChange={(e) =>
                             setFormData({
@@ -295,7 +358,7 @@ export default function CheckoutPage() {
                             })
                           }
                           rows={3}
-                          className="focus:border-secondary focus:ring-secondary/20 w-full resize-none rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 sm:px-4 sm:py-3 sm:text-base"
+                          className="focus:border-secondary focus:ring-secondary/20 w-full resize-none rounded-lg border px-3 py-2 text-base outline-none focus:ring-2 sm:px-4 sm:py-3"
                           placeholder="Enter your full address"
                           required
                         />
@@ -309,7 +372,7 @@ export default function CheckoutPage() {
                       Delivery Method
                     </h3>
                     <div className="space-y-2 sm:space-y-3">
-                      <label className="hover:bg-primary flex cursor-pointer items-start space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
                         <input
                           type="radio"
                           name="deliveryType"
@@ -320,6 +383,7 @@ export default function CheckoutPage() {
                           }
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
+                        <Store className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
                         <div className="min-w-0 flex-1">
                           <div className="text-deep text-sm font-medium sm:text-base">
                             Self-pickup
@@ -333,7 +397,7 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                       </label>
-                      <label className="hover:bg-primary flex cursor-pointer items-start space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
                         <input
                           type="radio"
                           name="deliveryType"
@@ -344,6 +408,7 @@ export default function CheckoutPage() {
                           }
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
+                        <Truck className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
                         <div className="min-w-0 flex-1">
                           <div className="text-deep text-sm font-medium sm:text-base">
                             Delivery
@@ -359,14 +424,18 @@ export default function CheckoutPage() {
 
                     {deliveryType === "pickup" && (
                       <div className="mt-3 sm:mt-4">
-                        <label className="text-deep mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm">
+                        <label
+                          htmlFor="pickupDateTime"
+                          className="text-deep mb-1.5 block text-xs font-medium sm:mb-2 sm:text-sm"
+                        >
                           Pickup Date & Time
                         </label>
                         <input
+                          id="pickupDateTime"
                           type="datetime-local"
                           value={pickupDateTime}
                           onChange={(e) => setPickupDateTime(e.target.value)}
-                          className="focus:border-secondary focus:ring-secondary/20 w-full rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 sm:px-4 sm:py-3 sm:text-base"
+                          className="focus:border-secondary focus:ring-secondary/20 w-full rounded-lg border px-3 py-2 text-base outline-none focus:ring-2 sm:px-4 sm:py-3"
                         />
                       </div>
                     )}
@@ -380,11 +449,11 @@ export default function CheckoutPage() {
                       Order Summary
                     </h3>
                     <div className="bg-secondary/5 space-y-3 rounded-lg p-3 sm:p-4">
-                      {itemsToDisplay?.map((item) => {
+                      {itemsToDisplay?.map((item, index) => {
                         const details = getItemDetails(item);
                         return (
                           <div
-                            key={details.key}
+                            key={`order-item-${details.key}-${index}`}
                             className="flex items-start justify-between gap-2 sm:items-center"
                           >
                             <div className="min-w-0 flex-1">
@@ -420,8 +489,26 @@ export default function CheckoutPage() {
                         );
                       })}
 
-                      <div className="mt-3 border-t pt-3">
+                      <div className="mt-3 space-y-2 border-t pt-3">
                         <div className="flex items-center justify-between">
+                          <span className="text-deep text-sm sm:text-base">
+                            Subtotal:
+                          </span>
+                          <span className="text-deep text-sm font-semibold sm:text-base">
+                            €{cartOnlyTotal.toFixed(2)}
+                          </span>
+                        </div>
+                        {deliveryType === "delivery" && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-deep text-sm sm:text-base">
+                              Delivery:
+                            </span>
+                            <span className="text-deep text-sm font-semibold sm:text-base">
+                              €{deliveryCost.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between border-t pt-2">
                           <span className="text-deep text-base font-semibold sm:text-lg">
                             Total:
                           </span>
@@ -439,7 +526,7 @@ export default function CheckoutPage() {
                       Payment Method
                     </h3>
                     <div className="space-y-2 sm:space-y-3">
-                      <label className="hover:bg-primary flex cursor-pointer items-start space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
                         <input
                           type="radio"
                           name="paymentMethod"
@@ -450,6 +537,7 @@ export default function CheckoutPage() {
                           }
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
+                        <CreditCard className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
                         <div className="min-w-0 flex-1">
                           <div className="text-deep text-sm font-medium sm:text-base">
                             Full Online Payment
@@ -461,7 +549,7 @@ export default function CheckoutPage() {
                         </div>
                       </label>
 
-                      <label className="hover:bg-primary flex cursor-pointer items-start space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
                         <input
                           type="radio"
                           name="paymentMethod"
@@ -472,6 +560,7 @@ export default function CheckoutPage() {
                           }
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
+                        <Wallet className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
                         <div className="min-w-0 flex-1">
                           <div className="text-deep text-sm font-medium sm:text-base">
                             30% Deposit
@@ -484,7 +573,7 @@ export default function CheckoutPage() {
                       </label>
 
                       {deliveryType === "pickup" && (
-                        <label className="hover:bg-primary flex cursor-pointer items-start space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                        <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
                           <input
                             type="radio"
                             name="paymentMethod"
@@ -495,6 +584,7 @@ export default function CheckoutPage() {
                             }
                             className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                           />
+                          <DollarSign className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
                           <div className="min-w-0 flex-1">
                             <div className="text-deep text-sm font-medium sm:text-base">
                               Cash Payment
@@ -509,19 +599,44 @@ export default function CheckoutPage() {
 
                     {paymentMethod === "cash" && (
                       <div className="bg-warm/20 mt-3 rounded-lg border p-3 sm:mt-4 sm:p-4">
-                        <p className="text-deep mb-2 text-xs sm:mb-3 sm:text-sm">
-                          To reserve your set, confirm the pickup date and time
-                          via WhatsApp
-                        </p>
+                        {!isFormValid && (
+                          <p className="text-accent mb-2 text-xs font-medium sm:mb-3 sm:text-sm">
+                            Please fill in all fields above to confirm via
+                            WhatsApp
+                          </p>
+                        )}
+                        {isFormValid && (
+                          <p className="text-accent mb-2 text-xs font-medium sm:mb-3 sm:text-sm">
+                            Click below to confirm your order via WhatsApp
+                          </p>
+                        )}
                         <button
                           type="button"
                           onClick={handleWhatsAppConfirm}
-                          className="w-full rounded-lg bg-green-600 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:py-3 sm:text-base"
+                          disabled={!isFormValid}
+                          aria-label="Confirm via WhatsApp"
+                          className="flex w-full items-center justify-center gap-3 rounded-lg bg-[#111B21] px-3 py-3 text-[#FCF5EB] shadow-md transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-row"
                         >
-                          📱 Confirm via WhatsApp
+                          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#25D366] p-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              className="h-5 w-5 fill-[#FCF5EB]"
+                              aria-hidden
+                            >
+                              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
+                            </svg>
+                          </span>
+
+                          <div className="min-w-0 flex-1 text-left">
+                            <div className="text-xs">Confirm via</div>
+                            <div className="truncate text-base font-bold sm:text-lg">
+                              WhatsApp
+                            </div>
+                          </div>
                         </button>
                         {whatsappConfirmed && (
-                          <p className="mt-2 text-xs font-medium text-green-700 sm:text-sm">
+                          <p className="text-secondary mt-2 text-xs font-medium sm:text-sm">
                             ✓ WhatsApp confirmation sent
                           </p>
                         )}

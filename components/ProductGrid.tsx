@@ -1,6 +1,7 @@
 "use client";
 
 import { usePaginatedQuery } from "convex/react";
+import { motion } from "motion/react";
 import { useMemo } from "react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "./ui/button";
@@ -148,11 +149,21 @@ export function ProductGrid({ filters }: ProductGridProps) {
 
   if (status === "LoadingFirstPage") {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
+      <motion.div
+        initial={{ opacity: 0.6 }}
+        animate={{ opacity: 0.8 }}
+        transition={{
+          duration: 1.2,
+          ease: "easeInOut",
+          repeat: Infinity,
+          repeatType: "reverse",
+        }}
+        className="border-foreground grid grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
+      >
         {Array.from({ length: 12 }).map((_, index) => (
           <div
             key={`skeleton-${index}`}
-            className="border-border flex flex-col border-r border-b"
+            className="border-foreground flex flex-col border-r border-b"
           >
             <div
               className="aspect-3/4 animate-pulse"
@@ -166,13 +177,13 @@ export function ProductGrid({ filters }: ProductGridProps) {
             </div>
           </div>
         ))}
-      </div>
+      </motion.div>
     );
   }
 
   if (products.length === 0) {
     return (
-      <div className="py-16 text-center">
+      <div className="flex h-full w-full flex-1 flex-col items-center justify-center py-16 text-center">
         <div className="mb-4 text-6xl">🎈</div>
         <h3 className="mb-2 text-xl font-semibold text-black">
           No balloons found
@@ -185,11 +196,17 @@ export function ProductGrid({ filters }: ProductGridProps) {
   return (
     <div className="w-full">
       {/* Seamless Product Grid - no gaps */}
-      <div className="border-foreground grid w-full grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
+      <motion.section
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        className="border-foreground grid w-full grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
+      >
         {products.map((product, index) => (
           <ProductCard index={index} key={product._id} product={product} />
         ))}
-      </div>
+      </motion.section>
 
       {/* Load More Button */}
       {status === "CanLoadMore" && (
@@ -197,7 +214,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
           <Button
             onClick={() => loadMore(10)}
             disabled={status !== "CanLoadMore"}
-            className="h-12 rounded-none bg-black px-12 tracking-wide text-white uppercase transition-colors hover:bg-black/90 disabled:opacity-50"
+            className="btn-accent h-12 rounded-lg px-12 font-semibold tracking-wide uppercase transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Load More
           </Button>

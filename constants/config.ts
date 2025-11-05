@@ -116,7 +116,7 @@ export const WHATSAPP_MESSAGES = {
     customerEmail: string,
     shippingAddress: string,
     deliveryType: string,
-    pickupDateTime?: string,
+    pickupDateTime?: string
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Самовывоз" : "Доставка";
     const dateTime = pickupDateTime || "не указано";
@@ -128,7 +128,7 @@ export const WHATSAPP_MESSAGES = {
     customerEmail: string,
     shippingAddress: string,
     deliveryType: string,
-    pickupDateTime?: string,
+    pickupDateTime?: string
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Abholung" : "Lieferung";
     const dateTime = pickupDateTime || "nicht angegeben";

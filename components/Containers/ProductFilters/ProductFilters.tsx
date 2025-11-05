@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { CategoriesIconCarousel } from "@/app/catalog/_components/CategoriesIconCarousel";
-import { CATEGORIES } from "@/lib/config";
+import { CATEGORIES } from "@/constants/config";
 import { FiltersDrawer } from "./FiltersDrawer";
 import { SearchInput } from "./SearchInput";
 import { SortByButton } from "./SortByButton";

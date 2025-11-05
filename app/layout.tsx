@@ -34,7 +34,7 @@ export default async function RootLayout({
             New pieces added daily
           </div> */}
           <Header />
-          <main className="h-full w-full flex-1">{children}</main>
+          <main className="flex h-full w-full flex-1 flex-col">{children}</main>
           <Footer />
 
           <Toaster richColors position="bottom-right" />

@@ -3,8 +3,6 @@
 import { SlidersHorizontal } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { BALLOON_COLORS } from "@/constants/colors";
-import { BALLOON_SIZES } from "@/constants/sizes";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -16,6 +14,8 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { BALLOON_COLORS } from "@/constants/colors";
+import { BALLOON_SIZES } from "@/constants/sizes";
 
 const PRICE_RANGES = [
   { label: "Up to €5", min: 0, max: 5 },

@@ -5,8 +5,8 @@ import { Hero } from "@/components/Containers";
 import { CategoriesCarousel } from "@/components/ui/categories-carousel";
 import { ProductCarousel } from "@/components/ui/product-carousel";
 import RainbowArcText from "@/components/ui/rainbow-text";
+import { CATEGORIES } from "@/constants/config";
 import type { api } from "@/convex/_generated/api";
-import { CATEGORIES } from "@/lib/config";
 
 interface HomePageClientProps {
   preloadedBestsellers: Preloaded<typeof api.products.list>;
