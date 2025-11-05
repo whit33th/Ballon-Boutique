@@ -61,20 +61,20 @@ a:hover {
 }
 
 .swiper-pagination {
-  position: static !important;
+  position: static;
   background-color: black;
-  border-radius: 0.125rem !important;
+  border-radius: 0.125rem;
 }
 .swiper-pagination {
-  background-color: transparent !important;
+  background-color: transparent;
 }
 
 .swiper-pagination-bullet-active {
-  background-color: #f6f6f6 !important;
+  background-color: #f6f6f6;
 }
 
 .swiper-free-mode > .swiper-wrapper {
-  transition-timing-function: linear !important;
+  transition-timing-function: linear;
 }
 
 ::-webkit-scrollbar {
@@ -234,39 +234,39 @@ body {
 /* small utility helpers for semantic tokens (so components can use `bg-primary`, `btn-accent` etc.) */
 @layer utilities {
   .bg-primary {
-    background-color: var(--primary) !important;
+    background-color: var(--primary);
   }
   .bg-secondary {
-    background-color: var(--secondary) !important;
+    background-color: var(--secondary);
   }
   .bg-accent {
-    background-color: var(--accent) !important;
+    background-color: var(--accent);
   }
   .bg-cream {
-    background-color: var(--color-light) !important;
+    background-color: var(--color-light);
   }
   .bg-warm {
-    background-color: var(--support-warm) !important;
+    background-color: var(--support-warm);
   }
   .bg-deep {
-    background-color: var(--deep) !important;
+    background-color: var(--deep);
   }
 
   .text-deep {
-    color: var(--deep) !important;
+    color: var(--deep);
   }
   .text-on-primary {
-    color: var(--primary-foreground) !important;
+    color: var(--primary-foreground);
   }
   .text-on-secondary {
-    color: var(--secondary-foreground) !important;
+    color: var(--secondary-foreground);
   }
   /* literal helper requested: text-background -> uses the page background color */
   .text-background {
-    color: var(--background) !important;
+    color: var(--background);
   }
   .text-on-accent {
-    color: var(--accent-foreground) !important;
+    color: var(--accent-foreground);
   }
 
   .btn-accent {

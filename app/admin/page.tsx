@@ -1,10 +1,11 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Header } from "../../components/Containers/Header";
 import { api } from "../../convex/_generated/api";
+import type { Doc, Id } from "../../convex/_generated/dataModel";
 
 export default function AdminPage() {
   const productsResult = useQuery(api.products.list, {
@@ -21,6 +22,8 @@ export default function AdminPage() {
     description: "",
     price: "",
     inStock: "",
+    category: "",
+    size: "30cm" as "30cm" | "45cm" | "80cm" | "100cm",
   });
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,7 +61,7 @@ export default function AdminPage() {
 
     setIsCreating(true);
     try {
-      let imageId: string | undefined;
+      let imageId: Id<"_storage"> | undefined;
 
       if (selectedImage) {
         // Step 1: Get upload URL
@@ -85,6 +88,8 @@ export default function AdminPage() {
         description: formData.description,
         price: parseFloat(formData.price),
         inStock: Boolean(formData.inStock),
+        category: formData.category,
+        size: formData.size,
         imageIds: imageId ? [imageId] : [],
       });
 
@@ -96,6 +101,8 @@ export default function AdminPage() {
         description: "",
         price: "",
         inStock: "",
+        category: "",
+        size: "30cm",
       });
       setSelectedImage(null);
 
@@ -127,10 +134,14 @@ export default function AdminPage() {
             <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
               <div className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="product-name"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
                     Product Name *
                   </label>
                   <input
+                    id="product-name"
                     type="text"
                     value={formData.name}
                     onChange={(e) =>
@@ -143,10 +154,14 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="product-description"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
                     Description *
                   </label>
                   <textarea
+                    id="product-description"
                     value={formData.description}
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
@@ -160,10 +175,14 @@ export default function AdminPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="product-price"
+                      className="mb-2 block text-sm font-medium text-gray-700"
+                    >
                       Price (€) *
                     </label>
                     <input
+                      id="product-price"
                       type="number"
                       step="0.01"
                       min="0"
@@ -178,10 +197,14 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="product-stock"
+                      className="mb-2 block text-sm font-medium text-gray-700"
+                    >
                       Stock Quantity *
                     </label>
                     <input
+                      id="product-stock"
                       type="number"
                       min="0"
                       value={formData.inStock}
@@ -194,24 +217,90 @@ export default function AdminPage() {
                     />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="product-category"
+                      className="mb-2 block text-sm font-medium text-gray-700"
+                    >
+                      Category *
+                    </label>
+                    <input
+                      id="product-category"
+                      type="text"
+                      value={formData.category}
+                      onChange={(e) =>
+                        setFormData({ ...formData, category: e.target.value })
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., Party Balloons"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="product-size"
+                      className="mb-2 block text-sm font-medium text-gray-700"
+                    >
+                      Size *
+                    </label>
+                    <select
+                      id="product-size"
+                      value={formData.size}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          size: e.target.value as
+                            | "30cm"
+                            | "45cm"
+                            | "80cm"
+                            | "100cm",
+                        })
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="30cm">30cm</option>
+                      <option value="45cm">45cm</option>
+                      <option value="80cm">80cm</option>
+                      <option value="100cm">100cm</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="product-image"
+                    className="mb-2 block text-sm font-medium text-gray-700"
+                  >
                     Product Image
                   </label>
-                  <div
+                  <button
+                    type="button"
+                    tabIndex={0}
                     onClick={handleUploadClick}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleUploadClick();
+                      }
+                    }}
                     className="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-blue-400"
                   >
                     {selectedImage ? (
                       <div className="space-y-4">
-                        <img
-                          src={URL.createObjectURL(selectedImage)}
-                          alt="Preview"
-                          className="mx-auto h-32 w-32 rounded-lg object-cover"
-                        />
+                        <div className="relative mx-auto h-32 w-32">
+                          <Image
+                            src={URL.createObjectURL(selectedImage)}
+                            alt="Preview"
+                            fill
+                            className="rounded-lg object-cover"
+                          />
+                        </div>
                         <p className="text-sm text-gray-600">
                           {selectedImage.name}
                         </p>
@@ -247,7 +336,7 @@ export default function AdminPage() {
                       onChange={handleImageSelect}
                       className="hidden"
                     />
-                  </div>
+                  </button>
                 </div>
 
                 <button
@@ -271,7 +360,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div
-                    key={i}
+                    key={`skeleton-${i}`}
                     className="animate-pulse rounded-lg bg-gray-100 p-4"
                   >
                     <div className="mb-4 h-32 rounded bg-gray-200"></div>
@@ -289,18 +378,16 @@ export default function AdminPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {products.map((product: any) => (
+                {products.map((product: Doc<"products">) => (
                   <div
                     key={product._id}
                     className="rounded-lg border border-gray-200 p-4 transition-shadow hover:shadow-md"
                   >
-                    <div className="mb-4 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-gray-100">
-                      {product.primaryImageUrl ? (
-                        <img
-                          src={product.primaryImageUrl}
-                          alt={product.name}
-                          className="h-full w-full object-cover"
-                        />
+                    <div className="relative mb-4 flex aspect-square items-center justify-center overflow-hidden rounded-lg bg-gray-100">
+                      {product.imageIds && product.imageIds.length > 0 ? (
+                        <div className="flex h-full w-full items-center justify-center text-4xl">
+                          🖼️
+                        </div>
                       ) : (
                         <div className="text-4xl">🎈</div>
                       )}

@@ -49,7 +49,10 @@ export function SortByButton() {
   return (
     <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
       <DrawerTrigger asChild>
-        <button className="border-border/50 text-deep flex h-10 items-center justify-center gap-2 text-sm font-medium tracking-wide underline-offset-1 transition-colors hover:underline">
+        <button
+          type="button"
+          className="border-border/50 text-deep flex h-10 items-center justify-center gap-2 text-sm font-medium tracking-wide underline-offset-1 transition-colors hover:underline"
+        >
           <ArrowUpDown className="h-4 w-4" />
           Sort By: {currentSortLabel}
         </button>

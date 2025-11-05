@@ -90,7 +90,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
       try {
         const decoded = decodeURIComponent(trimmed);
         return decoded.length > 0 ? decoded : undefined;
-      } catch (error) {
+      } catch (_error) {
         return trimmed;
       }
     };
@@ -113,6 +113,17 @@ export function ProductGrid({ filters }: ProductGridProps) {
         : undefined;
     };
 
+    const normalizeSize = (value?: string) => {
+      if (!value) {
+        return undefined;
+      }
+      const validSizes = ["30cm", "45cm", "80cm", "100cm"] as const;
+      type ValidSize = (typeof validSizes)[number];
+      return validSizes.includes(value as ValidSize)
+        ? (value as ValidSize)
+        : undefined;
+    };
+
     return {
       search: normalizeString(search),
       minPrice: parsePrice(minPrice),
@@ -123,7 +134,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
       sort: normalizeSort(sort),
       tag: normalizeTag(tag),
       color: normalizeString(color),
-      size: normalizeString(size),
+      size: normalizeSize(size),
     } as const;
   }, [
     search,
@@ -138,14 +149,11 @@ export function ProductGrid({ filters }: ProductGridProps) {
     size,
   ]);
 
-  // Casting until Convex codegen picks up extended return signature.
-  const productListQuery = api.products.list as any;
-
   const {
     results: products,
     status,
     loadMore,
-  } = usePaginatedQuery(productListQuery, queryArgs, { initialNumItems: 10 });
+  } = usePaginatedQuery(api.products.list, queryArgs, { initialNumItems: 10 });
 
   if (status === "LoadingFirstPage") {
     return (

@@ -11,7 +11,7 @@ type ProductDoc = Doc<"products">;
 const productPageValidator = v.object({
   page: v.array(productWithImageValidator),
   isDone: v.boolean(),
-  continueCursor: v.union(v.string(), v.null()),
+  continueCursor: v.string(),
 });
 
 const BALLOON_SIZES = ["30cm", "45cm", "80cm", "100cm"] as const;
@@ -370,7 +370,7 @@ export const list = query({
       try {
         const decoded = decodeURIComponent(trimmed);
         return decoded;
-      } catch (error) {
+      } catch (_error) {
         return trimmed;
       }
     };
@@ -383,11 +383,11 @@ export const list = query({
 
     const getBaseQuery = () => {
       // Search takes priority
-      if (useSearch) {
+      if (useSearch && normalizedSearch) {
         return ctx.db
           .query("products")
           .withSearchIndex("search_products", (q) =>
-            q.search("name", normalizedSearch!),
+            q.search("name", normalizedSearch),
           );
       }
 
@@ -559,11 +559,11 @@ export const list = query({
     const response = {
       page: pageWithImages,
       isDone: !hasMore,
-      continueCursor: hasMore ? continueCursor : null,
+      continueCursor: hasMore ? continueCursor : "",
     } satisfies {
       page: typeof pageWithImages;
       isDone: boolean;
-      continueCursor: string | null;
+      continueCursor: string;
     };
 
     return response;

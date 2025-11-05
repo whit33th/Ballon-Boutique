@@ -48,7 +48,7 @@ export default function ProfilePage() {
       await updateProfile(formData);
       toast.success("Profile updated successfully!");
       setIsEditing(false);
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to update profile");
     }
   };
@@ -63,7 +63,7 @@ export default function ProfilePage() {
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, index) => (
               <div
-                key={index}
+                key={`skeleton-${index}`}
                 className="h-12 animate-pulse rounded-full bg-white/70"
               />
             ))}
@@ -138,6 +138,7 @@ export default function ProfilePage() {
         >
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex flex-col rounded-3xl border px-6 py-5 text-left transition ${
@@ -175,6 +176,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     if (!isEditing) {
                       setFormData((prev) => ({
@@ -306,7 +308,7 @@ export default function ProfilePage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div
-                      key={index}
+                      key={`order-skeleton-${index}`}
                       className="h-32 animate-pulse rounded-3xl bg-white/70"
                     />
                   ))}

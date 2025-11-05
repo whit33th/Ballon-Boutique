@@ -85,9 +85,9 @@ export function ProductPersonalization({
 
       {/* Color Selector */}
       <div>
-        <label className="mb-3 block text-sm font-medium">
+        <p className="mb-3 block text-sm font-medium">
           Choose Color {selectedColor && `(${selectedColor})`}
-        </label>
+        </p>
         <div className="grid grid-cols-4 gap-3">
           {filteredColors.map((color) => (
             <button

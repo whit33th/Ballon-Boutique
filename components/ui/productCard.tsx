@@ -13,7 +13,7 @@ type ProductTag = "new" | "bestseller";
 type ProductCardProduct = Doc<"products"> & {
   primaryImageUrl: string | null;
   imageUrls: string[];
-  tags: ProductTag[];
+  tags?: ProductTag[];
 };
 
 interface ProductCardProps {

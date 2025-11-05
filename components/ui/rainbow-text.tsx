@@ -13,7 +13,6 @@ interface Props {
 
 export default function RainbowArcText({
   text,
-  radius = 120,
   colors = [
     "#8EC7F6",
     "#EF476F",
@@ -44,7 +43,7 @@ export default function RainbowArcText({
   }, []);
 
   return (
-    <div ref={containerRef} aria-label={text}>
+    <div ref={containerRef}>
       <div
         className={clsx(
           "font-bold/[1] text-center whitespace-pre-wrap uppercase",
@@ -60,7 +59,7 @@ export default function RainbowArcText({
           const delay = i * 0.07;
           return (
             <motion.span
-              key={i}
+              key={`char-${i}-${char}`}
               initial={{ opacity: 0, scale: 1, color: baseColor }}
               animate={
                 isVisible

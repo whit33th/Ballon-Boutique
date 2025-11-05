@@ -1,9 +1,11 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 import { type GuestCartItem, useGuestCart } from "../../lib/guestCart";
 
 export default function CartPage() {
@@ -70,7 +72,7 @@ export default function CartPage() {
   ) => {
     if (isAuthenticated) {
       try {
-        await updateQuantity({ itemId: item._id as any, quantity });
+        await updateQuantity({ itemId: item._id as Id<"cartItems">, quantity });
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Failed to update quantity",
@@ -102,9 +104,9 @@ export default function CartPage() {
   ) => {
     if (isAuthenticated) {
       try {
-        await removeItem({ itemId: item._id as any });
+        await removeItem({ itemId: item._id as Id<"cartItems"> });
         toast.success("Item removed from cart");
-      } catch (error) {
+      } catch (_error) {
         toast.error("Failed to remove item");
       }
       return;
@@ -130,7 +132,10 @@ export default function CartPage() {
               <div className="mb-6 h-8 rounded bg-gray-200"></div>
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-24 rounded bg-gray-200"></div>
+                  <div
+                    key={`skeleton-${i}`}
+                    className="h-24 rounded bg-gray-200"
+                  ></div>
                 ))}
               </div>
             </div>
@@ -153,6 +158,7 @@ export default function CartPage() {
               Add some beautiful balloons to get started!
             </p>
             <button
+              type="button"
               onClick={() => router.push("/catalog")}
               className="btn-accent rounded-lg px-6 py-3 font-semibold transition-opacity hover:opacity-90"
             >
@@ -184,12 +190,13 @@ export default function CartPage() {
                   key={item._id}
                   className="flex flex-col items-start gap-4 p-4 sm:flex-row sm:items-center sm:p-6"
                 >
-                  <div className="bg-secondary/10 flex h-20 w-20 shrink-0 items-center justify-center rounded-lg">
+                  <div className="bg-secondary/10 relative flex h-20 w-20 shrink-0 items-center justify-center rounded-lg">
                     {item.product.primaryImageUrl ? (
-                      <img
+                      <Image
                         src={item.product.primaryImageUrl}
                         alt={item.product.name}
-                        className="h-full w-full rounded-lg object-cover"
+                        fill
+                        className="rounded-lg object-cover"
                       />
                     ) : (
                       <div className="text-2xl">🎈</div>
@@ -232,6 +239,7 @@ export default function CartPage() {
                   <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:gap-4">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <button
+                        type="button"
                         onClick={() =>
                           void handleQuantityChange(item, item.quantity - 1)
                         }
@@ -243,6 +251,7 @@ export default function CartPage() {
                         {item.quantity}
                       </span>
                       <button
+                        type="button"
                         onClick={() =>
                           void handleQuantityChange(item, item.quantity + 1)
                         }
@@ -257,6 +266,7 @@ export default function CartPage() {
                         €{(item.product.price * item.quantity).toFixed(2)}
                       </p>
                       <button
+                        type="button"
                         onClick={() => void handleRemoveItem(item)}
                         className="text-terracotta hover:text-terracotta/80 text-xs transition-colors sm:text-sm"
                       >
@@ -278,6 +288,7 @@ export default function CartPage() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={handleCheckout}
                 className="btn-accent w-full rounded-lg py-3 font-semibold transition-opacity hover:opacity-90"
               >

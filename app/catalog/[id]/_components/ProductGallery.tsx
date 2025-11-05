@@ -105,7 +105,10 @@ export const ProductGallery = memo(function ProductGallery({
           <CarouselContent className="ml-0 h-full">
             {slides.map((slide) => (
               <CarouselItem key={slide.key} className="h-full basis-full pl-0">
-                <div
+                <button
+                  type="button"
+                  style={{ opacity: 100 }}
+                  tabIndex={0}
                   className="relative aspect-3/4 h-full max-h-[calc(100vh-57px-55px)] w-full overflow-hidden hover:opacity-100"
                   onKeyDown={(event) => {
                     if (!canNavigate) return;
@@ -132,7 +135,7 @@ export const ProductGallery = memo(function ProductGallery({
                     className="z-50 aspect-3/4 h-full w-full object-contain drop-shadow"
                     sizes="(min-width: 640px) 800px, 100vw"
                   />
-                </div>
+                </button>
               </CarouselItem>
             ))}
           </CarouselContent>

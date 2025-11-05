@@ -11,11 +11,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import type { Doc } from "@/convex/_generated/dataModel";
+import type { ProductWithImage } from "@/convex/helpers/products";
 import ProductCard from "./productCard";
 
 export interface ProductCarouselProps {
-  data: Doc<"products">[];
+  data: ProductWithImage[];
   label: string;
   secondaryLabel?: string;
 
@@ -42,7 +42,7 @@ export function ProductCarousel({
     };
   }, []);
 
-  const [api, setApi] = useState<CarouselApi>();
+  const [api, _setApi] = useState<CarouselApi>();
   const [disabled, setDisabled] = useState(false);
 
   useLayoutEffect(() => {
@@ -59,7 +59,7 @@ export function ProductCarousel({
   }, [api]);
 
   // Check state
-  const currentSlide = api?.selectedScrollSnap();
+  const _currentSlide = api?.selectedScrollSnap();
   return (
     <section className="flex flex-col overflow-hidden">
       {/* Header */}

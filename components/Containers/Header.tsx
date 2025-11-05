@@ -92,14 +92,19 @@ export function Header() {
         {/* Мобильное меню - показывает текущую страницу и dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="text-deep flex items-center gap-1 text-sm font-medium tracking-wide uppercase transition-colors hover:opacity-80 sm:hidden">
+            <button
+              type="button"
+              className="text-deep flex items-center gap-1 text-sm font-medium tracking-wide uppercase transition-colors hover:opacity-80 sm:hidden"
+            >
               {getCurrentPage()}
               <svg
                 className="h-3.5 w-3.5 transition-transform"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
+                <title>Toggle menu</title>
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -179,7 +184,10 @@ function AuthAction() {
       <Authenticated>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="text-deep transition-opacity hover:opacity-70">
+            <button
+              type="button"
+              className="text-deep transition-opacity hover:opacity-70"
+            >
               <IconButton Icon={User} />
             </button>
           </DropdownMenuTrigger>

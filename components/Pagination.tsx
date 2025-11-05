@@ -46,6 +46,7 @@ export function Pagination({
   return (
     <div className="mt-8 flex items-center justify-center space-x-2">
       <button
+        type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
@@ -55,7 +56,8 @@ export function Pagination({
 
       {visiblePages.map((page, index) => (
         <button
-          key={index}
+          type="button"
+          key={`page-${index}-${page}`}
           onClick={() => typeof page === "number" && onPageChange(page)}
           disabled={page === "..."}
           className={`rounded-lg border px-3 py-2 transition-colors ${
@@ -71,6 +73,7 @@ export function Pagination({
       ))}
 
       <button
+        type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className="rounded-lg border border-gray-300 px-3 py-2 text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"

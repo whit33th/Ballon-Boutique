@@ -3,13 +3,14 @@
 import { useQuery } from "convex/react";
 import { useParams, useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export default function OrderConfirmationPage() {
   const params = useParams();
   const router = useRouter();
   const orderId = params.id as string;
 
-  const order = useQuery(api.orders.getPublic, { id: orderId as any });
+  const order = useQuery(api.orders.getPublic, { id: orderId as Id<"orders"> });
 
   const handleContinueShopping = () => {
     router.push("/");
@@ -24,7 +25,10 @@ export default function OrderConfirmationPage() {
               <div className="mb-6 h-8 rounded bg-gray-200"></div>
               <div className="space-y-4">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-4 rounded bg-gray-200"></div>
+                  <div
+                    key={`skeleton-${i}`}
+                    className="h-4 rounded bg-gray-200"
+                  ></div>
                 ))}
               </div>
             </div>
@@ -47,6 +51,7 @@ export default function OrderConfirmationPage() {
               The order you're looking for doesn't exist.
             </p>
             <button
+              type="button"
               onClick={handleContinueShopping}
               className="btn-accent rounded-lg px-6 py-3 font-semibold"
             >
@@ -105,9 +110,9 @@ export default function OrderConfirmationPage() {
                   Items Ordered
                 </h3>
                 <div className="space-y-3">
-                  {order.items.map((item, index) => (
+                  {order.items.map((item) => (
                     <div
-                      key={index}
+                      key={item.productId}
                       className="bg-secondary/5 flex items-center justify-between rounded-lg p-3"
                     >
                       <div className="min-w-0 flex-1">
@@ -145,6 +150,7 @@ export default function OrderConfirmationPage() {
 
               <div className="text-center">
                 <button
+                  type="button"
                   onClick={handleContinueShopping}
                   className="btn-accent w-full rounded-lg px-6 py-3 font-semibold transition-opacity hover:opacity-90 sm:w-auto sm:px-8"
                 >

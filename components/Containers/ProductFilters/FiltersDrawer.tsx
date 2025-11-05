@@ -92,7 +92,10 @@ export function FiltersDrawer() {
   return (
     <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
       <DrawerTrigger asChild>
-        <button className="border-border/50 text-deep flex h-10 items-center gap-2 text-sm font-medium tracking-wide underline-offset-1 transition-colors hover:underline">
+        <button
+          type="button"
+          className="border-border/50 text-deep flex h-10 items-center gap-2 text-sm font-medium tracking-wide underline-offset-1 transition-colors hover:underline"
+        >
           <SlidersHorizontal className="h-4 w-4" />
           Filters
         </button>
@@ -138,6 +141,7 @@ export function FiltersDrawer() {
               <div className="grid grid-cols-3 gap-2">
                 {BALLOON_COLORS.map((color) => (
                   <button
+                    type="button"
                     key={color.name}
                     onClick={() =>
                       updateParam(

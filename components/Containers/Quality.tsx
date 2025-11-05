@@ -29,14 +29,14 @@ export const Quality = () => {
     <section className="relative overflow-hidden">
       <div className="relative z-10 mx-auto p-4 py-10">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {qualityItems.map((item, index) => {
+          {qualityItems.map((item) => {
             const Icon = item.icon;
             const isSquare = item.shape === "square";
             const isBeige = item.color === "beige";
 
             return (
               <div
-                key={index}
+                key={item.title}
                 className={`flex items-center justify-center border border-gray-200/50 p-4 backdrop-blur-sm ${
                   isSquare
                     ? "rounded-lg bg-amber-50/80"
