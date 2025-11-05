@@ -1,12 +1,9 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import {
-  Authenticated,
-  Unauthenticated,
-  useMutation,
-  useQuery,
-} from "convex/react";
+import { Authenticated, Unauthenticated, useMutation } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache";
+
 import { LogOut, ShoppingBag, User, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -186,9 +183,9 @@ function AuthAction() {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="text-deep transition-opacity hover:opacity-70"
+              className="text-deep flex h-10 w-10 items-center justify-center rounded-full bg-transparent outline-black/5 backdrop-blur-xs transition-colors hover:bg-black/10 hover:opacity-80 hover:outline"
             >
-              <IconButton Icon={User} />
+              <User className="h-5 w-5 text-current" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -221,9 +218,12 @@ function AuthAction() {
           href="/auth"
           className="text-deep flex gap-1 text-sm font-medium transition-colors hover:opacity-70"
         >
-          <div className="block sm:hidden">
-            <IconButton Icon={User} />
-          </div>
+          <button
+            type="button"
+            className="text-deep flex h-10 w-10 items-center justify-center rounded-full bg-transparent outline-black/5 backdrop-blur-xs transition-colors hover:bg-black/10 hover:opacity-80 hover:outline sm:hidden"
+          >
+            <User className="h-5 w-5 text-current" />
+          </button>
           <span className="hidden h-10 w-auto items-center justify-center px-3 sm:flex">
             Log In
           </span>

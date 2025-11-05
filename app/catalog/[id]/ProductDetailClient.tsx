@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  type Preloaded,
-  useMutation,
-  usePreloadedQuery,
-  useQuery,
-} from "convex/react";
+import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
+import { useQuery } from "convex-helpers/react/cache";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
