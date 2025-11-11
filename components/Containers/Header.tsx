@@ -4,9 +4,16 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { Authenticated, Unauthenticated, useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 
-import { LogOut, ShoppingBag, User, UserCircle } from "lucide-react";
+import {
+  LogOut,
+  ShieldCheck,
+  ShoppingBag,
+  User,
+  UserCircle,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import {
   DropdownMenu,
@@ -35,6 +42,7 @@ export function Header() {
   const badgeCount = isAuthenticated
     ? (cartTotal?.itemCount ?? 0)
     : guestItemCount;
+  const router = useRouter();
 
   useEffect(() => {
     if (!guestCartReady || !isAuthenticated || guestItems.length === 0) {
@@ -54,6 +62,7 @@ export function Header() {
           items: mapGuestCartForImport(guestItems),
         });
         clearGuestCart();
+        router.refresh();
       } catch (error) {
         console.error("Failed to import guest cart", error);
       } finally {
@@ -62,12 +71,17 @@ export function Header() {
     };
 
     void run();
+
+    return () => {
+      importInFlight.current = false;
+    };
   }, [
     guestCartReady,
     isAuthenticated,
     guestItems,
     importGuestCart,
     clearGuestCart,
+    router,
   ]);
 
   const pathname = usePathname();
@@ -84,7 +98,16 @@ export function Header() {
   };
 
   return (
-    <header className="bg-primary/95 sticky top-0 z-50 grid w-full grid-cols-3 border-b py-2 backdrop-blur-sm">
+    <header className="bg-primary/95 group sticky top-0 z-50 grid w-full grid-cols-3 border-b py-2 backdrop-blur-sm">
+      <Image
+        src="/hero-baloons.gif"
+        alt="Premium Balloons Collection"
+        width={100}
+        height={58}
+        className="absolute inset-0 -z-10 h-full w-full object-cover opacity-0 blur transition group-hover:opacity-15"
+        priority
+      />
+
       <nav className="flex items-center gap-4 justify-self-start px-4 sm:gap-6 sm:px-8">
         {/* Мобильное меню - показывает текущую страницу и dropdown */}
         <DropdownMenu>
@@ -153,14 +176,23 @@ export function Header() {
           href="/"
           className="text-deep flex items-center text-xl font-semibold tracking-tight"
         >
-          UP&UP
+          Ballon Boutique
         </Link>
       </div>
 
       <div className="flex items-center gap-3 justify-self-end px-1 sm:px-3">
+        {user?.isAdmin ? (
+          <Link
+            href="/admin"
+            className="text-deep hover:text-on-accent/90 flex h-10 items-center gap-2 rounded-full border border-white/20 px-3 text-xs font-semibold tracking-[0.25rem] uppercase transition-colors hover:border-white/40 hover:bg-white/10"
+          >
+            <ShieldCheck className="h-4 w-4" aria-hidden />
+            <span className="hidden sm:inline">Admin</span>
+          </Link>
+        ) : null}
         <AuthAction />
         <Link href="/cart" className="relative">
-          <IconButton Icon={ShoppingBag} />
+          <IconButton Icon={ShoppingBag} ariaLabel="Open cart" />
           {badgeCount > 0 && (
             <span className="bg-accent text-on-accent absolute top-0 right-2.5 flex min-h-[1.2rem] min-w-[1.2rem] translate-x-1/2 items-center justify-center rounded-full px-1 py-0.5 text-[0.7rem] md:right-1.5">
               {badgeCount > 99 ? "99+" : badgeCount}
@@ -183,6 +215,7 @@ function AuthAction() {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
+              aria-label="Account menu"
               className="text-deep flex h-10 w-10 items-center justify-center rounded-full bg-transparent outline-black/5 backdrop-blur-xs transition-colors hover:bg-black/10 hover:opacity-80 hover:outline"
             >
               <User className="h-5 w-5 text-current" />
@@ -220,6 +253,7 @@ function AuthAction() {
         >
           <button
             type="button"
+            aria-label="Open sign in page"
             className="text-deep flex h-10 w-10 items-center justify-center rounded-full bg-transparent outline-black/5 backdrop-blur-xs transition-colors hover:bg-black/10 hover:opacity-80 hover:outline sm:hidden"
           >
             <User className="h-5 w-5 text-current" />

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
+import { ensureAdmin } from "./helpers/admin";
 import { requireUser } from "./helpers/auth";
 
 const orderItemValidator = v.object({
@@ -8,7 +9,21 @@ const orderItemValidator = v.object({
   productName: v.string(),
   quantity: v.number(),
   price: v.number(),
+  personalization: v.optional(
+    v.object({
+      text: v.optional(v.string()),
+      color: v.optional(v.string()),
+      number: v.optional(v.string()),
+    }),
+  ),
 });
+
+const orderStatusValidator = v.union(
+  v.literal("pending"),
+  v.literal("confirmed"),
+  v.literal("shipped"),
+  v.literal("delivered"),
+);
 
 const orderValidator = v.object({
   _id: v.id("orders"),
@@ -16,12 +31,7 @@ const orderValidator = v.object({
   userId: v.id("users"),
   items: v.array(orderItemValidator),
   totalAmount: v.number(),
-  status: v.union(
-    v.literal("pending"),
-    v.literal("confirmed"),
-    v.literal("shipped"),
-    v.literal("delivered"),
-  ),
+  status: orderStatusValidator,
   customerEmail: v.string(),
   customerName: v.string(),
   shippingAddress: v.string(),
@@ -248,6 +258,46 @@ export const list = query({
   },
 });
 
+export const listAll = query({
+  args: {
+    status: v.optional(orderStatusValidator),
+    sort: v.optional(v.union(v.literal("newest"), v.literal("oldest"))),
+  },
+  returns: v.array(orderValidator),
+  handler: async (ctx, args) => {
+    // Проверка прав администратора
+    await ensureAdmin(ctx);
+
+    const orders: Doc<"orders">[] = [];
+
+    if (args.status) {
+      const status = args.status;
+      const statusQuery = ctx.db
+        .query("orders")
+        .withIndex("by_status", (q) => q.eq("status", status));
+
+      for await (const order of statusQuery) {
+        orders.push(order);
+      }
+    } else {
+      const allOrders = ctx.db.query("orders");
+      for await (const order of allOrders) {
+        orders.push(order);
+      }
+    }
+
+    orders.sort((a, b) => {
+      if (args.sort === "oldest") {
+        return a._creationTime - b._creationTime;
+      }
+
+      return b._creationTime - a._creationTime;
+    });
+
+    return orders;
+  },
+});
+
 export const get = query({
   args: { id: v.id("orders") },
   returns: v.union(orderValidator, v.null()),
@@ -275,5 +325,50 @@ export const getPublic = query({
   handler: async (ctx, args) => {
     const order = await ctx.db.get(args.id);
     return order ?? null;
+  },
+});
+
+// Admin-only: обновление статуса заказа
+export const updateStatus = mutation({
+  args: {
+    orderId: v.id("orders"),
+    status: orderStatusValidator,
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Проверка прав администратора
+    await ensureAdmin(ctx);
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    await ctx.db.patch(args.orderId, {
+      status: args.status,
+    });
+
+    return null;
+  },
+});
+
+// Admin-only: удаление заказа
+export const deleteOrder = mutation({
+  args: {
+    orderId: v.id("orders"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // Проверка прав администратора
+    await ensureAdmin(ctx);
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    await ctx.db.delete(args.orderId);
+
+    return null;
   },
 });

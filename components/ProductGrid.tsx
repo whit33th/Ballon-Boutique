@@ -2,8 +2,9 @@
 
 import { usePaginatedQuery } from "convex/react";
 import { motion } from "motion/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "@/convex/_generated/api";
+import { calculateItemsToLoad } from "@/lib/pagination";
 import { Button } from "./ui/button";
 import ProductCard from "./ui/productCard";
 
@@ -14,6 +15,7 @@ type ProductGridFilters = {
   available?: string;
   sale?: string;
   category?: string;
+  categoryGroup?: string;
   sort?: string;
   tag?: string;
   color?: string;
@@ -37,13 +39,7 @@ export const balloonColors = [
   "#FFD93D",
 ];
 
-const SORT_OPTIONS = [
-  "default",
-  "price-low",
-  "price-high",
-  "name-asc",
-  "name-desc",
-] as const;
+const SORT_OPTIONS = ["default", "name-asc", "name-desc"] as const;
 
 type SortOption = (typeof SORT_OPTIONS)[number];
 
@@ -61,11 +57,29 @@ export function ProductGrid({ filters }: ProductGridProps) {
     available,
     sale,
     category,
+    categoryGroup,
     sort,
     tag,
     color,
     size,
   } = filters;
+
+  // Calculate items to load based on viewport width
+  const [itemsToLoad, setItemsToLoad] = useState<number | null>(null);
+
+  useEffect(() => {
+    const updateItemsToLoad = () => {
+      setItemsToLoad(calculateItemsToLoad(window.innerWidth));
+    };
+
+    // Initial calculation
+    updateItemsToLoad();
+
+    // Update on resize
+    window.addEventListener("resize", updateItemsToLoad);
+
+    return () => window.removeEventListener("resize", updateItemsToLoad);
+  }, []);
 
   const queryArgs = useMemo(() => {
     const parsePrice = (value?: string) => {
@@ -131,6 +145,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
       available: available === "true" ? true : undefined,
       sale: sale === "true" ? true : undefined,
       category: normalizeString(category),
+      categoryGroup: normalizeString(categoryGroup),
       sort: normalizeSort(sort),
       tag: normalizeTag(tag),
       color: normalizeString(color),
@@ -143,6 +158,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
     available,
     sale,
     category,
+    categoryGroup,
     sort,
     tag,
     color,
@@ -153,9 +169,17 @@ export function ProductGrid({ filters }: ProductGridProps) {
     results: products,
     status,
     loadMore,
-  } = usePaginatedQuery(api.products.list, queryArgs, { initialNumItems: 10 });
+  } = usePaginatedQuery(
+    api.products.list,
+    itemsToLoad !== null ? queryArgs : "skip",
+    {
+      initialNumItems: itemsToLoad ?? 8,
+    },
+  );
+  const isLoadingMore = status === "LoadingMore";
 
-  if (status === "LoadingFirstPage") {
+  // Show loading state while calculating viewport width
+  if (itemsToLoad === null || status === "LoadingFirstPage") {
     return (
       <motion.div
         initial={{ opacity: 0.6 }}
@@ -209,7 +233,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5, ease: "easeInOut" }}
-        className="border-foreground grid w-full grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
+        className="border-foreground grid w-full grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
       >
         {products.map((product, index) => (
           <ProductCard index={index} key={product._id} product={product} />
@@ -220,13 +244,22 @@ export function ProductGrid({ filters }: ProductGridProps) {
       {status === "CanLoadMore" && (
         <div className="px-8 py-12 text-center">
           <Button
-            onClick={() => loadMore(10)}
+            onClick={() => loadMore(itemsToLoad)}
             disabled={status !== "CanLoadMore"}
             className="btn-accent h-12 rounded-lg px-12 font-semibold tracking-wide uppercase transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Load More
           </Button>
         </div>
+      )}
+      {isLoadingMore && (
+        <p
+          className="text-deep flex items-center justify-center gap-2 px-8 pb-12 text-sm"
+          aria-live="polite"
+        >
+          <span className="bg-deep h-2 w-2 animate-pulse rounded-full" />
+          Loading more balloons…
+        </p>
       )}
     </div>
   );

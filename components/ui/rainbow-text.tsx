@@ -20,7 +20,6 @@ export default function RainbowArcText({
     "#F66E52",
     "#A1D99B",
     "#91E5CF",
-    "#FFB5A7",
     "#FFD93D",
   ],
   className,

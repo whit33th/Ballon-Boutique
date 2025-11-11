@@ -9,7 +9,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
+} from "@/components/ui/carousels/carousel";
 
 export interface Category {
   name: string;
@@ -56,7 +56,7 @@ export function CategoriesIconCarousel({
           slidesToScroll: 5,
         }}
       >
-        <CarouselContent className="ml-0">
+        <CarouselContent className="ml-0 flex justify-around">
           {categories.map((category, index) => {
             const categoryValue = category.value ?? category.name;
             const isAllCategory = categoryValue === "";
@@ -79,7 +79,7 @@ export function CategoriesIconCarousel({
                   aria-pressed={isActive}
                 >
                   <div
-                    className={`relative flex aspect-square h-full w-full items-center justify-center rounded-xl ${
+                    className={`relative flex aspect-square h-15 w-15 items-center justify-center rounded-xl ${
                       isActive ? "ring-secondary ring-2" : "ring-border ring-1"
                     }`}
                   >
@@ -91,7 +91,7 @@ export function CategoriesIconCarousel({
                       className="aspect-square h-full w-full rounded-xl object-cover text-gray-500 drop-shadow"
                     />
                   </div>
-                  <div className="mt-3 w-14 truncate text-center text-xs font-medium text-black lg:w-16 lg:text-[0.8rem]">
+                  <div className="mt-3 truncate text-center text-xs font-medium text-black lg:text-[0.8rem]">
                     {category.name}
                   </div>
                 </button>
@@ -99,14 +99,16 @@ export function CategoriesIconCarousel({
             );
           })}
         </CarouselContent>
-        <div className="z-50 opacity-0 group-hover:flex lg:hidden lg:group-hover:opacity-100">
+        <div className="pointer-events-none z-50 opacity-0 group-hover:pointer-events-auto group-hover:flex focus-within:pointer-events-auto focus-within:opacity-100 lg:hidden lg:group-hover:opacity-100">
           <CarouselPrevious
             disabled={disabled}
-            className="left-0 z-50 h-9 w-9 -translate-x-2/5 disabled:opacity-0 lg:left-4 lg:h-8 lg:w-8 lg:translate-x-0"
+            aria-label="Scroll categories backward"
+            className="left-0 z-50 h-9 w-9 -translate-x-2/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:left-4 lg:h-8 lg:w-8 lg:translate-x-0"
           />
           <CarouselNext
             disabled={disabled}
-            className="right-0 z-50 h-9 w-9 translate-x-2/5 disabled:opacity-0 lg:right-4 lg:h-8 lg:w-8 lg:translate-x-0"
+            aria-label="Scroll categories forward"
+            className="right-0 z-50 h-9 w-9 translate-x-2/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:right-4 lg:h-8 lg:w-8 lg:translate-x-0"
           />
         </div>
       </Carousel>

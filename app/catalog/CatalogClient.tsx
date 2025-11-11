@@ -1,17 +1,10 @@
 "use client";
 
-import { type Preloaded, usePreloadedQuery } from "convex/react";
 import { useSearchParams } from "next/navigation";
 import { ProductFilters } from "@/components/Containers/ProductFilters/ProductFilters";
 import { ProductGrid } from "@/components/ProductGrid";
-import type { api } from "@/convex/_generated/api";
 
-interface CatalogClientProps {
-  preloaded: Preloaded<typeof api.products.list>;
-}
-
-export default function CatalogClient({ preloaded }: CatalogClientProps) {
-  usePreloadedQuery(preloaded);
+export default function CatalogClient() {
   const searchParams = useSearchParams();
 
   const filters = {
@@ -21,6 +14,7 @@ export default function CatalogClient({ preloaded }: CatalogClientProps) {
     available: searchParams.get("available") || "",
     sale: searchParams.get("sale") || "",
     category: searchParams.get("category") || "",
+    categoryGroup: searchParams.get("categoryGroup") || "",
     sort: searchParams.get("sort") || "",
     tag: searchParams.get("tag") || "",
     color: searchParams.get("color") || "",

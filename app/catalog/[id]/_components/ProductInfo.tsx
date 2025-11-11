@@ -49,7 +49,7 @@ export const ProductInfo = memo(function ProductInfo({
         </p>
       </div>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <div>
             <span className="text-deep/50 mb-1 block text-xs tracking-wider uppercase">
@@ -97,10 +97,10 @@ export const ProductInfo = memo(function ProductInfo({
           {!inStock ? "Sold out" : "Add to cart"}
         </motion.button>
 
-        <div className="text-secondary flex items-center gap-2 text-sm font-medium">
+        {/* <div className="text-secondary flex items-center gap-2 text-sm font-medium">
           <Sparkles className="h-5 w-5" />
           Free gift wrapping with every order
-        </div>
+        </div> */}
       </div>
     </div>
   );

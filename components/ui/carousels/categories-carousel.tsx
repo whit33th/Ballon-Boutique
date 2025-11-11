@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import type { Route } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
@@ -10,23 +11,19 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
-import type { ProductWithImage } from "@/convex/helpers/products";
-import ProductCard from "./productCard";
+} from "@/components/ui/carousels/carousel";
 
-export interface ProductCarouselProps {
-  data: ProductWithImage[];
-  label: string;
-  secondaryLabel?: string;
-
-  count?: number;
+export interface Category {
+  name: string;
+  image: string;
+  link: string;
 }
 
-export function ProductCarousel({
-  data,
-  label,
-  secondaryLabel,
-}: ProductCarouselProps) {
+export interface CategoriesCarouselProps {
+  categories: Category[];
+}
+
+export function CategoriesCarousel({ categories }: CategoriesCarouselProps) {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
@@ -42,7 +39,7 @@ export function ProductCarousel({
     };
   }, []);
 
-  const [api, _setApi] = useState<CarouselApi>();
+  const [api, setApi] = useState<CarouselApi>();
   const [disabled, setDisabled] = useState(false);
 
   useLayoutEffect(() => {
@@ -58,52 +55,53 @@ export function ProductCarousel({
     };
   }, [api]);
 
-  // Check state
-  const _currentSlide = api?.selectedScrollSnap();
   return (
     <section className="flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 px-4">
-        <h2 className="flex max-w-2xl gap-1.5 truncate text-xl leading-tight md:text-2xl">
-          <span>{label}</span>
-          {secondaryLabel ? (
-            <>
-              <span>✧</span>
-              <span>{secondaryLabel}</span>
-            </>
-          ) : null}
+      <div className="flex justify-between gap-2 p-4 px-4">
+        <h2 className="flex max-w-2xl gap-1.5 truncate text-2xl leading-tight md:text-2xl">
+          Explore Categories
         </h2>
-        <Link
-          href={"/catalog"}
-          className="flex items-center gap-2 text-sm transition-[gap] duration-200 hover:gap-3"
-        >
-          More products
-          <ArrowRight className="h-4 w-4" />
-        </Link>
       </div>
 
       {/* Carousel */}
       <div className="border-foreground relative border-t">
         <Carousel
+          setApi={setApi}
           className="group"
           opts={{
             dragFree: isMobile,
-            // skipSnaps: true,
             align: "start",
           }}
         >
           <CarouselContent className="ml-0">
-            {data.map((product, index) => (
+            {categories.map((category) => (
               <CarouselItem
-                key={product._id}
-                className="basis-2/3 pl-0 sm:basis-2/5 md:basis-2/7 lg:basis-2/9"
+                key={category.name}
+                className="basis-2/5 pl-0 sm:basis-2/7 md:basis-2/9 lg:basis-2/11 xl:basis-2/13"
               >
-                <ProductCard index={index} product={product} />
+                <Link
+                  href={category.link as Route}
+                  className="group border-foreground block border-r"
+                >
+                  <article className="relative aspect-square overflow-hidden bg-linear-to-br from-green-100 to-yellow-100">
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      className="object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <h3 className="text-center text-lg font-black tracking-tight uppercase backdrop-invert transition-transform group-hover:scale-105 lg:text-xl 2xl:text-2xl">
+                        {category.name}
+                      </h3>
+                    </div>
+                  </article>
+                </Link>
               </CarouselItem>
             ))}
           </CarouselContent>
-
-          <div className="opacity-0 group-hover:flex lg:hidden lg:group-hover:opacity-100">
+          <div className="z-50 opacity-0 group-hover:flex lg:hidden lg:group-hover:opacity-100">
             <CarouselPrevious
               disabled={disabled}
               className="left-0 z-50 h-12 w-12 -translate-x-2/5 disabled:opacity-0 lg:left-6 lg:h-9 lg:w-9 lg:translate-x-0"

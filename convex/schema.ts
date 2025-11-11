@@ -2,11 +2,26 @@ import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const usersTable = defineTable({
+  name: v.optional(v.string()),
+  image: v.optional(v.string()),
+  email: v.optional(v.string()),
+  emailVerificationTime: v.optional(v.number()),
+  phone: v.optional(v.string()),
+  phoneVerificationTime: v.optional(v.number()),
+  isAnonymous: v.optional(v.boolean()),
+  address: v.optional(v.string()),
+  isAdmin: v.optional(v.boolean()),
+})
+  .index("email", ["email"])
+  .index("phone", ["phone"]);
+
 const applicationTables = {
   products: defineTable({
     name: v.string(),
     description: v.string(),
     price: v.number(),
+    categoryGroup: v.string(),
     category: v.string(),
     size: v.union(
       v.literal("30cm"),
@@ -27,14 +42,22 @@ const applicationTables = {
     .index("by_price", ["price"])
     .index("by_name", ["name"])
     .index("by_category", ["category"])
+    .index("by_category_group", ["categoryGroup"])
+    .index("by_group_and_category", ["categoryGroup", "category"])
     .index("by_size", ["size"])
     // Composite indexes for better e-commerce performance
     // Default sorting: show bestsellers first (by soldCount desc, then by _creationTime desc)
     .index("by_popularity", ["soldCount"])
     // Category + popularity for filtered browsing
     .index("by_category_and_popularity", ["category", "soldCount"])
+    .index("by_group_and_popularity", ["categoryGroup", "soldCount"])
     // Price sorting within category
     .index("by_category_and_price", ["category", "price"])
+    .index("by_group_category_and_price", [
+      "categoryGroup",
+      "category",
+      "price",
+    ])
     // Stock + popularity for availability filtering
     .index("by_stock_and_sold", ["inStock", "soldCount"]),
 
@@ -131,5 +154,6 @@ const applicationTables = {
 
 export default defineSchema({
   ...authTables,
+  users: usersTable,
   ...applicationTables,
 });

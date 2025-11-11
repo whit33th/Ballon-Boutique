@@ -1,4 +1,4 @@
-// Ballonique Shop Configuration
+// Ballon Boutique Shop Configuration
 
 /**
  * WhatsApp Configuration
@@ -12,7 +12,7 @@ export const WHATSAPP_NUMBER = "48572296004";
  * Store Information
  */
 export const STORE_INFO = {
-  name: "Ballonique",
+  name: "Ballon Boutique",
   slogan: "Wenn Momente zu Emotionen werden",
   sloganRu: "Когда мгновение становится эмоциями",
 
@@ -82,30 +82,9 @@ export const PAYMENT_CONFIG = {
 };
 
 /**
- * Categories Configuration
- * Using temporary images until final icons are ready
+ * Primary category cards used across the shop
  */
-export const CATEGORIES = [
-  { name: "All", icon: "/baloons3.png", value: "" },
-  { name: "For Kids", icon: "/baloons3.png", value: "For Kids" },
-  { name: "For Her", icon: "/baloons2.png", value: "For Her" },
-  { name: "For Him", icon: "/baloons4.png", value: "For Him" },
-  { name: "Love", icon: "/img.jpg", value: "Love" },
-  { name: "Mom", icon: "/baloons2.png", value: "Mom" },
-  { name: "Baby Birth", icon: "/baloons3.png", value: "Baby Birth" },
-  {
-    name: "Surprise in a Balloon",
-    icon: "/baloons4.png",
-    value: "Surprise in a Balloon",
-  },
-  { name: "Anniversary", icon: "/img.jpg", value: "Anniversary" },
-  {
-    name: "Balloon Bouquets",
-    icon: "/baloons2.png",
-    value: "Balloon Bouquets",
-  },
-  // { name: "For Any Event", icon: "/baloons3.png", value: "For Any Event" },
-] as const;
+export { PRIMARY_CATEGORY_CARDS as CATEGORIES } from "@/constants/categories";
 
 /**
  * WhatsApp message templates

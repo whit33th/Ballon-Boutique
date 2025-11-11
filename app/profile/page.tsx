@@ -5,7 +5,7 @@ import { useQuery } from "convex-helpers/react/cache";
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { SignOutButton } from "@/components/SignOutButton";
 import { api } from "@/convex/_generated/api";
@@ -17,6 +17,9 @@ const tabs: Array<{ id: TabId; label: string; hint: string }> = [
   { id: "orders", label: "Orders", hint: "Purchase history" },
   { id: "settings", label: "Settings", hint: "Preferences" },
 ];
+
+const tabButtonId = (tabId: TabId) => `profile-tab-${tabId}`;
+const tabPanelId = (tabId: TabId) => `profile-panel-${tabId}`;
 
 export default function ProfilePage() {
   const user = useQuery(api.auth.loggedInUser);
@@ -32,22 +35,38 @@ export default function ProfilePage() {
     address: "",
   });
 
-  useEffect(() => {
-    if (user && !isEditing) {
-      setFormData((prev) => ({
-        ...prev,
-        name: user.name ?? "",
-        email: user.email ?? "",
-      }));
+  const resetFormFromUser = useCallback(() => {
+    if (!user) {
+      setFormData({ name: "", email: "", phone: "", address: "" });
+      return;
     }
-  }, [user, isEditing]);
+
+    setFormData({
+      name: user.name ?? "",
+      email: user.email ?? "",
+      phone: user.phone ?? "",
+      address: user.address ?? "",
+    });
+  }, [user]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      resetFormFromUser();
+    }
+  }, [isEditing, resetFormFromUser]);
 
   const handleUpdateProfile = async (
     event: React.FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
     try {
-      await updateProfile(formData);
+      const updated = await updateProfile(formData);
+      setFormData({
+        name: updated?.name ?? "",
+        email: updated?.email ?? "",
+        phone: updated?.phone ?? "",
+        address: updated?.address ?? "",
+      });
       toast.success("Profile updated successfully!");
       setIsEditing(false);
     } catch (_error) {
@@ -137,26 +156,52 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="mt-10 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3"
+          role="tablist"
+          aria-label="Profile sections"
         >
-          {tabs.map((tab) => (
-            <button
-              type="button"
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col rounded-3xl border px-6 py-5 text-left transition ${
-                activeTab === tab.id
-                  ? "border-black bg-white shadow-[0_20px_50px_-35px_rgba(15,23,42,0.7)]"
-                  : "border-black/10 bg-white/70 hover:border-black/40"
-              }`}
-            >
-              <span className="text-xs tracking-[0.3rem] text-black/40 uppercase">
-                {tab.hint}
-              </span>
-              <span className="text-lg font-semibold text-black">
-                {tab.label}
-              </span>
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                type="button"
+                role="tab"
+                id={tabButtonId(tab.id)}
+                key={tab.id}
+                aria-selected={isActive}
+                aria-controls={tabPanelId(tab.id)}
+                tabIndex={isActive ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={(event) => {
+                  if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") {
+                    return;
+                  }
+                  event.preventDefault();
+                  const offset = event.key === "ArrowRight" ? 1 : -1;
+                  const currentIndex = tabs.findIndex(
+                    (candidate) => candidate.id === tab.id,
+                  );
+                  if (currentIndex === -1) {
+                    return;
+                  }
+                  const nextIndex =
+                    (currentIndex + offset + tabs.length) % tabs.length;
+                  setActiveTab(tabs[nextIndex].id);
+                }}
+                className={`flex flex-col rounded-3xl border px-6 py-5 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black ${
+                  isActive
+                    ? "border-black bg-white shadow-[0_20px_50px_-35px_rgba(15,23,42,0.7)]"
+                    : "border-black/10 bg-white/70 hover:border-black/40"
+                }`}
+              >
+                <span className="text-xs tracking-[0.3rem] text-black/40 uppercase">
+                  {tab.hint}
+                </span>
+                <span className="text-lg font-semibold text-black">
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
         </motion.nav>
 
         <section className="mt-10 space-y-8">
@@ -167,6 +212,10 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
               className="grid gap-6 rounded-[36px] bg-white p-8 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.55)]"
+              role="tabpanel"
+              id={tabPanelId("profile")}
+              aria-labelledby={tabButtonId("profile")}
+              tabIndex={0}
             >
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -180,14 +229,13 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (!isEditing) {
-                      setFormData((prev) => ({
-                        ...prev,
-                        name: user.name ?? "",
-                        email: user.email ?? "",
-                      }));
+                    if (isEditing) {
+                      resetFormFromUser();
+                      setIsEditing(false);
+                    } else {
+                      resetFormFromUser();
+                      setIsEditing(true);
                     }
-                    setIsEditing((prev) => !prev);
                   }}
                   className="rounded-full border border-black px-5 py-2 text-xs font-semibold tracking-widest text-black uppercase transition hover:bg-black hover:text-white"
                 >
@@ -259,7 +307,10 @@ export default function ProfilePage() {
                     </motion.button>
                     <button
                       type="button"
-                      onClick={() => setIsEditing(false)}
+                      onClick={() => {
+                        resetFormFromUser();
+                        setIsEditing(false);
+                      }}
                       className="inline-flex h-12 items-center justify-center rounded-full border border-black px-6 text-xs font-semibold tracking-widest text-black uppercase transition hover:bg-black/5"
                     >
                       Discard
@@ -284,6 +335,22 @@ export default function ProfilePage() {
                       {user.email ?? "Not set"}
                     </p>
                   </div>
+                  <div className="rounded-3xl border border-black/10 bg-white/70 px-5 py-4">
+                    <p className="text-xs tracking-[0.3rem] text-black/40 uppercase">
+                      Phone
+                    </p>
+                    <p className="mt-2 text-lg font-medium text-black">
+                      {user.phone ?? (formData.phone || "Not set")}
+                    </p>
+                  </div>
+                  <div className="rounded-3xl border border-black/10 bg-white/70 px-5 py-4 md:col-span-2">
+                    <p className="text-xs tracking-[0.3rem] text-black/40 uppercase">
+                      Default delivery address
+                    </p>
+                    <p className="mt-2 text-lg font-medium whitespace-pre-wrap text-black">
+                      {user.address ?? (formData.address || "Not set")}
+                    </p>
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -296,6 +363,10 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
               className="grid gap-5 rounded-[36px] bg-white p-8 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.55)]"
+              role="tabpanel"
+              id={tabPanelId("orders")}
+              aria-labelledby={tabButtonId("orders")}
+              tabIndex={0}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-2xl font-semibold text-black">
@@ -375,6 +446,10 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
               className="grid gap-6 rounded-[36px] bg-white p-8 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.55)]"
+              role="tabpanel"
+              id={tabPanelId("settings")}
+              aria-labelledby={tabButtonId("settings")}
+              tabIndex={0}
             >
               <div>
                 <h2 className="text-2xl font-semibold text-black">

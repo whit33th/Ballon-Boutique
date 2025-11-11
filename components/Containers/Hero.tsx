@@ -1,40 +1,24 @@
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
 
 export const Hero = () => {
   return (
-    <section className="relative h-[calc(100svh-57px-26px-62px-20px)] overflow-hidden">
-      {/* Background Image */}
-      <Image
-        src="/hero-baloons.gif"
-        alt="Premium Balloons Collection"
+    <section className="relative w-full overflow-hidden py-6 sm:py-10 md:py-14">
+      {/* <Image
+        src={"/imgs/baloonsGif/1.jpg"}
+        alt="hero img"
+        className="absolute inset-0 -z-10 h-full w-full scale-110 object-cover object-top blur-sm contrast-150"
         fill
-        className="absolute inset-0 -z-10 h-full w-full object-cover"
         priority
-      />
-      {/* Dark overlay for text readability */}
+      /> */}
 
       {/* Content */}
-      <div className="text-background z-10 flex h-full max-w-2xl flex-col justify-between p-4 py-10 md:p-10">
-        <div>
-          <h1 className="mb-6 text-4xl leading-tight font-light sm:text-5xl md:text-6xl lg:text-7xl">
-            Ballonique – When Moments Become Emotions
-          </h1>
-        </div>
-        <div>
-          <p className="mb-8 hidden text-xl md:block md:text-2xl">
-            Designer balloon sets for all celebrations. Emotions and joy in
-            every detail.
-          </p>
-          <Link
-            href="/catalog"
-            className="btn-accent inline-flex items-center gap-3 rounded-full px-6 py-3 text-lg font-medium transition-[transform,opacity] duration-200 hover:opacity-90"
-          >
-            Shop Now
-            <ArrowRight className="h-5 w-5" />
-          </Link>
-        </div>
+      <div className="mx-auto max-w-3xl px-4 sm:px-8">
+        <h1 className="text-2xl leading-tight font-semibold sm:text-3xl md:text-4xl">
+          When Moments Become Emotions
+        </h1>
+        <p className="sm:text-md mt-4 text-sm">
+          Designer balloon sets for every celebration
+        </p>
       </div>
     </section>
   );

@@ -17,8 +17,6 @@ import {
 
 const sortOptions = [
   { value: "default", label: "Default" },
-  { value: "price-low", label: "Price: Low to High" },
-  { value: "price-high", label: "Price: High to Low" },
   { value: "name-asc", label: "Name: A to Z" },
   { value: "name-desc", label: "Name: Z to A" },
 ];
@@ -87,10 +85,11 @@ export function SortByButton() {
         </div>
 
         <DrawerFooter className="pt-4">
-          <DrawerClose asChild>
-            <Button className="btn-accent text-on-accent w-full rounded-sm">
-              Close
-            </Button>
+          <DrawerClose
+            className="btn-accent text-on-accent w-full rounded-sm text-center"
+            type="button"
+          >
+            Close
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>

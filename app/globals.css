@@ -118,17 +118,20 @@ body {
   /* overscroll-behavior: contain; */
   /* overflow: hidden; */
 }
+input {
+  caret-color: var(--accent);
+}
 
 :root {
   --radius: 0.625rem;
   /* Palette sampled from the provided photo (rounded swatches)
      Colors (left->right): blue, warm orange, light beige, terracotta, deep brown
   */
-  --color-blue: #2f6d7a; /* deep teal-blue */
-  --color-warm: #e89a5a; /* warm peach / orange */
-  --color-light: #f8f5ed; /* light cream / beige (primary background) */
-  --color-terracotta: #c44a2f; /* warm terracotta / coral (accent) */
-  --color-deep: #5a2f28; /* deep brown / maroon (text & accents) */
+  --color-blue: #348998; /* чуть ярче и свежее — морская бирюза */
+  --color-warm: #f3a766; /* теплее и светлее — апельсиновый акцент */
+  --color-light: #fcf8ef; /* чуть белее, чтобы всё «дышало» */
+  --color-terracotta: #e25536; /* коралл с энергией, но не кислотный */
+  --color-deep: #4a2620; /* капельку темнее для контраста */
 
   --color-blue-rgb: 47, 109, 122;
   --color-warm-rgb: 232, 154, 90;
@@ -184,40 +187,6 @@ body {
   --sidebar-accent-foreground: var(--foreground);
   --sidebar-border: rgba(var(--deep-rgb), 0.06);
   --sidebar-ring: rgba(var(--secondary-rgb), 0.25);
-}
-
-.dark {
-  --background: #1a1a1a;
-  --foreground: #ffffff;
-  --card: #2a2a2a;
-  --card-foreground: #ffffff;
-  --popover: #2a2a2a;
-  --popover-foreground: #ffffff;
-  --primary: #8bc34a;
-  --primary-foreground: #000000;
-  --secondary: #ffc107;
-  --secondary-foreground: #000000;
-  --muted: #2a2a2a;
-  --muted-foreground: #999999;
-  --accent: #2196f3;
-  --accent-foreground: #ffffff;
-  --destructive: #e91e63;
-  --border: #333333;
-  --input: #2a2a2a;
-  --ring: #2196f3;
-  --chart-1: #8bc34a;
-  --chart-2: #ffc107;
-  --chart-3: #2196f3;
-  --chart-4: #e91e63;
-  --chart-5: #9c27b0;
-  --sidebar: #2a2a2a;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #2196f3;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #333333;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #333333;
-  --sidebar-ring: #2196f3;
 }
 
 @layer base {

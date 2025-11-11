@@ -6,6 +6,7 @@ export const productDocumentFields = {
   name: v.string(),
   description: v.string(),
   price: v.number(),
+  categoryGroup: v.string(),
   category: v.string(),
   size: v.union(
     v.literal("30cm"),

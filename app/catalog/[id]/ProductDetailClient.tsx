@@ -8,12 +8,7 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { snapshotFromProduct, useGuestCart } from "@/lib/guestCart";
-import {
-  ProductFeatures,
-  ProductGallery,
-  ProductHeader,
-  ProductInfo,
-} from "./_components";
+import { ProductGallery, ProductHeader, ProductInfo } from "./_components";
 import { ProductPersonalization } from "./_components/ProductPersonalization";
 
 interface Props {
@@ -178,7 +173,7 @@ export default function ProductDetailClient({ preloaded }: Props) {
         // whileInView={{ opacity: 1, x: 0 }}
         // viewport={{ once: true }}
         // transition={{ duration: 0.5, ease: "easeOut" }}
-        className="to-primary/20 flex flex-col justify-between bg-linear-to-br from-white/50 px-8 py-10 lg:w-1/2"
+        className="to-primary/20 flex flex-col justify-between bg-linear-to-br from-white/50 px-8 py-6 lg:w-1/2"
       >
         <div className="flex h-full flex-col justify-between gap-6">
           <div className="space-y-6">
@@ -198,7 +193,7 @@ export default function ProductDetailClient({ preloaded }: Props) {
               />
             )}
           </div>
-          <ProductFeatures />
+          {/* <ProductFeatures /> */}
         </div>
       </motion.div>
     </section>

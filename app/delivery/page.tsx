@@ -21,7 +21,7 @@ export default function DeliveryPage() {
                 </h2>
                 <div className="rounded-lg bg-purple-50 p-6">
                   <p className="mb-4 text-gray-700">
-                    Your Ballonique order can be conveniently picked up:
+                    Your Ballon Boutique order can be conveniently picked up:
                   </p>
                   <div className="space-y-3 text-gray-700">
                     <div className="flex items-start">

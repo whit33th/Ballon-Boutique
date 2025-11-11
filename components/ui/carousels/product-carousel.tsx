@@ -10,7 +10,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
+} from "@/components/ui/carousels/carousel";
 import type { ProductWithImage } from "@/convex/helpers/products";
 import ProductCard from "../productCard";
 
@@ -42,7 +42,7 @@ export function ProductCarousel({
     };
   }, []);
 
-  const [api, _setApi] = useState<CarouselApi>();
+  const [api, setApi] = useState<CarouselApi>();
   const [disabled, setDisabled] = useState(false);
 
   useLayoutEffect(() => {
@@ -75,7 +75,7 @@ export function ProductCarousel({
         </h2>
         <Link
           href={"/catalog"}
-          className="flex items-center gap-2 text-sm hover:gap-3"
+          className="flex items-center gap-2 text-sm transition-[gap] duration-200 hover:gap-3"
         >
           More products
           <ArrowRight className="h-4 w-4" />
@@ -85,6 +85,7 @@ export function ProductCarousel({
       {/* Carousel */}
       <div className="border-foreground relative border-t">
         <Carousel
+          setApi={setApi}
           className="group"
           opts={{
             dragFree: isMobile,
@@ -96,21 +97,23 @@ export function ProductCarousel({
             {data.map((product, index) => (
               <CarouselItem
                 key={product._id}
-                className="basis-2/3 pl-0 sm:basis-2/5 md:basis-2/7 lg:basis-2/9"
+                className="basis-2/5 pl-0 sm:basis-2/7 md:basis-2/9 lg:basis-2/11 xl:basis-2/13"
               >
                 <ProductCard index={index} product={product} />
               </CarouselItem>
             ))}
           </CarouselContent>
 
-          <div className="opacity-0 group-hover:flex lg:hidden lg:group-hover:opacity-100">
+          <div className="pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:flex focus-within:pointer-events-auto focus-within:opacity-100 lg:hidden lg:group-hover:opacity-100">
             <CarouselPrevious
               disabled={disabled}
-              className="left-0 z-50 h-12 w-12 -translate-x-2/5 disabled:opacity-0 lg:left-6 lg:h-9 lg:w-9 lg:translate-x-0"
+              aria-label="Scroll products backward"
+              className="left-0 z-50 h-12 w-12 -translate-x-2/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:left-6 lg:h-9 lg:w-9 lg:translate-x-0"
             />
             <CarouselNext
               disabled={disabled}
-              className="right-0 z-50 h-12 w-12 translate-x-2/5 disabled:opacity-0 lg:right-6 lg:h-9 lg:w-9 lg:translate-x-0"
+              aria-label="Scroll products forward"
+              className="right-0 z-50 h-12 w-12 translate-x-2/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:right-6 lg:h-9 lg:w-9 lg:translate-x-0"
             />
           </div>
         </Carousel>

@@ -387,15 +387,20 @@ export default function CheckoutPage() {
                       Delivery Method
                     </h3>
                     <div className="space-y-2 sm:space-y-3">
-                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label
+                        className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4"
+                        htmlFor="delivery-pickup"
+                      >
                         <input
                           type="radio"
                           name="deliveryType"
+                          id="delivery-pickup"
                           value="pickup"
                           checked={deliveryType === "pickup"}
                           onChange={(e) =>
                             setDeliveryType(e.target.value as DeliveryType)
                           }
+                          aria-describedby="delivery-pickup-details"
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
                         <Store className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
@@ -403,7 +408,10 @@ export default function CheckoutPage() {
                           <div className="text-deep text-sm font-medium sm:text-base">
                             Self-pickup
                           </div>
-                          <div className="text-deep/70 text-xs sm:text-sm">
+                          <div
+                            className="text-deep/70 text-xs sm:text-sm"
+                            id="delivery-pickup-details"
+                          >
                             {STORE_INFO.address.street},{" "}
                             {STORE_INFO.address.postalCode}{" "}
                             {STORE_INFO.address.city}
@@ -412,15 +420,20 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                       </label>
-                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label
+                        className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4"
+                        htmlFor="delivery-delivery"
+                      >
                         <input
                           type="radio"
                           name="deliveryType"
+                          id="delivery-delivery"
                           value="delivery"
                           checked={deliveryType === "delivery"}
                           onChange={(e) =>
                             setDeliveryType(e.target.value as DeliveryType)
                           }
+                          aria-describedby="delivery-delivery-details"
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
                         <Truck className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
@@ -428,7 +441,10 @@ export default function CheckoutPage() {
                           <div className="text-deep text-sm font-medium sm:text-base">
                             Delivery
                           </div>
-                          <div className="text-deep/70 text-xs sm:text-sm">
+                          <div
+                            className="text-deep/70 text-xs sm:text-sm"
+                            id="delivery-delivery-details"
+                          >
                             Delivery to nearby cities{" "}
                             {STORE_INFO.delivery.hours} (+€
                             {STORE_INFO.delivery.cost})
@@ -541,15 +557,20 @@ export default function CheckoutPage() {
                       Payment Method
                     </h3>
                     <div className="space-y-2 sm:space-y-3">
-                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label
+                        className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4"
+                        htmlFor="payment-full"
+                      >
                         <input
                           type="radio"
                           name="paymentMethod"
+                          id="payment-full"
                           value="full_online"
                           checked={paymentMethod === "full_online"}
                           onChange={(e) =>
                             setPaymentMethod(e.target.value as PaymentMethod)
                           }
+                          aria-describedby="payment-full-details"
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
                         <CreditCard className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
@@ -557,22 +578,30 @@ export default function CheckoutPage() {
                           <div className="text-deep text-sm font-medium sm:text-base">
                             Full Online Payment
                           </div>
-                          <div className="text-deep/70 text-xs sm:text-sm">
+                          <div
+                            className="text-deep/70 text-xs sm:text-sm"
+                            id="payment-full-details"
+                          >
                             Pay the full amount online — your set will be
                             reserved immediately
                           </div>
                         </div>
                       </label>
 
-                      <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                      <label
+                        className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4"
+                        htmlFor="payment-partial"
+                      >
                         <input
                           type="radio"
                           name="paymentMethod"
+                          id="payment-partial"
                           value="partial_online"
                           checked={paymentMethod === "partial_online"}
                           onChange={(e) =>
                             setPaymentMethod(e.target.value as PaymentMethod)
                           }
+                          aria-describedby="payment-partial-details"
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                         />
                         <Wallet className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
@@ -580,7 +609,10 @@ export default function CheckoutPage() {
                           <div className="text-deep text-sm font-medium sm:text-base">
                             30% Deposit
                           </div>
-                          <div className="text-deep/70 text-xs sm:text-sm">
+                          <div
+                            className="text-deep/70 text-xs sm:text-sm"
+                            id="payment-partial-details"
+                          >
                             Pay 30% online to reserve. Remaining amount paid in
                             cash upon pickup
                           </div>
@@ -588,15 +620,20 @@ export default function CheckoutPage() {
                       </label>
 
                       {deliveryType === "pickup" && (
-                        <label className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4">
+                        <label
+                          className="hover:bg-primary flex cursor-pointer items-center space-x-2 rounded-lg border p-3 transition-colors sm:space-x-3 sm:p-4"
+                          htmlFor="payment-cash"
+                        >
                           <input
                             type="radio"
                             name="paymentMethod"
+                            id="payment-cash"
                             value="cash"
                             checked={paymentMethod === "cash"}
                             onChange={(e) =>
                               setPaymentMethod(e.target.value as PaymentMethod)
                             }
+                            aria-describedby="payment-cash-details"
                             className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
                           />
                           <DollarSign className="text-secondary mt-0.5 h-5 w-5 shrink-0 sm:mt-1 sm:h-6 sm:w-6" />
@@ -604,7 +641,10 @@ export default function CheckoutPage() {
                             <div className="text-deep text-sm font-medium sm:text-base">
                               Cash Payment
                             </div>
-                            <div className="text-deep/70 text-xs sm:text-sm">
+                            <div
+                              className="text-deep/70 text-xs sm:text-sm"
+                              id="payment-cash-details"
+                            >
                               Only for pickup. Requires WhatsApp confirmation
                             </div>
                           </div>

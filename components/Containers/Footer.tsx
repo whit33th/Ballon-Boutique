@@ -7,7 +7,8 @@ export const Footer = () => {
         {/* Single row: left = year text, center = palette dots, right = Instagram */}
         <div className="grid grid-cols-3 items-center">
           <p className="text-left text-xs text-white">
-            &copy; {new Date().getFullYear()} Ballonique. All rights reserved.
+            &copy; {new Date().getFullYear()} Ballon Boutique. All rights
+            reserved.
           </p>
 
           <div className="flex justify-center gap-3" aria-hidden="true">

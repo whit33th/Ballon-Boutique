@@ -11,5 +11,19 @@ export default async function HomePage() {
     },
   });
 
-  return <HomePageClient preloadedBestsellers={preloadedBestsellers} />;
+  // Prefetch new products data on the server
+  const preloadedNewProducts = await preloadQuery(api.products.getNewProducts, {
+    daysOld: 7,
+    paginationOpts: {
+      cursor: null,
+      numItems: 10,
+    },
+  });
+
+  return (
+    <HomePageClient
+      preloadedBestsellers={preloadedBestsellers}
+      preloadedNewProducts={preloadedNewProducts}
+    />
+  );
 }

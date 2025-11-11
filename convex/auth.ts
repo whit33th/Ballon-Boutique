@@ -15,15 +15,13 @@ export const loggedInUser = query({
       _id: v.id("users"),
       name: v.optional(v.string()),
       email: v.optional(v.string()),
+      phone: v.optional(v.string()),
+      address: v.optional(v.string()),
+      isAdmin: v.optional(v.boolean()),
     }),
     v.null(),
   ),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       return null;
@@ -32,8 +30,11 @@ export const loggedInUser = query({
     const user = await ctx.db.get(userId);
     return {
       _id: userId,
-      name: user?.name ?? identity.name ?? undefined,
-      email: user?.email ?? identity.email ?? undefined,
+      name: user?.name ?? undefined,
+      email: user?.email ?? undefined,
+      phone: user?.phone ?? undefined,
+      address: user?.address ?? undefined,
+      isAdmin: user?.isAdmin ?? undefined,
     };
   },
 });

@@ -50,10 +50,89 @@ const randomColors = (count: number) => {
   return shuffled.slice(0, count);
 };
 
+type CategoryGroupValue =
+  | "balloons"
+  | "toy-in-balloon"
+  | "balloon-bouquets"
+  | "mini-sets";
+
+const CATEGORY_GROUP_MAP: Record<
+  string,
+  { group: CategoryGroupValue; category: string }
+> = {
+  "for kids": { group: "balloons", category: "For Kids Boys" },
+  "for kids boys": { group: "balloons", category: "For Kids Boys" },
+  "for kids girls": { group: "balloons", category: "For Kids Girls" },
+  "for her": { group: "balloons", category: "For Her" },
+  "for him": { group: "balloons", category: "For Him" },
+  love: { group: "balloons", category: "Love" },
+  mom: { group: "balloons", category: "Mom" },
+  anniversary: { group: "balloons", category: "Anniversary" },
+  "baby birth": { group: "balloons", category: "Baby Birth" },
+  "surprise box": { group: "balloons", category: "Surprise Box" },
+  "for any event": { group: "balloons", category: "Any Event" },
+  "any event": { group: "balloons", category: "Any Event" },
+  "toy in a balloon": {
+    group: "toy-in-balloon",
+    category: "Toy in a Balloon",
+  },
+  "surprise in a balloon": {
+    group: "toy-in-balloon",
+    category: "Toy in a Balloon",
+  },
+  "balloon bouquets": {
+    group: "balloon-bouquets",
+    category: "Balloon Bouquets",
+  },
+  "mini sets": { group: "mini-sets", category: "Mini Sets" },
+  "mini gift sets": { group: "mini-sets", category: "Mini Sets" },
+};
+
+const resolveCategoryAssignment = (
+  rawCategory?: string | null,
+): { group: CategoryGroupValue; category: string } => {
+  if (!rawCategory) {
+    return { group: "balloons", category: "Any Event" };
+  }
+
+  const normalized = rawCategory.trim().toLowerCase();
+  if (normalized.length === 0) {
+    return { group: "balloons", category: "Any Event" };
+  }
+
+  const mapping = CATEGORY_GROUP_MAP[normalized];
+  if (mapping) {
+    return mapping;
+  }
+
+  return { group: "balloons", category: rawCategory.trim() };
+};
+
+const normalizeCategoryGroupInput = (
+  rawGroup?: string | null,
+): CategoryGroupValue | undefined => {
+  if (!rawGroup) {
+    return undefined;
+  }
+
+  const normalized = rawGroup.trim().toLowerCase();
+  if (
+    normalized === "balloons" ||
+    normalized === "toy-in-balloon" ||
+    normalized === "balloon-bouquets" ||
+    normalized === "mini-sets"
+  ) {
+    return normalized as CategoryGroupValue;
+  }
+
+  return undefined;
+};
+
 const SAMPLE_PRODUCTS: Array<{
   name: string;
   description: string;
   price: number;
+  categoryGroup: CategoryGroupValue;
   category: string;
   size: "30cm" | "45cm" | "80cm" | "100cm";
   inStock: boolean;
@@ -65,7 +144,8 @@ const SAMPLE_PRODUCTS: Array<{
     description:
       "Soft gradient balloon that shifts from blush to sunrise gold.",
     price: 6,
-    category: "For Kids",
+    categoryGroup: "balloons",
+    category: "For Kids Girls",
     size: randomSize(),
     inStock: true,
     isPersonalizable: true,
@@ -75,6 +155,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Sunrise Ombre Balloon",
     description: "Warm ombre tones that brighten morning celebrations.",
     price: 5.5,
+    categoryGroup: "balloons",
     category: "For Her",
     size: randomSize(),
     inStock: true,
@@ -85,7 +166,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Electric Blue Balloon",
     description: "Vivid cobalt statement balloon for modern parties.",
     price: 4.5,
-    category: "For Kids",
+    categoryGroup: "balloons",
+    category: "For Kids Boys",
     size: randomSize(),
     inStock: true,
     isPersonalizable: true,
@@ -95,7 +177,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Cotton Candy Swirl Balloon",
     description: "Pastel swirl pattern inspired by carnival treats.",
     price: 5,
-    category: "For Kids",
+    categoryGroup: "balloons",
+    category: "For Kids Girls",
     size: randomSize(),
     inStock: true,
   },
@@ -103,6 +186,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Midnight Spark Balloon",
     description: "Deep navy balloon with metallic specks that shimmer.",
     price: 7,
+    categoryGroup: "balloons",
     category: "For Him",
     size: randomSize(),
     inStock: true,
@@ -111,6 +195,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Cherry Jubilee Balloon",
     description: "Rich cherry red balloon for bold centerpiece displays.",
     price: 4,
+    categoryGroup: "balloons",
     category: "Anniversary",
     size: randomSize(),
     inStock: true,
@@ -119,7 +204,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Citrus Burst Balloon",
     description: "Zesty orange balloon that energizes summer events.",
     price: 3.5,
-    category: "For Kids",
+    categoryGroup: "balloons",
+    category: "Any Event",
     size: randomSize(),
     inStock: true,
   },
@@ -127,6 +213,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Ocean Breeze Balloon",
     description: "Cool teal balloon reminiscent of coastal escapes.",
     price: 4.5,
+    categoryGroup: "balloons",
     category: "Baby Birth",
     size: randomSize(),
     inStock: true,
@@ -135,6 +222,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Lavender Dream Balloon",
     description: "Soft lavender tones perfect for bridal showers.",
     price: 5,
+    categoryGroup: "balloons",
     category: "For Her",
     size: randomSize(),
     inStock: true,
@@ -143,6 +231,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Golden Celebration Balloon",
     description: "Luxe metallic gold balloon for milestone moments.",
     price: 8,
+    categoryGroup: "balloons",
     category: "Anniversary",
     size: randomSize(),
     inStock: true,
@@ -153,7 +242,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Silver Lining Balloon",
     description: "Sleek silver balloon that complements modern decor.",
     price: 7.5,
-    category: "For Any Event",
+    categoryGroup: "balloons",
+    category: "Any Event",
     size: randomSize(),
     inStock: true,
     isPersonalizable: true,
@@ -163,6 +253,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Emerald Sparkle Balloon",
     description: "Jewel-toned balloon with subtle glitter overlay.",
     price: 6.5,
+    categoryGroup: "balloon-bouquets",
     category: "Balloon Bouquets",
     size: randomSize(),
     inStock: true,
@@ -173,6 +264,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Rose Gold Luxe Balloon",
     description: "Trending rose gold balloon for chic gatherings.",
     price: 8.5,
+    categoryGroup: "balloons",
     category: "For Her",
     size: randomSize(),
     inStock: true,
@@ -183,7 +275,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Iridescent Haze Balloon",
     description: "Opalescent finish that changes with every angle.",
     price: 9,
-    category: "Surprise in a Balloon",
+    categoryGroup: "toy-in-balloon",
+    category: "Toy in a Balloon",
     size: randomSize(),
     inStock: true,
   },
@@ -191,6 +284,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Frosted Pearl Balloon",
     description: "Frosted satin balloon with pearlescent sheen.",
     price: 5.5,
+    categoryGroup: "balloons",
     category: "For Her",
     size: randomSize(),
     inStock: true,
@@ -199,7 +293,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Neon Carnival Balloon",
     description: "Vibrant neon palette designed for night parties.",
     price: 6,
-    category: "For Kids",
+    categoryGroup: "balloons",
+    category: "For Kids Boys",
     size: randomSize(),
     inStock: true,
   },
@@ -207,7 +302,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Starry Night Balloon",
     description: "Midnight blue balloon dotted with gold stars.",
     price: 7.5,
-    category: "For Kids",
+    categoryGroup: "balloons",
+    category: "For Kids Boys",
     size: randomSize(),
     inStock: true,
   },
@@ -215,6 +311,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Pastel Confetti Balloon",
     description: "Transparent balloon filled with pastel confetti.",
     price: 6.5,
+    categoryGroup: "balloons",
     category: "Baby Birth",
     size: randomSize(),
     inStock: true,
@@ -223,6 +320,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Mystic Teal Balloon",
     description: "Moody teal balloon for enchanted themes.",
     price: 5.5,
+    categoryGroup: "balloons",
     category: "Love",
     size: randomSize(),
     inStock: true,
@@ -231,7 +329,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Sunset Fiesta Balloon",
     description: "Fiery gradient balloon inspired by tropical sunsets.",
     price: 6.5,
-    category: "For Any Event",
+    categoryGroup: "balloons",
+    category: "Any Event",
     size: randomSize(),
     inStock: true,
   },
@@ -239,6 +338,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Royal Purple Balloon",
     description: "Regal purple balloon suited for elegant soirees.",
     price: 6,
+    categoryGroup: "balloons",
     category: "Anniversary",
     size: randomSize(),
     inStock: true,
@@ -247,7 +347,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Blush Bloom Balloon",
     description: "Delicate blush balloon with watercolor finish.",
     price: 5,
-    category: "Baby Birth",
+    categoryGroup: "balloons",
+    category: "Mom",
     size: randomSize(),
     inStock: true,
   },
@@ -255,7 +356,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Arctic Sky Balloon",
     description: "Cool gradient balloon shifting from ice blue to white.",
     price: 5.5,
-    category: "For Any Event",
+    categoryGroup: "balloons",
+    category: "Any Event",
     size: randomSize(),
     inStock: true,
   },
@@ -263,7 +365,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Vintage Blush Balloon",
     description: "Muted rose balloon for nostalgic celebrations.",
     price: 4.5,
-    category: "Anniversary",
+    categoryGroup: "balloons",
+    category: "Love",
     size: randomSize(),
     inStock: true,
   },
@@ -271,7 +374,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Galaxy Twist Balloon",
     description: "Cosmic balloon with swirling galaxy artwork.",
     price: 7,
-    category: "For Kids",
+    categoryGroup: "balloons",
+    category: "For Kids Girls",
     size: randomSize(),
     inStock: true,
   },
@@ -279,7 +383,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Tropical Sunrise Balloon",
     description: "Bright coral and yellow balloon for beach parties.",
     price: 5.5,
-    category: "For Any Event",
+    categoryGroup: "balloons",
+    category: "Any Event",
     size: randomSize(),
     inStock: true,
   },
@@ -287,7 +392,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Velvet Rouge Balloon",
     description: "Deep wine balloon with luxe matte finish.",
     price: 6.5,
-    category: "Anniversary",
+    categoryGroup: "balloons",
+    category: "Love",
     size: randomSize(),
     inStock: true,
   },
@@ -295,7 +401,8 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Crystal Clear Balloon",
     description: "Glass-like balloon ready for custom fillings.",
     price: 4,
-    category: "Surprise in a Balloon",
+    categoryGroup: "balloons",
+    category: "Surprise Box",
     size: randomSize(),
     inStock: true,
   },
@@ -303,6 +410,7 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Amber Spark Balloon",
     description: "Warm amber balloon with sparkling highlights.",
     price: 5.5,
+    categoryGroup: "balloons",
     category: "Love",
     size: randomSize(),
     inStock: true,
@@ -311,11 +419,55 @@ const SAMPLE_PRODUCTS: Array<{
     name: "Mint Breeze Balloon",
     description: "Fresh mint green balloon for spring events.",
     price: 4.5,
-    category: "Baby Birth",
+    categoryGroup: "mini-sets",
+    category: "Mini Sets",
     size: randomSize(),
     inStock: true,
   },
 ];
+
+export const getNewProducts = query({
+  args: {
+    daysOld: v.optional(v.number()),
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: productPageValidator,
+  handler: async (ctx, args) => {
+    const daysOld = args.daysOld ?? 7;
+    const cutoffTime = Date.now() - daysOld * 24 * 60 * 60 * 1000;
+
+    const allProducts = await ctx.db.query("products").collect();
+
+    // Filter for new products
+    const newProducts = allProducts.filter((product) => {
+      return product._creationTime >= cutoffTime;
+    });
+
+    // Sort by creation time (newest first)
+    newProducts.sort((a, b) => b._creationTime - a._creationTime);
+
+    // Paginate
+    const cursor = args.paginationOpts.cursor
+      ? Number.parseInt(args.paginationOpts.cursor, 10)
+      : 0;
+    const numItems = args.paginationOpts.numItems;
+    const startIdx = cursor;
+    const endIdx = startIdx + numItems;
+    const page = newProducts.slice(startIdx, endIdx);
+    const hasMore = endIdx < newProducts.length;
+
+    // Attach images
+    const pageWithImages = await Promise.all(
+      page.map((product) => attachImageToProduct(ctx, product)),
+    );
+
+    return {
+      page: pageWithImages,
+      isDone: !hasMore,
+      continueCursor: hasMore ? endIdx.toString() : "",
+    };
+  },
+});
 
 export const list = query({
   args: {
@@ -324,6 +476,7 @@ export const list = query({
     minPrice: v.optional(v.number()),
     maxPrice: v.optional(v.number()),
     category: v.optional(v.string()),
+    categoryGroup: v.optional(v.string()),
     color: v.optional(v.string()),
     size: v.optional(
       v.union(
@@ -346,8 +499,31 @@ export const list = query({
   },
   returns: productPageValidator,
   handler: async (ctx, args) => {
-    const normalizedSearch = args.search?.trim();
-    const useSearch = normalizedSearch && normalizedSearch.length >= 2;
+    // Normalize inputs
+    const normalizeString = (input?: string | null) => {
+      if (!input) return undefined;
+      const trimmed = input.replace(/\+/g, " ").trim();
+      if (!trimmed) return undefined;
+      try {
+        return decodeURIComponent(trimmed);
+      } catch {
+        return trimmed;
+      }
+    };
+
+    const searchTerm = args.search?.trim();
+    const useSearch = searchTerm && searchTerm.length >= 2;
+
+    const categoryInput = normalizeString(args.category);
+    const categoryNorm = categoryInput
+      ? resolveCategoryAssignment(categoryInput)
+      : undefined;
+    const category = categoryNorm?.category ?? categoryInput;
+    const categoryGroup =
+      normalizeString(args.categoryGroup) ?? categoryNorm?.group;
+    const color = normalizeString(args.color);
+    const size = args.size;
+    const available = args.available;
     const minPrice =
       typeof args.minPrice === "number" && Number.isFinite(args.minPrice)
         ? args.minPrice
@@ -356,217 +532,85 @@ export const list = query({
       typeof args.maxPrice === "number" && Number.isFinite(args.maxPrice)
         ? args.maxPrice
         : undefined;
-    const normalizeCategory = (input?: string | null) => {
-      if (!input) {
-        return undefined;
-      }
 
-      const replaced = input.replace(/\+/g, " ");
-      const trimmed = replaced.trim();
-      if (trimmed.length === 0) {
-        return undefined;
-      }
+    // Step 1: Build query using indexes for categorical filters
+    let allProducts: ProductDoc[];
 
-      try {
-        const decoded = decodeURIComponent(trimmed);
-        return decoded;
-      } catch (_error) {
-        return trimmed;
-      }
-    };
-
-    const categoryInput = normalizeCategory(args.category);
-    const categoryTerm = categoryInput?.toLowerCase();
-    const colorInput = normalizeCategory(args.color);
-    const colorTerm = colorInput?.toLowerCase();
-    const sizeTerm = args.size;
-
-    const getBaseQuery = () => {
-      // Search takes priority
-      if (useSearch && normalizedSearch) {
-        return ctx.db
-          .query("products")
-          .withSearchIndex("search_products", (q) =>
-            q.search("name", normalizedSearch),
-          );
-      }
-
-      // Use optimized indexes for sorting
-      if (args.sort === "price-low") {
-        // Category + price index for better performance when filtering by category
-        if (categoryInput) {
-          return ctx.db
-            .query("products")
-            .withIndex("by_category_and_price", (q) =>
-              q.eq("category", categoryInput),
-            )
-            .order("asc");
-        }
-        return ctx.db
-          .query("products")
-          .withIndex("by_price", (q) => q)
-          .order("asc");
-      }
-
-      if (args.sort === "price-high") {
-        if (categoryInput) {
-          return ctx.db
-            .query("products")
-            .withIndex("by_category_and_price", (q) =>
-              q.eq("category", categoryInput),
-            )
-            .order("desc");
-        }
-        return ctx.db
-          .query("products")
-          .withIndex("by_price", (q) => q)
-          .order("desc");
-      }
-
-      if (args.sort === "name-asc") {
-        return ctx.db
-          .query("products")
-          .withIndex("by_name", (q) => q)
-          .order("asc");
-      }
-
-      if (args.sort === "name-desc") {
-        return ctx.db
-          .query("products")
-          .withIndex("by_name", (q) => q)
-          .order("desc");
-      }
-
-      // Default: show popular products first (bestsellers)
-      // Use category-specific index if filtering by category
-      if (categoryInput) {
-        return ctx.db
-          .query("products")
-          .withIndex("by_category_and_popularity", (q) =>
-            q.eq("category", categoryInput),
-          )
-          .order("desc");
-      }
-
-      // Default sorting: by popularity (soldCount desc)
-      return ctx.db.query("products").withIndex("by_popularity").order("desc");
-    };
-
-    const matchesFilters = (product: ProductDoc) => {
-      if (args.available && !product.inStock) {
-        return false;
-      }
-
-      if (minPrice !== undefined && product.price < minPrice) {
-        return false;
-      }
-
-      if (maxPrice !== undefined && product.price > maxPrice) {
-        return false;
-      }
-
-      if (categoryTerm) {
-        const productCategory = product.category?.trim();
-        const productCategoryLower = productCategory?.toLowerCase();
-        // Compare original category with the passed category (case-insensitive)
-        if (productCategoryLower !== categoryTerm) {
-          return false;
-        }
-      }
-
-      if (colorTerm) {
-        // Check if the product has the selected color in its availableColors array
-        if (!product.availableColors || product.availableColors.length === 0) {
-          return false;
-        }
-        const hasColor = product.availableColors.some(
-          (color) => color.toLowerCase() === colorTerm,
-        );
-        if (!hasColor) {
-          return false;
-        }
-      }
-
-      if (sizeTerm && product.size !== sizeTerm) {
-        return false;
-      }
-
-      return true;
-    };
-
-    const numItems = args.paginationOpts.numItems;
-    const cursor = args.paginationOpts.cursor ?? null;
-
-    // Without filters, simple pagination
-    if (
-      !args.available &&
-      minPrice === undefined &&
-      maxPrice === undefined &&
-      !categoryTerm &&
-      !colorTerm &&
-      !sizeTerm
-    ) {
-      const { page, isDone, continueCursor } = await getBaseQuery().paginate({
-        cursor,
-        numItems,
-      });
-
-      const pageWithImages = await Promise.all(
-        page.map((product) => attachImageToProduct(ctx, product)),
-      );
-
-      return {
-        page: pageWithImages,
-        isDone,
-        continueCursor,
-      };
+    if (useSearch && searchTerm) {
+      allProducts = await ctx.db
+        .query("products")
+        .withSearchIndex("search_products", (q) => q.search("name", searchTerm))
+        .collect();
+    } else if (categoryGroup && category) {
+      allProducts = await ctx.db
+        .query("products")
+        .withIndex("by_group_and_category", (q) =>
+          q.eq("categoryGroup", categoryGroup).eq("category", category),
+        )
+        .collect();
+    } else if (category) {
+      allProducts = await ctx.db
+        .query("products")
+        .withIndex("by_category", (q) => q.eq("category", category))
+        .collect();
+    } else if (categoryGroup) {
+      allProducts = await ctx.db
+        .query("products")
+        .withIndex("by_category_group", (q) =>
+          q.eq("categoryGroup", categoryGroup),
+        )
+        .collect();
+    } else if (size) {
+      allProducts = await ctx.db
+        .query("products")
+        .withIndex("by_size", (q) => q.eq("size", size))
+        .collect();
+    } else {
+      allProducts = await ctx.db.query("products").collect();
     }
 
-    // With filters, fetch a larger batch to account for filtering
-    // We fetch more items to increase chances of having enough after filtering
-    const batchSize = numItems * 10;
-    const { page, isDone, continueCursor } = await getBaseQuery().paginate({
-      cursor,
-      numItems: batchSize,
+    // Step 2: Apply JavaScript filters for non-indexed fields
+    const filtered = allProducts.filter((product) => {
+      if (available && !product.inStock) return false;
+      if (minPrice !== undefined && product.price < minPrice) return false;
+      if (maxPrice !== undefined && product.price > maxPrice) return false;
+      if (size && product.size !== size) return false;
+      if (color) {
+        const hasColor = product.availableColors?.some(
+          (c) => c.toLowerCase() === color.toLowerCase(),
+        );
+        if (!hasColor) return false;
+      }
+      return true;
     });
 
-    const filtered = page.filter(matchesFilters);
-    const pageForClient = filtered.slice(0, numItems);
-
-    // Only indicate "has more" if we actually have more filtered items
-    // or if the database query isn't done (there might be more matching items)
-    const hasMoreFilteredItems = filtered.length > numItems;
-    const databaseHasMore = !isDone;
-    const hasMore =
-      hasMoreFilteredItems || (databaseHasMore && filtered.length === numItems);
-
-    if (!useSearch) {
-      if (args.sort === "price-high") {
-        pageForClient.sort((a, b) => b.price - a.price);
-      } else if (args.sort === "price-low") {
-        pageForClient.sort((a, b) => a.price - b.price);
-      } else if (args.sort === "name-asc") {
-        pageForClient.sort((a, b) => a.name.localeCompare(b.name));
-      } else if (args.sort === "name-desc") {
-        pageForClient.sort((a, b) => b.name.localeCompare(a.name));
-      }
+    // Step 3: Apply sorting (only name-asc and name-desc)
+    if (args.sort === "name-asc") {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (args.sort === "name-desc") {
+      filtered.sort((a, b) => b.name.localeCompare(a.name));
     }
 
+    // Step 4: Paginate on server
+    const cursor = args.paginationOpts.cursor
+      ? Number.parseInt(args.paginationOpts.cursor, 10)
+      : 0;
+    const numItems = args.paginationOpts.numItems;
+    const startIdx = cursor;
+    const endIdx = startIdx + numItems;
+    const page = filtered.slice(startIdx, endIdx);
+    const hasMore = endIdx < filtered.length;
+
+    // Step 5: Attach images and return
     const pageWithImages = await Promise.all(
-      pageForClient.map((product) => attachImageToProduct(ctx, product)),
+      page.map((product) => attachImageToProduct(ctx, product)),
     );
 
-    const response = {
+    return {
       page: pageWithImages,
       isDone: !hasMore,
-      continueCursor: hasMore ? continueCursor : "",
-    } satisfies {
-      page: typeof pageWithImages;
-      isDone: boolean;
-      continueCursor: string;
+      continueCursor: hasMore ? endIdx.toString() : "",
     };
-
-    return response;
   },
 });
 
@@ -589,6 +633,7 @@ export const create = mutation({
     description: v.string(),
     price: v.number(),
     category: v.string(),
+    categoryGroup: v.optional(v.string()),
     size: v.union(
       v.literal("30cm"),
       v.literal("45cm"),
@@ -608,9 +653,22 @@ export const create = mutation({
       throw new Error("Price must be non-negative");
     }
 
+    const assignment = resolveCategoryAssignment(args.category);
+    const providedGroup = normalizeCategoryGroupInput(args.categoryGroup);
+    const categoryGroup = providedGroup ?? assignment.group;
+
     return ctx.db.insert("products", {
-      ...args,
+      name: args.name,
+      description: args.description,
+      price: args.price,
+      categoryGroup,
+      category: assignment.category,
+      size: args.size,
+      imageIds: args.imageIds,
+      inStock: args.inStock,
       soldCount: 0,
+      isPersonalizable: args.isPersonalizable,
+      availableColors: args.availableColors,
     });
   },
 });
@@ -662,6 +720,7 @@ export const seedSampleProducts = internalMutation({
         await ctx.db.patch(existing._id, {
           description: product.description,
           price: product.price,
+          categoryGroup: product.categoryGroup,
           category: product.category,
           size: product.size,
           inStock: product.inStock,
