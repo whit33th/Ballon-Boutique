@@ -13,16 +13,16 @@ import { DEFAULT_PRODUCT_IMAGE_TRANSFORMATION } from "@/lib/imagekit";
 
 interface HomePageClientProps {
   preloadedBestsellers: Preloaded<typeof api.products.list>;
+  preloadedNewArrivals: Preloaded<typeof api.products.getNewProducts>;
 }
 
 export function HomePageClient({
   preloadedBestsellers,
+  preloadedNewArrivals,
 }: HomePageClientProps) {
   // Use preloaded query for instant data - no loading state!
   const bestsellersProduct = usePreloadedQuery(preloadedBestsellers);
-  const newProducts = useQuery(api.products.getNewProducts, {
-    paginationOpts: { cursor: null, numItems: 10 },
-  });
+  const newProducts = usePreloadedQuery(preloadedNewArrivals);
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -70,7 +70,13 @@ export function HomePageClient({
               secondaryLabel="Arrivals"
               transitionGroup="new-arrival"
             />
-          ) : null}
+          ) : (
+            <div className="flex h-32 items-center justify-center">
+              <div className="text-center text-gray-500">
+                No products available
+              </div>
+            </div>
+          )}
         </motion.div>
 
         <motion.section

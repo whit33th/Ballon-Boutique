@@ -10,8 +10,12 @@ export default async function HomePage() {
       numItems: 8,
     },
   });
+  const preloadedNewArrivals = await preloadQuery(api.products.getNewProducts, {
+    paginationOpts: {
+      cursor: null,
+      numItems: 8,
+    },
+  });
 
-  return (
-    <HomePageClient preloadedBestsellers={preloadedBestsellers} />
-  );
+  return <HomePageClient preloadedBestsellers={preloadedBestsellers} />;
 }
