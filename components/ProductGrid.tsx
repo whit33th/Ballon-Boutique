@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { calculateItemsToLoad, getItemsToLoad } from "@/lib/pagination";
 import { Button } from "./ui/button";
 import ProductCard from "./ui/productCard";
+import Image from "next/image";
 
 type ProductGridFilters = {
   search: string;
@@ -228,7 +229,13 @@ export function ProductGrid({ filters }: ProductGridProps) {
   if (products.length === 0) {
     return (
       <div className="flex h-full w-full flex-1 flex-col items-center justify-center py-16 text-center">
-        <div className="mb-4 text-6xl">🎈</div>
+        <Image
+          src="/imgs/cat.png"
+          alt="No balloons found"
+          width={200}
+          height={200}
+          className="mb-4"
+        />
         <h3 className="mb-2 text-xl font-semibold text-black">
           No balloons found
         </h3>
