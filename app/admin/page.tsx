@@ -4,17 +4,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { upload } from "@imagekit/next";
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm, type FieldErrors, type Path } from "react-hook-form";
+import { type FieldErrors, type Path, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,7 +37,6 @@ import { ADMIN_PRODUCT_IMAGE_TRANSFORMATION } from "@/lib/imagekit";
 import { cn } from "@/lib/utils";
 import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
-import Image from "next/image";
 
 const SIZE_OPTIONS = ["30cm", "45cm", "80cm", "100cm"] as const;
 
@@ -235,7 +233,6 @@ export default function AdminPage() {
     (item) => item.value === (categoryGroup as CategoryGroupValue),
   );
   const categoryOptions = currentGroup?.subcategories ?? [];
-  const fallbackCategory = currentGroup?.categoryValue ?? "";
 
   const productMetrics = useMemo(() => {
     if (!products.length) {
@@ -626,7 +623,6 @@ export default function AdminPage() {
                                     key={image.preview}
                                     className="group relative aspect-3/4 overflow-hidden rounded-xl border border-slate-200"
                                   >
-                                    {/* biome-ignore lint/performance/noImgElement: native preview for local uploads */}
                                     <Image
                                       src={image.preview}
                                       alt="Загруженное изображение"
@@ -1103,7 +1099,7 @@ export default function AdminPage() {
                             </span>
                           </div>
 
-                          <p className="mt-2 line-clamp-2 text-sm text-slate-600">
+                          <p className="mt-2 line-clamp-2 text-sm wrap-break-word text-slate-600">
                             {product.description}
                           </p>
 

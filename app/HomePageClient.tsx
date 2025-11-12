@@ -1,6 +1,6 @@
 "use client";
 
-import { type Preloaded, usePreloadedQuery } from "convex/react";
+import { type Preloaded, usePreloadedQuery, useQuery } from "convex/react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { Hero } from "@/components/Containers";
@@ -8,21 +8,21 @@ import { ProductCarousel } from "@/components/ui/carousels/product-carousel";
 import ImageKitPicture from "@/components/ui/ImageKitPicture";
 import RainbowArcText from "@/components/ui/rainbow-text";
 import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
-import type { api } from "@/convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { DEFAULT_PRODUCT_IMAGE_TRANSFORMATION } from "@/lib/imagekit";
 
 interface HomePageClientProps {
-  preloadedBestsellers: Preloaded<typeof api.products.getNewProducts>;
-  preloadedNewProducts: Preloaded<typeof api.products.getNewProducts>;
+  preloadedBestsellers: Preloaded<typeof api.products.list>;
 }
 
 export function HomePageClient({
   preloadedBestsellers,
-  preloadedNewProducts,
 }: HomePageClientProps) {
   // Use preloaded query for instant data - no loading state!
   const bestsellersProduct = usePreloadedQuery(preloadedBestsellers);
-  const newProducts = usePreloadedQuery(preloadedNewProducts);
+  const newProducts = useQuery(api.products.getNewProducts, {
+    paginationOpts: { cursor: null, numItems: 10 },
+  });
 
   return (
     <main className="flex min-h-screen flex-col">
@@ -46,6 +46,7 @@ export function HomePageClient({
               data={bestsellersProduct.page}
               label="Bestselling"
               secondaryLabel="Products"
+              transitionGroup="bestseller"
             />
           ) : (
             <div className="flex h-32 items-center justify-center">
@@ -67,6 +68,7 @@ export function HomePageClient({
               data={newProducts.page}
               label="New"
               secondaryLabel="Arrivals"
+              transitionGroup="new-arrival"
             />
           ) : null}
         </motion.div>

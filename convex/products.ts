@@ -428,33 +428,23 @@ const SAMPLE_PRODUCTS: Array<{
 
 export const getNewProducts = query({
   args: {
-    daysOld: v.optional(v.number()),
     paginationOpts: paginationOptsValidator,
   },
   returns: productPageValidator,
   handler: async (ctx, args) => {
-    const daysOld = args.daysOld ?? 7;
-    const cutoffTime = Date.now() - daysOld * 24 * 60 * 60 * 1000;
-
-    const allProducts = await ctx.db.query("products").collect();
-
-    // Filter for new products
-    const newProducts = allProducts.filter((product) => {
-      return product._creationTime >= cutoffTime;
-    });
-
-    // Sort by creation time (newest first)
-    newProducts.sort((a, b) => b._creationTime - a._creationTime);
+    // Use creation time ordering (newest first) — leverages underlying index
+    const allProducts = await ctx.db.query("products").order("desc").collect();
 
     // Paginate
-    const cursor = args.paginationOpts.cursor
+    const baseCursor = args.paginationOpts.cursor
       ? Number.parseInt(args.paginationOpts.cursor, 10)
       : 0;
+    const cursor = baseCursor;
     const numItems = args.paginationOpts.numItems;
     const startIdx = cursor;
     const endIdx = startIdx + numItems;
-    const page = newProducts.slice(startIdx, endIdx);
-    const hasMore = endIdx < newProducts.length;
+    const page = allProducts.slice(startIdx, endIdx);
+    const hasMore = endIdx < allProducts.length;
 
     // Attach images
     const pageWithImages = await Promise.all(

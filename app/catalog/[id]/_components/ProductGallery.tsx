@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   memo,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -27,6 +28,7 @@ interface ProductGalleryProps {
   activeImage: number;
   onImageChange: (index: number) => void;
   transitionId?: string;
+  transitionGroups?: string[];
 }
 
 export const ProductGallery = memo(function ProductGallery({
@@ -35,13 +37,19 @@ export const ProductGallery = memo(function ProductGallery({
   activeImage,
   onImageChange,
   transitionId,
+  transitionGroups,
 }: ProductGalleryProps) {
   const canNavigate = images.length > 1;
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   // Use transition name only for the first image to match product card
-  const transitionName = transitionId
-    ? `product-image-${transitionId}`
-    : undefined;
+  const transitionNames =
+    transitionId === undefined
+      ? []
+      : transitionGroups && transitionGroups.length > 0
+        ? transitionGroups.map(
+            (group) => `product-image-${group}-${transitionId}`,
+          )
+        : [`product-image-${transitionId}`];
   const slides = useMemo(
     () =>
       images.map((src, index) => ({
@@ -98,94 +106,105 @@ export const ProductGallery = memo(function ProductGallery({
     onImageChange(nextIndex);
   }, [activeImage, canNavigate, images.length, onImageChange]);
 
+  const carousel = (
+    <Carousel
+      setApi={setCarouselApi}
+      opts={{ align: "start", loop: canNavigate }}
+      className="relative h-full w-full flex-1"
+    >
+      <CarouselContent className="ml-0 h-full">
+        {slides.map((slide) => (
+          <CarouselItem key={slide.key} className="h-full basis-full pl-0">
+            <button
+              type="button"
+              style={{ opacity: 100 }}
+              tabIndex={0}
+              className="relative aspect-3/4 h-full max-h-[calc(100vh-57px-55px)] w-full overflow-hidden hover:opacity-100"
+              onKeyDown={(event) => {
+                if (!canNavigate) return;
+                if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                  event.preventDefault();
+                  handleNextImage();
+                }
+                if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                  event.preventDefault();
+                  handlePreviousImage();
+                }
+              }}
+              onClick={() => handleNextImage()}
+            >
+              <ImageKitPicture
+                src={slide.src}
+                alt={productName}
+                fill
+                priority={slide.index === 0}
+                loading={slide.index === 0 ? "eager" : "lazy"}
+                className="z-50 aspect-3/4 h-full w-full object-contain drop-shadow"
+                sizes="(min-width: 640px) 800px, 100vw"
+                transformation={PRODUCT_DETAIL_IMAGE_TRANSFORMATION}
+                placeholderOptions={{ width: 48, quality: 12, blur: 45 }}
+              />
+            </button>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+
+      {canNavigate && (
+        <>
+          <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-2 md:hidden">
+            {slides.map((slide) => (
+              <span
+                key={`${slide.key}-dot`}
+                className={`h-2 rounded-full transition-[width,background-color] duration-300 ${
+                  slide.index === activeImage
+                    ? "bg-accent w-8"
+                    : "w-2 backdrop-invert"
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className="absolute inset-y-0 left-0 flex items-center md:flex">
+            <button
+              type="button"
+              onClick={handlePreviousImage}
+              className="text-deep hover:bg-secondary ml-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg transition-[transform,background-color,color] duration-200 hover:scale-110 hover:text-white md:flex"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+          </div>
+
+          <div className="absolute inset-y-0 right-0 flex items-center md:flex">
+            <button
+              type="button"
+              onClick={handleNextImage}
+              className="text-deep hover:bg-secondary mr-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg transition-[transform,background-color,color] duration-200 hover:scale-110 hover:text-white md:flex"
+              aria-label="Next image"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </div>
+        </>
+      )}
+    </Carousel>
+  );
+
+  const transitionedCarousel =
+    transitionNames.length > 0
+      ? transitionNames.reduceRight<ReactNode>(
+          (child, name) => (
+            <ViewTransition key={name} name={name}>
+              {child}
+            </ViewTransition>
+          ),
+          carousel as ReactNode,
+        )
+      : (carousel as ReactNode);
+
   return (
     <div className="border-border relative flex max-h-[calc(100vh-57px-55px)] flex-1 flex-col border-b md:flex-row md:items-center md:justify-center">
-      <ViewTransition name={transitionName}>
-        <Carousel
-          setApi={setCarouselApi}
-          opts={{ align: "start", loop: canNavigate }}
-          className="relative h-full w-full flex-1"
-        >
-          <CarouselContent className="ml-0 h-full">
-            {slides.map((slide) => (
-              <CarouselItem key={slide.key} className="h-full basis-full pl-0">
-                <button
-                  type="button"
-                  style={{ opacity: 100 }}
-                  tabIndex={0}
-                  className="relative aspect-3/4 h-full max-h-[calc(100vh-57px-55px)] w-full overflow-hidden hover:opacity-100"
-                  onKeyDown={(event) => {
-                    if (!canNavigate) return;
-                    if (
-                      event.key === "ArrowRight" ||
-                      event.key === "ArrowDown"
-                    ) {
-                      event.preventDefault();
-                      handleNextImage();
-                    }
-                    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-                      event.preventDefault();
-                      handlePreviousImage();
-                    }
-                  }}
-                  onClick={() => handleNextImage()}
-                >
-                  <ImageKitPicture
-                    src={slide.src}
-                    alt={productName}
-                    fill
-                    priority={slide.index === 0}
-                    loading={slide.index === 0 ? "eager" : "lazy"}
-                    className="z-50 aspect-3/4 h-full w-full object-contain drop-shadow"
-                    sizes="(min-width: 640px) 800px, 100vw"
-                    transformation={PRODUCT_DETAIL_IMAGE_TRANSFORMATION}
-                    placeholderOptions={{ width: 48, quality: 12, blur: 45 }}
-                  />
-                </button>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-
-          {canNavigate && (
-            <>
-              <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-2 md:hidden">
-                {slides.map((slide) => (
-                  <span
-                    key={`${slide.key}-dot`}
-                    className={`h-2 rounded-full transition-[width,background-color] duration-300 ${
-                      slide.index === activeImage
-                        ? "bg-accent w-8"
-                        : "w-2 backdrop-invert"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <div className="absolute inset-y-0 left-0 flex items-center md:flex">
-                <button
-                  type="button"
-                  onClick={handlePreviousImage}
-                  className="text-deep hover:bg-secondary ml-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg transition-[transform,background-color,color] duration-200 hover:scale-110 hover:text-white md:flex"
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-              </div>
-
-              <div className="absolute inset-y-0 right-0 flex items-center md:flex">
-                <button
-                  type="button"
-                  onClick={handleNextImage}
-                  className="text-deep hover:bg-secondary mr-4 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 shadow-lg transition-[transform,background-color,color] duration-200 hover:scale-110 hover:text-white md:flex"
-                  aria-label="Next image"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-              </div>
-            </>
-          )}
-        </Carousel>
-      </ViewTransition>
+      {transitionedCarousel}
 
       <div className="border-border flex snap-x gap-3 overflow-x-auto border-t p-4 md:absolute md:bottom-2 md:left-1/2 md:-translate-x-1/2 md:border-t-0">
         {slides.map((slide) => (

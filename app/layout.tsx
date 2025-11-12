@@ -13,8 +13,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Balloon Shop",
-  description: "Beautiful balloons for every occasion",
+  title: "Ballon Boutique",
+  description: "Balloons for every occasion. When moments - become memories.",
 };
 
 export default async function RootLayout({
@@ -24,6 +24,9 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta name="apple-mobile-web-app-title" content="Ballon Boutique" />
+      </head>
       <body
         className={`${dmSans.variable} relative flex min-h-screen w-full flex-col overflow-x-hidden antialiased`}
       >

@@ -20,12 +20,14 @@ export interface ProductCarouselProps {
   secondaryLabel?: string;
 
   count?: number;
+  transitionGroup?: string;
 }
 
 export function ProductCarousel({
   data,
   label,
   secondaryLabel,
+  transitionGroup,
 }: ProductCarouselProps) {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
@@ -99,7 +101,13 @@ export function ProductCarousel({
                 key={product._id}
                 className="basis-2/5 pl-0 sm:basis-2/7 md:basis-2/9 lg:basis-2/11 xl:basis-2/13"
               >
-                <ProductCard index={index} product={product} />
+                <ProductCard
+                  index={index}
+                  product={product}
+                  transitionGroups={
+                    transitionGroup ? [transitionGroup] : undefined
+                  }
+                />
               </CarouselItem>
             ))}
           </CarouselContent>

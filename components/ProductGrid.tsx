@@ -4,7 +4,7 @@ import { usePaginatedQuery } from "convex/react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/convex/_generated/api";
-import { calculateItemsToLoad } from "@/lib/pagination";
+import { calculateItemsToLoad, getItemsToLoad } from "@/lib/pagination";
 import { Button } from "./ui/button";
 import ProductCard from "./ui/productCard";
 
@@ -64,10 +64,18 @@ export function ProductGrid({ filters }: ProductGridProps) {
     size,
   } = filters;
 
+  // Avoid SSR flash of default skeleton count (8) by waiting for mount
+  const [mounted, setMounted] = useState(false);
   // Calculate items to load based on viewport width
-  const [itemsToLoad, setItemsToLoad] = useState<number | null>(null);
+  const [itemsToLoad, setItemsToLoad] = useState<number | null>(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+    return calculateItemsToLoad(window.innerWidth);
+  });
 
   useEffect(() => {
+    setMounted(true);
     const updateItemsToLoad = () => {
       setItemsToLoad(calculateItemsToLoad(window.innerWidth));
     };
@@ -179,7 +187,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
   const isLoadingMore = status === "LoadingMore";
 
   // Show loading state while calculating viewport width
-  if (itemsToLoad === null || status === "LoadingFirstPage") {
+  if (!mounted || itemsToLoad === null || status === "LoadingFirstPage") {
     return (
       <motion.div
         initial={{ opacity: 0.6 }}
@@ -192,23 +200,27 @@ export function ProductGrid({ filters }: ProductGridProps) {
         }}
         className="border-foreground grid grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
       >
-        {Array.from({ length: 12 }).map((_, index) => (
-          <div
-            key={`skeleton-${index}`}
-            className="border-foreground flex flex-col border-r border-b"
-          >
-            <div
-              className="aspect-3/4 animate-pulse"
-              style={{
-                backgroundColor: balloonColors[index % balloonColors.length],
-              }}
-            />
-            <div className="px-4 py-3">
-              <div className="mb-2 h-4 w-3/4 bg-white/60" />
-              <div className="h-4 w-20 bg-white/40" />
-            </div>
-          </div>
-        ))}
+        {mounted &&
+          Array.from({ length: itemsToLoad ?? getItemsToLoad() }).map(
+            (_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className="border-foreground flex flex-col border-r border-b"
+              >
+                <div
+                  className="aspect-3/4 animate-pulse"
+                  style={{
+                    backgroundColor:
+                      balloonColors[index % balloonColors.length],
+                  }}
+                />
+                <div className="px-4 py-3">
+                  <div className="mb-2 h-4 w-3/4 bg-white/60" />
+                  <div className="h-4 w-20 bg-white/40" />
+                </div>
+              </div>
+            ),
+          )}
       </motion.div>
     );
   }
@@ -236,9 +248,47 @@ export function ProductGrid({ filters }: ProductGridProps) {
         className="border-foreground grid w-full grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
       >
         {products.map((product, index) => (
-          <ProductCard index={index} key={product._id} product={product} />
+          <ProductCard
+            index={index}
+            key={product._id}
+            product={product}
+            transitionGroups={["catalog"]}
+          />
         ))}
       </motion.section>
+
+      {/* Loading More Skeletons */}
+      {isLoadingMore && itemsToLoad !== null && (
+        <motion.div
+          initial={{ opacity: 0.6 }}
+          animate={{ opacity: 0.8 }}
+          transition={{
+            duration: 1.0,
+            ease: "easeInOut",
+            repeat: Infinity,
+            repeatType: "reverse",
+          }}
+          className="border-foreground grid grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
+        >
+          {Array.from({ length: itemsToLoad }).map((_, index) => (
+            <div
+              key={`loadmore-skeleton-${index}`}
+              className="border-foreground flex flex-col border-r border-b"
+            >
+              <div
+                className="aspect-3/4 animate-pulse"
+                style={{
+                  backgroundColor: balloonColors[index % balloonColors.length],
+                }}
+              />
+              <div className="px-4 py-3">
+                <div className="mb-2 h-4 w-3/4 bg-white/60" />
+                <div className="h-4 w-20 bg-white/40" />
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      )}
 
       {/* Load More Button */}
       {status === "CanLoadMore" && (

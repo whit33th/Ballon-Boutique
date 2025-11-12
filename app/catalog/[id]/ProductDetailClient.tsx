@@ -165,6 +165,7 @@ export default function ProductDetailClient({ preloaded }: Props) {
           activeImage={activeImage}
           onImageChange={handleImageChange}
           transitionId={product._id}
+          transitionGroups={["catalog", "bestseller", "new-arrival"]}
         />
       </motion.div>
 
