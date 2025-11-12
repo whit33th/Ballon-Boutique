@@ -123,6 +123,55 @@ const productFormSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
 
+const collectErrorMessages = (
+  errors: FieldErrors<ProductFormValues>,
+): string[] => {
+  const extract = (error: unknown): string[] => {
+    if (!error) {
+      return [];
+    }
+
+    if (Array.isArray(error)) {
+      return error.flatMap(extract);
+    }
+
+    if (typeof error === "object") {
+      const err = error as Record<string, unknown>;
+      const messages: string[] = [];
+
+      if (typeof err.message === "string") {
+        messages.push(err.message);
+      }
+
+      if (typeof err.types === "object" && err.types !== null) {
+        messages.push(
+          ...Object.values(err.types as Record<string, unknown>).flatMap(
+            (value) => (typeof value === "string" ? [value] : []),
+          ),
+        );
+      }
+
+      for (const [key, value] of Object.entries(err)) {
+        if (
+          key === "message" ||
+          key === "type" ||
+          key === "ref" ||
+          key === "types"
+        ) {
+          continue;
+        }
+        messages.push(...extract(value));
+      }
+
+      return messages;
+    }
+
+    return [];
+  };
+
+  return Array.from(new Set(Object.values(errors).flatMap(extract)));
+};
+
 const productDefaultValues: ProductFormValues = {
   name: "",
   description: "",
@@ -463,13 +512,13 @@ export default function AdminPage() {
       return;
     }
 
-    const [fieldName, fieldError] = firstErrorEntry as [
-      Path<ProductFormValues>,
-      { message?: string },
-    ];
+    const [fieldName] = firstErrorEntry as [Path<ProductFormValues>, unknown];
 
-    if (fieldError?.message) {
-      toast.error(fieldError.message);
+    const messages = collectErrorMessages(errors);
+    if (messages.length > 0) {
+      toast.error("Заполните обязательные поля", {
+        description: messages.map((message) => `• ${message}`).join("\n"),
+      });
     }
 
     form.setFocus(fieldName);
@@ -568,12 +617,11 @@ export default function AdminPage() {
                           <div className="mt-4 space-y-3">
                             {totalImages === 0 ? (
                               <label className="flex cursor-pointer flex-col items-center gap-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-6 text-center text-sm text-slate-600 transition hover:border-slate-400">
-                                <div className="text-3xl">📷</div>
-                                <div>
-                                  Перетащите файлы или{" "}
-                                  <span className="font-semibold text-slate-900">
-                                    выберите на компьютере
-                                  </span>
+                                <div className="text-3xl font-semibold text-slate-950">
+                                  📷
+                                </div>
+                                <div className="text-sm font-medium text-slate-700">
+                                  Выберите файлы
                                 </div>
                                 <p className="text-xs text-slate-400">
                                   До 8 изображений, максимум 3 MB каждое
@@ -938,7 +986,7 @@ export default function AdminPage() {
 
                             return (
                               <FormItem className="flex flex-col gap-2">
-                                <FormLabel>Популярные цвета</FormLabel>
+                                <FormLabel>Цвета</FormLabel>
                                 <FormControl>
                                   <div
                                     className={cn(
@@ -1005,9 +1053,13 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 p-8 text-center shadow-sm">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-900/5 text-2xl">
-                      🎈
-                    </div>
+                    <Image
+                      src="/imgs/cat.png"
+                      alt="No products"
+                      width={90}
+                      height={90}
+                      className="mx-auto"
+                    />
                     <h2 className="text-lg font-semibold text-slate-900">
                       Добавьте первый товар
                     </h2>
