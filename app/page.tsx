@@ -17,5 +17,10 @@ export default async function HomePage() {
     },
   });
 
-  return <HomePageClient preloadedBestsellers={preloadedBestsellers} />;
+  return (
+    <HomePageClient
+      preloadedBestsellers={preloadedBestsellers}
+      preloadedNewArrivals={preloadedNewArrivals}
+    />
+  );
 }

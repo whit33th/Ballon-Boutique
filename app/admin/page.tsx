@@ -118,7 +118,7 @@ const productFormSchema = z.object({
   size: z.enum(SIZE_OPTIONS),
   inStock: z.boolean(),
   isPersonalizable: z.boolean(),
-  availableColors: z.array(z.string()).max(8, "Не больше 8 цветов").default([]),
+  availableColors: z.array(z.string()).default([]),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
