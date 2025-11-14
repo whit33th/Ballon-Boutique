@@ -148,7 +148,7 @@ const sanitizeCategoriesSelection = (
     if (!trimmed) {
       continue;
     }
-    
+
     // When a categoryGroup is explicitly provided, trust it and just use the
     // category label as-is. Only infer the group from the category name if
     // no explicit group was given.
