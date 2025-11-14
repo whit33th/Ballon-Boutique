@@ -57,6 +57,7 @@ export default function CheckoutPage() {
     items: guestItems,
     totalPrice: guestTotal,
     initialized: guestInitialized,
+    clear: clearGuestCart,
   } = useGuestCart();
 
   // Use appropriate cart based on authentication
@@ -100,6 +101,22 @@ export default function CheckoutPage() {
     useState<PaymentMethod>("full_online");
   const [whatsappConfirmed, setWhatsappConfirmed] = useState(false);
   const [pickupDateTime, setPickupDateTime] = useState("");
+
+  // Handler for delivery type change with payment method reset
+  const handleDeliveryTypeChange = (newDeliveryType: DeliveryType) => {
+    setDeliveryType(newDeliveryType);
+
+    // Reset payment method to full_online if switching to delivery and cash was selected
+    if (newDeliveryType === "delivery" && paymentMethod === "cash") {
+      setPaymentMethod("full_online");
+      setWhatsappConfirmed(false);
+    }
+
+    // Reset pickup date/time when switching to delivery
+    if (newDeliveryType === "delivery") {
+      setPickupDateTime("");
+    }
+  };
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Email validation regex
@@ -179,6 +196,9 @@ export default function CheckoutPage() {
       }
 
       toast.success("Order placed successfully!");
+      if (!isAuthenticated) {
+        clearGuestCart();
+      }
       router.push(`/order-confirmation/${orderId}`);
     } catch (error) {
       toast.error(
@@ -397,7 +417,9 @@ export default function CheckoutPage() {
                           value="pickup"
                           checked={deliveryType === "pickup"}
                           onChange={(e) =>
-                            setDeliveryType(e.target.value as DeliveryType)
+                            handleDeliveryTypeChange(
+                              e.target.value as DeliveryType,
+                            )
                           }
                           aria-describedby="delivery-pickup-details"
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"
@@ -430,7 +452,9 @@ export default function CheckoutPage() {
                           value="delivery"
                           checked={deliveryType === "delivery"}
                           onChange={(e) =>
-                            setDeliveryType(e.target.value as DeliveryType)
+                            handleDeliveryTypeChange(
+                              e.target.value as DeliveryType,
+                            )
                           }
                           aria-describedby="delivery-delivery-details"
                           className="text-secondary mt-0.5 h-4 w-4 shrink-0 sm:mt-1"

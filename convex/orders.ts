@@ -221,11 +221,9 @@ export const create = mutation({
       pickupDateTime: args.pickupDateTime,
     });
 
-    // Only clear cart for cash payments
-    if (args.paymentMethod === "cash") {
-      for (const cartItem of cartItems) {
-        await ctx.db.delete(cartItem._id);
-      }
+    // Clear the user's cart after a successful checkout regardless of payment method
+    for (const cartItem of cartItems) {
+      await ctx.db.delete(cartItem._id);
     }
 
     return orderId;
