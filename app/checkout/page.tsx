@@ -2,26 +2,29 @@
 
 import { useMutation, useQuery } from "convex/react";
 import {
-  AlertCircle,
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  CheckCircle2,
-  Clock,
   CreditCard,
   DollarSign,
-  Loader2,
-  Lock,
   Mail,
   MapPin,
-  MessageCircle,
-  ShieldCheck,
-  ShoppingBag,
   Store,
   Truck,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  getWhatsAppLink,
+  STORE_INFO,
+  WHATSAPP_MESSAGES,
+} from "@/constants/config";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import type { ProductWithImage } from "@/convex/helpers/products";
+import { type GuestCartItem, useGuestCart } from "@/lib/guestCart";
+
 type DeliveryType = "pickup" | "delivery";
+type PaymentMethod = "full_online" | "cash";
 
 // Cart item from server (authenticated users)
 type ServerCartItem = {

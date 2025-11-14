@@ -601,7 +601,7 @@ export const create = mutation({
       imageUrls: args.imageUrls,
       inStock: args.inStock,
       soldCount: 0,
-      isPersonalizable: args.isPersonalizable,
+      isPersonalizable: args.isPersonalizable ?? true,
       availableColors: args.availableColors,
     });
   },
@@ -645,7 +645,7 @@ export const update = mutation({
       categoryGroup,
       imageUrls: args.imageUrls,
       inStock: args.inStock,
-      isPersonalizable: args.isPersonalizable,
+      isPersonalizable: args.isPersonalizable ?? true,
       availableColors: args.availableColors,
     });
 
@@ -694,7 +694,7 @@ export const seedSampleProducts = internalMutation({
           categoryGroup: product.categoryGroup,
           category: product.category,
           inStock: product.inStock,
-          isPersonalizable: product.isPersonalizable,
+          isPersonalizable: product.isPersonalizable ?? true,
           availableColors: product.availableColors,
         });
         updated += 1;
@@ -705,6 +705,7 @@ export const seedSampleProducts = internalMutation({
         ...product,
         imageUrls: [],
         soldCount: 0,
+        isPersonalizable: product.isPersonalizable ?? true,
       });
       inserted += 1;
     }

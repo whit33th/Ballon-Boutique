@@ -1,17 +1,12 @@
 "use client";
 
-import { type Preloaded, usePreloadedQuery, useQuery } from "convex/react";
+import { type Preloaded, usePreloadedQuery } from "convex/react";
 import { motion } from "motion/react";
-import Link from "next/link";
+import { CategorySection } from "@/components/CategorySection";
 import { Hero } from "@/components/Containers";
 import { ProductCarousel } from "@/components/ui/carousels/product-carousel";
-import ImageKitPicture from "@/components/ui/ImageKitPicture";
 import RainbowArcText from "@/components/ui/rainbow-text";
-import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
-import { api } from "@/convex/_generated/api";
-import { DEFAULT_PRODUCT_IMAGE_TRANSFORMATION } from "@/lib/imagekit";
-import Image from "next/image";
-import { CategorySection } from "@/components/CategorySection";
+import type { api } from "@/convex/_generated/api";
 
 interface HomePageClientProps {
   preloadedBestsellers: Preloaded<typeof api.products.list>;

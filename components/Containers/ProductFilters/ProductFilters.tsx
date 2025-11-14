@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CATEGORY_TO_GROUP,
   PRODUCT_CATEGORY_GROUPS,
@@ -43,8 +43,7 @@ export function ProductFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [openPopover, setOpenPopover] = useState<string | null>(null);
-  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
-  const hoverTimeoutRef = useRef<number | null>(null);
+  const isDesktop = useIsDesktop();
 
   const rawGroupParam = searchParams.get("categoryGroup");
   const rawCategoryParam = searchParams.get("category");
@@ -63,36 +62,6 @@ export function ProductFilters() {
     : null;
   const activeGroup = normalizedGroup ?? derivedGroup ?? null;
   const activeCategory = normalizedCategory ?? "";
-  const shouldShowMobileCarousel = activeGroup === "balloons";
-
-  const clearHoverTimeout = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      window.clearTimeout(hoverTimeoutRef.current);
-      hoverTimeoutRef.current = null;
-    }
-  }, []);
-
-  const handleHoverStart = useCallback(
-    (groupValue: string) => {
-      clearHoverTimeout();
-      setHoveredGroup(groupValue);
-    },
-    [clearHoverTimeout],
-  );
-
-  const handleHoverEnd = useCallback(() => {
-    clearHoverTimeout();
-    hoverTimeoutRef.current = window.setTimeout(() => {
-      setHoveredGroup(null);
-    }, 120);
-  }, [clearHoverTimeout]);
-
-  useEffect(() => {
-    return () => {
-      clearHoverTimeout();
-    };
-  }, [clearHoverTimeout]);
-
   const selectedGroup = useMemo(() => {
     if (activeGroup) {
       return (
@@ -103,6 +72,10 @@ export function ProductFilters() {
     }
     return PRODUCT_CATEGORY_GROUPS[0] ?? null;
   }, [activeGroup]);
+
+  const shouldShowMobileCarousel = Boolean(
+    selectedGroup && selectedGroup.subcategories.length > 0,
+  );
 
   const handleNavigate = useCallback(
     (params: URLSearchParams) => {
@@ -174,7 +147,6 @@ export function ProductFilters() {
       const shouldClosePopover = !options?.keepPopover;
       if (shouldClosePopover) {
         setOpenPopover(null);
-        setHoveredGroup(null);
       }
       handleNavigate(params);
     },
@@ -202,7 +174,6 @@ export function ProductFilters() {
       }
 
       setOpenPopover(null);
-      setHoveredGroup(null);
       handleNavigate(params);
     },
     [activeCategory, activeGroup, handleNavigate, searchParams],
@@ -214,9 +185,7 @@ export function ProductFilters() {
         {PRODUCT_CATEGORY_GROUPS.map((group) => {
           const isActiveGroup = activeGroup === group.value;
           const hasSubcategories = group.subcategories.length > 0;
-          const isHovered = hoveredGroup === group.value;
-          const isOpen =
-            (openPopover === group.value || isHovered) && hasSubcategories;
+          const isOpen = openPopover === group.value && hasSubcategories;
 
           return (
             <CategoryGroupCard
@@ -226,10 +195,8 @@ export function ProductFilters() {
               isOpen={isOpen}
               activeCategory={activeCategory}
               activeGroup={activeGroup}
+              isDesktop={isDesktop}
               setOpenPopover={setOpenPopover}
-              setHoveredGroup={setHoveredGroup}
-              onHoverStart={handleHoverStart}
-              onHoverEnd={handleHoverEnd}
               onGroupSelect={handleGroupSelect}
               onShowAll={handleShowAllInGroup}
               onSubcategorySelect={handleSubcategorySelect}
@@ -238,9 +205,7 @@ export function ProductFilters() {
         })}
       </div>
 
-      {shouldShowMobileCarousel &&
-      selectedGroup &&
-      selectedGroup.value === "balloons" ? (
+      {shouldShowMobileCarousel && selectedGroup ? (
         <MobileSubcategoryCarousel
           group={selectedGroup}
           activeCategory={activeCategory}
@@ -271,4 +236,32 @@ export function ProductFilters() {
       </div>
     </div>
   );
+}
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState<boolean>(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return window.matchMedia("(min-width: 640px)").matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const mediaQuery = window.matchMedia("(min-width: 640px)");
+    const handleChange = () => {
+      setIsDesktop(mediaQuery.matches);
+    };
+
+    handleChange();
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []);
+
+  return isDesktop;
 }

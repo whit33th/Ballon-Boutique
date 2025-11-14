@@ -22,18 +22,18 @@ import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
 import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 import {
-  ProductForm,
-  ProductCard,
-  OrdersTable,
-  ProductMetricsCard,
-  OrderMetricsCards,
   EmptyProductsState,
-  productFormSchema,
-  type ProductFormValues,
-  type PendingImage,
-  type ProductCardData,
-  type OrderStatus,
   ORDER_STATUS_FILTERS,
+  OrderMetricsCards,
+  type OrderStatus,
+  OrdersTable,
+  type PendingImage,
+  ProductCard,
+  type ProductCardData,
+  ProductForm,
+  type ProductFormValues,
+  ProductMetricsCard,
+  productFormSchema,
 } from "./_components";
 
 const DEFAULT_CATEGORY_GROUP = PRODUCT_CATEGORY_GROUPS[0];
@@ -49,7 +49,7 @@ const productDefaultValues: ProductFormValues = {
   categoryGroup: DEFAULT_CATEGORY_GROUP.value,
   category: DEFAULT_CATEGORY,
   inStock: true,
-  isPersonalizable: false,
+  isPersonalizable: true,
   availableColors: [],
 };
 

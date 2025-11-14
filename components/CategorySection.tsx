@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
 
 export function CategorySection() {

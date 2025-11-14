@@ -11,8 +11,6 @@ interface SubcategoryMenuProps {
   isOpen: boolean;
   activeCategory: string;
   activeGroup: string | null;
-  onHoverStart: (groupValue: CategoryGroup["value"]) => void;
-  onHoverEnd: () => void;
   onShowAllClick: () => void;
   onSubcategoryClick: (value: string) => void;
 }
@@ -22,8 +20,6 @@ export function SubcategoryMenu({
   isOpen,
   activeCategory,
   activeGroup,
-  onHoverStart,
-  onHoverEnd,
   onShowAllClick,
   onSubcategoryClick,
 }: SubcategoryMenuProps) {
@@ -44,12 +40,6 @@ export function SubcategoryMenu({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            onMouseEnter={() => {
-              onHoverStart(group.value);
-            }}
-            onMouseLeave={() => {
-              onHoverEnd();
-            }}
           >
             <div className="flex items-center justify-between gap-3">
               <span className="text-[0.7rem] font-semibold tracking-[0.35em] text-[rgba(var(--deep-rgb),0.55)] uppercase">

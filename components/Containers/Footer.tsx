@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Instagram } from "lucide-react";
+import Link from "next/link";
 
 import { STORE_INFO, WHATSAPP_NUMBER } from "@/constants/config";
 

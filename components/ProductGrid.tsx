@@ -2,12 +2,12 @@
 
 import { usePaginatedQuery } from "convex/react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { calculateItemsToLoad, getItemsToLoad } from "@/lib/pagination";
 import { Button } from "./ui/button";
 import ProductCard from "./ui/productCard";
-import Image from "next/image";
 
 type ProductGridFilters = {
   search: string;

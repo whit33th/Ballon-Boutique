@@ -1,4 +1,4 @@
-import { type UseFormReturn, useWatch } from "react-hook-form";
+import { useForm, type UseFormReturn, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +23,7 @@ import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
 import { BALLOON_COLORS } from "@/constants/colors";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "./ImageUpload";
-import { type PendingImage } from "./types";
+import type { PendingImage } from "./types";
 
 export const productFormSchema = z
   .object({
@@ -39,7 +39,7 @@ export const productFormSchema = z
     categoryGroup: z.string().min(1, "Выберите группу"),
     category: z.string().optional(),
     inStock: z.boolean(),
-    isPersonalizable: z.boolean(),
+    isPersonalizable: z.boolean().default(true),
     availableColors: z.array(z.string()).default([]),
   })
   .superRefine((data, ctx) => {
