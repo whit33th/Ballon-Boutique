@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { STORE_INFO } from "@/constants/config";
 
 const sections = [
@@ -73,12 +72,14 @@ export default function ImprintPage() {
             <p className="mt-2">
               Consumers may submit complaints to the EU online dispute
               resolution platform:
-              <Link
+              <a
                 href={STORE_INFO.legal.euDisputeResolutionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:text-secondary ml-2 underline"
               >
                 {STORE_INFO.legal.euDisputeResolutionUrl}
-              </Link>
+              </a>
               . We are neither obliged nor willing to participate in dispute
               resolution proceedings before a consumer arbitration board, yet we
               always aim to resolve matters directly with our customers.
