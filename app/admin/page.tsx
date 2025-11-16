@@ -1,10 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FieldErrors, type Path, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { uploadFileInChunks } from "@/lib/chunkedUploadClient";
 import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 import {
+  type AdminPaymentListItem,
   EmptyProductsState,
   ORDER_STATUS_FILTERS,
   OrderMetricsCards,
@@ -33,7 +34,9 @@ import {
   ProductForm,
   type ProductFormValues,
   ProductMetricsCard,
+  PaymentsTab,
   productFormSchema,
+  type StripePaymentListItem,
   type UploadProgressState,
 } from "./_components";
 
@@ -70,7 +73,7 @@ export default function AdminPage() {
   const user = useQuery(api.auth.loggedInUser);
 
   const [activeTab, setActiveTab] = useState<
-    "products" | "orders" | "insights"
+    "products" | "orders" | "payments" | "insights"
   >("products");
   const [formOpen, setFormOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
@@ -83,6 +86,11 @@ export default function AdminPage() {
   >(null);
   const [uploadProgress, setUploadProgress] =
     useState<UploadProgressState | null>(null);
+  const [stripePayments, setStripePayments] = useState<
+    StripePaymentListItem[] | null
+  >(null);
+  const [isStripeLoading, setIsStripeLoading] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
 
   const previewUrlsRef = useRef<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -90,6 +98,7 @@ export default function AdminPage() {
 
   const createProduct = useMutation(api.products.create);
   const updateProduct = useMutation(api.products.update);
+  const listStripePayments = useAction(api.payments.listStripePayments);
 
   const productsResult = useQuery(api.products.list, {
     order: "createdAt-desc",
@@ -100,6 +109,10 @@ export default function AdminPage() {
     status: statusFilter === "all" ? undefined : statusFilter,
     sort: sortOrder,
   });
+
+  const paymentsResult = useQuery(api.paymentsAdmin.list, {
+    limit: 40,
+  }) as AdminPaymentListItem[] | undefined;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -184,6 +197,36 @@ export default function AdminPage() {
   const products = (productsResult?.page ?? []) as ProductCardData[];
   const ordersLoading = ordersResult === undefined;
   const orders = ordersResult ?? [];
+  const convexPayments = paymentsResult ?? [];
+  const paymentsLoading = paymentsResult === undefined;
+
+  const refreshStripePayments = useCallback(async () => {
+    if (!isAdmin) {
+      return;
+    }
+    setIsStripeLoading(true);
+    setStripeError(null);
+    try {
+      const data = await listStripePayments({ limit: 20 });
+      setStripePayments(data);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Не удалось загрузить Stripe платежи";
+      setStripeError(message);
+      toast.error(message);
+    } finally {
+      setIsStripeLoading(false);
+    }
+  }, [isAdmin, listStripePayments]);
+
+  useEffect(() => {
+    if (!isAdmin) {
+      return;
+    }
+    void refreshStripePayments();
+  }, [isAdmin, refreshStripePayments]);
 
   const productMetrics = useMemo(() => {
     if (!products.length) {
@@ -540,7 +583,9 @@ export default function AdminPage() {
         <Tabs
           value={activeTab}
           onValueChange={(value) =>
-            setActiveTab(value as "products" | "orders" | "insights")
+            setActiveTab(
+              value as "products" | "orders" | "payments" | "insights",
+            )
           }
           className="space-y-6"
         >
@@ -548,6 +593,7 @@ export default function AdminPage() {
             <TabsList>
               <TabsTrigger value="products">Товары</TabsTrigger>
               <TabsTrigger value="orders">Заказы</TabsTrigger>
+              <TabsTrigger value="payments">Платежи</TabsTrigger>
               <TabsTrigger value="insights">Аналитика</TabsTrigger>
             </TabsList>
 
@@ -675,6 +721,17 @@ export default function AdminPage() {
 
               <OrdersTable orders={orders} isLoading={ordersLoading} />
             </div>
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentsTab
+              convexPayments={convexPayments}
+              convexLoading={paymentsLoading}
+              stripePayments={stripePayments}
+              stripeLoading={isStripeLoading}
+              stripeError={stripeError}
+              onReloadStripe={refreshStripePayments}
+            />
           </TabsContent>
 
           <TabsContent value="insights">

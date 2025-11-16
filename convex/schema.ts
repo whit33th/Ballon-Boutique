@@ -84,6 +84,7 @@ const applicationTables = {
       }),
     ),
     totalAmount: v.number(),
+    grandTotal: v.optional(v.number()),
     status: v.union(
       v.literal("pending"),
       v.literal("confirmed"),
@@ -96,6 +97,8 @@ const applicationTables = {
     deliveryType: v.optional(
       v.union(v.literal("pickup"), v.literal("delivery")),
     ),
+    deliveryFee: v.optional(v.number()),
+    currency: v.optional(v.string()),
     paymentMethod: v.optional(
       v.union(
         v.literal("full_online"),
@@ -110,35 +113,74 @@ const applicationTables = {
     .index("by_user", ["userId"])
     .index("by_status", ["status"]),
 
-  paymentIntents: defineTable({
-    paymentIntentId: v.string(),
-    userId: v.id("users"),
-    amount: v.number(),
+  payments: defineTable({
+    orderId: v.id("orders"),
+    userId: v.optional(v.id("users")),
+    paymentIntentId: v.optional(v.string()),
+    status: v.union(
+      v.literal("requires_payment_method"),
+      v.literal("requires_confirmation"),
+      v.literal("requires_action"),
+      v.literal("processing"),
+      v.literal("requires_capture"),
+      v.literal("succeeded"),
+      v.literal("canceled"),
+      v.literal("failed"),
+      v.literal("refunded"),
+    ),
+    amountBase: v.number(),
+    amountMinor: v.number(),
     currency: v.string(),
-    status: v.string(),
-    orderData: v.object({
-      customerName: v.string(),
-      customerEmail: v.string(),
-      shippingAddress: v.string(),
-      items: v.array(
+    displayAmount: v.object({
+      value: v.number(),
+      currency: v.string(),
+      conversionRate: v.optional(v.number()),
+      conversionFeePct: v.optional(v.number()),
+    }),
+    customer: v.object({
+      name: v.string(),
+      email: v.string(),
+      phone: v.optional(v.string()),
+    }),
+    shipping: v.object({
+      address: v.string(),
+      deliveryType: v.union(v.literal("pickup"), v.literal("delivery")),
+      pickupDateTime: v.optional(v.string()),
+      deliveryFee: v.optional(v.number()),
+    }),
+    items: v.array(
+      v.object({
+        productId: v.id("products"),
+        productName: v.string(),
+        quantity: v.number(),
+        price: v.number(),
+        personalization: v.optional(
+          v.object({
+            text: v.optional(v.string()),
+            color: v.optional(v.string()),
+            number: v.optional(v.string()),
+          }),
+        ),
+      }),
+    ),
+    stripeClientSecret: v.optional(v.string()),
+    stripeLatestChargeId: v.optional(v.string()),
+    lastError: v.optional(v.string()),
+    refunds: v.optional(
+      v.array(
         v.object({
-          productId: v.id("products"),
-          productName: v.string(),
-          quantity: v.number(),
-          price: v.number(),
-          personalization: v.optional(
-            v.object({
-              text: v.optional(v.string()),
-              color: v.optional(v.string()),
-              number: v.optional(v.string()),
-            }),
-          ),
+          stripeRefundId: v.string(),
+          amountMinor: v.number(),
+          amount: v.number(),
+          currency: v.string(),
+          reason: v.optional(v.string()),
+          createdAt: v.number(),
         }),
       ),
-    }),
-    stripeClientSecret: v.optional(v.string()),
+    ),
   })
     .index("by_payment_intent_id", ["paymentIntentId"])
+    .index("by_order", ["orderId"])
     .index("by_user", ["userId"]),
 };
 

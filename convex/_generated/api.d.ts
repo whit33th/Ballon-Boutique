@@ -13,13 +13,17 @@ import type * as cart from "../cart.js";
 import type * as helpers_admin from "../helpers/admin.js";
 import type * as helpers_auth from "../helpers/auth.js";
 import type * as helpers_products from "../helpers/products.js";
+import type * as helpers_stripeClient from "../helpers/stripeClient.js";
 import type * as http from "../http.js";
 import type * as orders from "../orders.js";
 import type * as paymentMutations from "../paymentMutations.js";
 import type * as payments from "../payments.js";
+import type * as paymentsAdmin from "../paymentsAdmin.js";
 import type * as products from "../products.js";
 import type * as router from "../router.js";
+import type * as stripe from "../stripe.js";
 import type * as users from "../users.js";
+import type * as validators_order from "../validators/order.js";
 import type * as validators_product from "../validators/product.js";
 
 import type {
@@ -34,13 +38,17 @@ declare const fullApi: ApiFromModules<{
   "helpers/admin": typeof helpers_admin;
   "helpers/auth": typeof helpers_auth;
   "helpers/products": typeof helpers_products;
+  "helpers/stripeClient": typeof helpers_stripeClient;
   http: typeof http;
   orders: typeof orders;
   paymentMutations: typeof paymentMutations;
   payments: typeof payments;
+  paymentsAdmin: typeof paymentsAdmin;
   products: typeof products;
   router: typeof router;
+  stripe: typeof stripe;
   users: typeof users;
+  "validators/order": typeof validators_order;
   "validators/product": typeof validators_product;
 }>;
 

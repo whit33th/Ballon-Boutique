@@ -3,27 +3,7 @@ import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { ensureAdmin } from "./helpers/admin";
 import { requireUser } from "./helpers/auth";
-
-const orderItemValidator = v.object({
-  productId: v.id("products"),
-  productName: v.string(),
-  quantity: v.number(),
-  price: v.number(),
-  personalization: v.optional(
-    v.object({
-      text: v.optional(v.string()),
-      color: v.optional(v.string()),
-      number: v.optional(v.string()),
-    }),
-  ),
-});
-
-const orderStatusValidator = v.union(
-  v.literal("pending"),
-  v.literal("confirmed"),
-  v.literal("shipped"),
-  v.literal("delivered"),
-);
+import { orderItemValidator, orderStatusValidator } from "./validators/order";
 
 const orderValidator = v.object({
   _id: v.id("orders"),
@@ -46,6 +26,9 @@ const orderValidator = v.object({
   paymentIntentId: v.optional(v.string()),
   whatsappConfirmed: v.optional(v.boolean()),
   pickupDateTime: v.optional(v.string()),
+  currency: v.optional(v.string()),
+  deliveryFee: v.optional(v.number()),
+  grandTotal: v.optional(v.number()),
 });
 
 export const createGuest = mutation({

@@ -21,6 +21,7 @@ export const STORE_INFO = {
     city: "Knittelfeld",
     postalCode: "8720",
     country: "Austria",
+    countryCode: "AT",
   },
 
   contact: {

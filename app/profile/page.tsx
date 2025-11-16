@@ -9,6 +9,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { SignOutButton } from "@/components/SignOutButton";
 import { api } from "@/convex/_generated/api";
+import { STORE_INFO } from "@/constants/config";
+import {
+  composeAddress,
+  createEmptyAddressFields,
+  parseAddress,
+  type AddressFields,
+} from "@/lib/address";
 
 type TabId = "profile" | "orders" | "settings";
 
@@ -21,6 +28,12 @@ const tabs: Array<{ id: TabId; label: string; hint: string }> = [
 const tabButtonId = (tabId: TabId) => `profile-tab-${tabId}`;
 const tabPanelId = (tabId: TabId) => `profile-panel-${tabId}`;
 
+type ProfileFormData = {
+  name: string;
+  email: string;
+  phone: string;
+} & AddressFields;
+
 export default function ProfilePage() {
   const user = useQuery(api.auth.loggedInUser);
   const orders = useQuery(api.orders.list);
@@ -28,24 +41,31 @@ export default function ProfilePage() {
 
   const [activeTab, setActiveTab] = useState<TabId>("profile");
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormData>(() => ({
     name: "",
     email: "",
     phone: "",
-    address: "",
-  });
+    ...createEmptyAddressFields(),
+  }));
 
   const resetFormFromUser = useCallback(() => {
     if (!user) {
-      setFormData({ name: "", email: "", phone: "", address: "" });
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        ...createEmptyAddressFields(),
+      });
       return;
     }
+
+    const parsedAddress = parseAddress(user.address);
 
     setFormData({
       name: user.name ?? "",
       email: user.email ?? "",
       phone: user.phone ?? "",
-      address: user.address ?? "",
+      ...parsedAddress,
     });
   }, [user]);
 
@@ -60,12 +80,25 @@ export default function ProfilePage() {
   ) => {
     event.preventDefault();
     try {
-      const updated = await updateProfile(formData);
+      const normalizedAddress = composeAddress({
+        streetAddress: formData.streetAddress,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        deliveryNotes: formData.deliveryNotes,
+      });
+
+      const updated = await updateProfile({
+        name: formData.name || undefined,
+        email: formData.email || undefined,
+        phone: formData.phone || undefined,
+        address: normalizedAddress || undefined,
+      });
+      const parsed = parseAddress(updated?.address);
       setFormData({
         name: updated?.name ?? "",
         email: updated?.email ?? "",
         phone: updated?.phone ?? "",
-        address: updated?.address ?? "",
+        ...parsed,
       });
       toast.success("Profile updated successfully!");
       setIsEditing(false);
@@ -187,7 +220,7 @@ export default function ProfilePage() {
                     (currentIndex + offset + tabs.length) % tabs.length;
                   setActiveTab(tabs[nextIndex].id);
                 }}
-                className={`flex flex-col rounded-3xl border px-6 py-5 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black ${
+                className={`flex flex-col rounded-3xl border px-6 py-5 text-left transition focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-black ${
                   isActive
                     ? "border-black bg-white shadow-[0_20px_50px_-35px_rgba(15,23,42,0.7)]"
                     : "border-black/10 bg-white/70 hover:border-black/40"
@@ -283,18 +316,60 @@ export default function ProfilePage() {
                     />
                   </label>
                   <label className="flex flex-col gap-2 text-sm text-black/60 md:col-span-2">
-                    Default delivery address
-                    <textarea
-                      value={formData.address}
+                    Street & house number
+                    <input
+                      value={formData.streetAddress}
                       onChange={(event) =>
                         setFormData({
                           ...formData,
-                          address: event.target.value,
+                          streetAddress: event.target.value,
                         })
                       }
-                      rows={4}
+                      className="h-12 rounded-2xl border border-black/10 px-4 text-sm font-medium text-black transition outline-none focus:border-black"
+                      placeholder="Sandgasse 3"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm text-black/60">
+                    City
+                    <input
+                      value={formData.city}
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          city: event.target.value,
+                        })
+                      }
+                      className="h-12 rounded-2xl border border-black/10 px-4 text-sm font-medium text-black transition outline-none focus:border-black"
+                      placeholder={STORE_INFO.address.city}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm text-black/60">
+                    Postal code
+                    <input
+                      value={formData.postalCode}
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          postalCode: event.target.value,
+                        })
+                      }
+                      className="h-12 rounded-2xl border border-black/10 px-4 text-sm font-medium text-black transition outline-none focus:border-black"
+                      placeholder={STORE_INFO.address.postalCode}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm text-black/60 md:col-span-2">
+                    Delivery notes (door code, floor…)
+                    <textarea
+                      value={formData.deliveryNotes}
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          deliveryNotes: event.target.value,
+                        })
+                      }
+                      rows={3}
                       className="rounded-2xl border border-black/10 px-4 py-3 text-sm font-medium text-black transition outline-none focus:border-black"
-                      placeholder="Street, city, postal code"
+                      placeholder="Ring the bell twice, leave at reception, etc."
                     />
                   </label>
                   <div className="flex flex-wrap items-center gap-3 md:col-span-2">
@@ -319,38 +394,26 @@ export default function ProfilePage() {
                 </form>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div className="rounded-3xl border border-black/10 bg-white/70 px-5 py-4">
-                    <p className="text-xs tracking-[0.3rem] text-black/40 uppercase">
-                      Full name
-                    </p>
-                    <p className="mt-2 text-lg font-medium text-black">
-                      {user.name ?? "Not set"}
-                    </p>
-                  </div>
-                  <div className="rounded-3xl border border-black/10 bg-white/70 px-5 py-4">
-                    <p className="text-xs tracking-[0.3rem] text-black/40 uppercase">
-                      Email
-                    </p>
-                    <p className="mt-2 text-lg font-medium text-black">
-                      {user.email ?? "Not set"}
-                    </p>
-                  </div>
-                  <div className="rounded-3xl border border-black/10 bg-white/70 px-5 py-4">
-                    <p className="text-xs tracking-[0.3rem] text-black/40 uppercase">
-                      Phone
-                    </p>
-                    <p className="mt-2 text-lg font-medium text-black">
-                      {user.phone ?? (formData.phone || "Not set")}
-                    </p>
-                  </div>
-                  <div className="rounded-3xl border border-black/10 bg-white/70 px-5 py-4 md:col-span-2">
-                    <p className="text-xs tracking-[0.3rem] text-black/40 uppercase">
-                      Default delivery address
-                    </p>
-                    <p className="mt-2 text-lg font-medium whitespace-pre-wrap text-black">
-                      {user.address ?? (formData.address || "Not set")}
-                    </p>
-                  </div>
+                  <InfoTile label="Full name" value={user.name ?? "Not set"} />
+                  <InfoTile label="Email" value={user.email ?? "Not set"} />
+                  <InfoTile
+                    label="Phone"
+                    value={user.phone ?? (formData.phone || "Not set")}
+                  />
+                  <InfoTile
+                    label="Street & house number"
+                    value={formData.streetAddress || "Not set"}
+                  />
+                  <InfoTile label="City" value={formData.city || "Not set"} />
+                  <InfoTile
+                    label="Postal code"
+                    value={formData.postalCode || "Not set"}
+                  />
+                  <InfoTile
+                    label="Delivery notes"
+                    value={formData.deliveryNotes || "Not set"}
+                    fullWidth
+                  />
                 </div>
               )}
             </motion.div>
@@ -489,6 +552,27 @@ export default function ProfilePage() {
           ) : null}
         </section>
       </main>
+    </div>
+  );
+}
+
+type InfoTileProps = {
+  label: string;
+  value: string;
+  fullWidth?: boolean;
+};
+
+function InfoTile({ label, value, fullWidth }: InfoTileProps) {
+  return (
+    <div
+      className={`rounded-3xl border border-black/10 bg-white/70 px-5 py-4 ${fullWidth ? "md:col-span-2" : ""}`}
+    >
+      <p className="text-xs tracking-[0.3rem] text-black/40 uppercase">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-medium whitespace-pre-wrap text-black">
+        {value}
+      </p>
     </div>
   );
 }

@@ -9,5 +9,6 @@ export {
   productFormSchema,
 } from "./ProductForm";
 export { ProductMetricsCard } from "./ProductMetricsCard";
+export { PaymentsTab } from "./PaymentsTab";
 export * from "./types";
 export * from "./utils";
