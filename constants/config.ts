@@ -60,6 +60,7 @@ export const STORE_INFO = {
   orderPolicy: {
     preparationTime: 72, // in hours (3 days)
     cancellationDeadline: 48, // in hours (2 days)
+    minPickupDays: 3, // minimum days in advance for pickup
     preparationTimeRu: "72 часа (3 дня)",
     preparationTimeDe: "72 Stunden (3 Tage)",
     cancellationDeadlineRu: "48 часов",

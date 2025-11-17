@@ -5,7 +5,7 @@ import type Stripe from "stripe";
 import { internal } from "./_generated/api.js";
 import { internalAction } from "./_generated/server";
 import { getStripeClient } from "./helpers/stripeClient";
-import { type PaymentStatus } from "./paymentMutations";
+import type { PaymentStatus } from "./paymentMutations";
 
 const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

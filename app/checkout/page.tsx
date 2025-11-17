@@ -10,8 +10,8 @@ import {
 import {
   type Appearance,
   loadStripe,
-  type PaymentRequestPaymentMethodEvent,
   type PaymentRequest,
+  type PaymentRequestPaymentMethodEvent,
 } from "@stripe/stripe-js";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
@@ -34,17 +34,20 @@ import {
   STORE_INFO,
   WHATSAPP_MESSAGES,
 } from "@/constants/config";
-import { matchDeliveryCity, type DeliveryCityPricing } from "@/constants/price";
+import {
+  COURIER_DELIVERY_CITIES,
+  type CourierDeliveryCity,
+} from "@/constants/delivery";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import type { ProductWithImage } from "@/convex/helpers/products";
-import { type GuestCartItem, useGuestCart } from "@/lib/guestCart";
 import {
+  type AddressFields,
   composeAddress,
   createEmptyAddressFields,
   parseAddress,
-  type AddressFields,
 } from "@/lib/address";
+import { type GuestCartItem, useGuestCart } from "@/lib/guestCart";
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 if (!publishableKey) {
@@ -91,6 +94,16 @@ const formatCurrency = (value: number) =>
     currency: DISPLAY_CURRENCY,
     maximumFractionDigits: 2,
   }).format(value);
+
+/**
+ * Calculate minimum pickup datetime (current date + minimum pickup days from config)
+ */
+const getMinPickupDateTime = (): string => {
+  const date = new Date();
+  date.setDate(date.getDate() + STORE_INFO.orderPolicy.minPickupDays);
+  // Format to datetime-local format: YYYY-MM-DDTHH:mm
+  return date.toISOString().slice(0, 16);
+};
 
 type DeliveryType = "pickup" | "delivery";
 type PaymentMethod = "full_online" | "cash";
@@ -398,8 +411,8 @@ function OptionCard({
       >
         {icon}
       </div>
-      <div className="flex-1">
-        <p className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+      <div className="flex h-full flex-1 flex-col justify-center gap-1">
+        <p className="flex h-full items-center gap-2 text-sm font-semibold text-gray-900">
           {title}
           {badge && (
             <span className="bg-secondary/15 text-secondary rounded-full px-2 py-0.5 text-xs font-medium">
@@ -407,6 +420,7 @@ function OptionCard({
             </span>
           )}
         </p>
+
         <p className="text-sm text-gray-600">{description}</p>
       </div>
       <span
@@ -421,13 +435,56 @@ function OptionCard({
   );
 }
 
+type CourierCityCardProps = {
+  city: CourierDeliveryCity;
+  selected: boolean;
+  onSelect: () => void;
+};
+
+function CourierCityCard({ city, selected, onSelect }: CourierCityCardProps) {
+  const etaRange =
+    city.etaDays.min === city.etaDays.max
+      ? `${city.etaDays.min} day`
+      : `${city.etaDays.min}–${city.etaDays.max} days`;
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`w-full rounded-2xl border p-4 text-left transition ${
+        selected
+          ? "border-secondary bg-secondary/5 shadow-sm"
+          : "border-gray-200 bg-white"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">{city.name}</p>
+          <p className="text-xs text-gray-600">Courier delivery</p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm font-semibold text-gray-900">
+            {formatCurrency(city.price)}
+          </p>
+          <p className="text-xs text-gray-500">{etaRange}</p>
+        </div>
+      </div>
+      {selected && (
+        <p className="text-secondary mt-3 text-xs font-medium">
+          Selected for delivery
+        </p>
+      )}
+    </button>
+  );
+}
+
 type SummaryProps = {
   items: (ServerCartItem | GuestCartItem)[] | undefined;
   deliveryCost: number;
   deliveryType: DeliveryType;
   cartOnlyTotal: number;
   total: number;
-  matchedDeliveryCity?: DeliveryCityPricing;
+  selectedCourierCity?: CourierDeliveryCity;
 };
 
 function OrderSummary({
@@ -436,7 +493,7 @@ function OrderSummary({
   deliveryType,
   cartOnlyTotal,
   total,
-  matchedDeliveryCity,
+  selectedCourierCity,
 }: SummaryProps) {
   const getItemDetails = (item: ServerCartItem | GuestCartItem) => {
     if (isServerCartItem(item)) {
@@ -512,7 +569,7 @@ function OrderSummary({
             <div className="flex items-center justify-between">
               <span>
                 Delivery
-                {matchedDeliveryCity ? ` (${matchedDeliveryCity.label})` : ""}
+                {selectedCourierCity ? ` (${selectedCourierCity.name})` : ""}
               </span>
               <span className="font-semibold">
                 {formatCurrency(deliveryCost)}
@@ -571,6 +628,9 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("full_online");
   const [pickupDateTime, setPickupDateTime] = useState("");
+  const [selectedCourierCityId, setSelectedCourierCityId] = useState<
+    string | null
+  >(null);
   const [whatsappConfirmed, setWhatsappConfirmed] = useState(false);
   const [isCashSubmitting, setIsCashSubmitting] = useState(false);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
@@ -585,10 +645,14 @@ export default function CheckoutPage() {
       ? { paymentIntentId: pendingPaymentIntentId }
       : "skip",
   );
-  const matchedDeliveryCity = useMemo(
-    () => matchDeliveryCity(formData.city),
-    [formData.city],
-  );
+  const selectedCourierCity = useMemo(() => {
+    if (!selectedCourierCityId) {
+      return undefined;
+    }
+    return COURIER_DELIVERY_CITIES.find(
+      (city) => city.id === selectedCourierCityId,
+    );
+  }, [selectedCourierCityId]);
 
   useEffect(() => {
     if (!user) {
@@ -611,8 +675,8 @@ export default function CheckoutPage() {
   }, [user]);
 
   const deliveryCost =
-    deliveryType === "delivery"
-      ? (matchedDeliveryCity?.price ?? STORE_INFO.delivery.cost)
+    deliveryType === "delivery" && selectedCourierCity
+      ? selectedCourierCity.price
       : 0;
   const total = cartOnlyTotal + deliveryCost;
 
@@ -654,7 +718,9 @@ export default function CheckoutPage() {
   const hasDeliveryAddress =
     formData.streetAddress.trim() !== "" &&
     formData.postalCode.trim() !== "" &&
-    formData.city.trim() !== "";
+    (deliveryType === "delivery"
+      ? Boolean(selectedCourierCity)
+      : formData.city.trim() !== "");
 
   const isFormValid =
     formData.customerName.trim() !== "" &&
@@ -715,6 +781,23 @@ export default function CheckoutPage() {
     setDeliveryType(type);
     if (type === "delivery") {
       setPickupDateTime("");
+      if (!selectedCourierCityId) {
+        setFormData((prev) => ({
+          ...prev,
+          city: "",
+        }));
+      }
+    }
+  };
+
+  const handleCourierCitySelect = (cityId: string) => {
+    setSelectedCourierCityId(cityId);
+    const city = COURIER_DELIVERY_CITIES.find((option) => option.id === cityId);
+    if (city) {
+      setFormData((prev) => ({
+        ...prev,
+        city: city.name,
+      }));
     }
   };
 
@@ -1056,8 +1139,10 @@ export default function CheckoutPage() {
                   setFormData={setFormData}
                   isValidEmail={isValidEmail}
                   deliveryType={deliveryType}
-                  deliveryCost={deliveryCost}
-                  matchedDeliveryCity={matchedDeliveryCity}
+                  selectedCourierCity={selectedCourierCity}
+                  selectedCourierCityId={selectedCourierCityId}
+                  courierCities={COURIER_DELIVERY_CITIES}
+                  onCourierCitySelect={handleCourierCitySelect}
                   pickupDateTime={pickupDateTime}
                   setPickupDateTime={setPickupDateTime}
                   handleDeliveryTypeChange={handleDeliveryTypeChange}
@@ -1097,7 +1182,7 @@ export default function CheckoutPage() {
               deliveryType={deliveryType}
               cartOnlyTotal={cartOnlyTotal}
               total={total}
-              matchedDeliveryCity={matchedDeliveryCity}
+              selectedCourierCity={selectedCourierCity}
             />
           </div>
         </div>
@@ -1111,8 +1196,10 @@ type StepOneProps = {
   setFormData: React.Dispatch<React.SetStateAction<CheckoutFormData>>;
   isValidEmail: (email: string) => boolean;
   deliveryType: DeliveryType;
-  deliveryCost: number;
-  matchedDeliveryCity?: DeliveryCityPricing;
+  selectedCourierCity?: CourierDeliveryCity;
+  selectedCourierCityId: string | null;
+  courierCities: CourierDeliveryCity[];
+  onCourierCitySelect: (cityId: string) => void;
   pickupDateTime: string;
   setPickupDateTime: (value: string) => void;
   handleDeliveryTypeChange: (type: DeliveryType) => void;
@@ -1126,8 +1213,10 @@ function StepOne({
   setFormData,
   isValidEmail,
   deliveryType,
-  deliveryCost,
-  matchedDeliveryCity,
+  selectedCourierCity,
+  selectedCourierCityId,
+  courierCities,
+  onCourierCitySelect,
   pickupDateTime,
   setPickupDateTime,
   handleDeliveryTypeChange,
@@ -1138,6 +1227,11 @@ function StepOne({
   const emailHasError =
     formData.customerEmail.trim() !== "" &&
     !isValidEmail(formData.customerEmail);
+  const _courierDescription = selectedCourierCity
+    ? `+${formatCurrency(selectedCourierCity.price)} · ${
+        selectedCourierCity.etaDays.min
+      }-${selectedCourierCity.etaDays.max} days`
+    : "Select a courier city to see price & ETA";
 
   return (
     <div className="space-y-6">
@@ -1216,94 +1310,6 @@ function StepOne({
 
       <div className="rounded-3xl bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900">
-          Delivery details
-        </h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Address fields are prefilled from your profile so checkout stays fast.
-        </p>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2 md:col-span-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <MapPin className="h-4 w-4" /> Street and house number
-            </span>
-            <input
-              type="text"
-              value={formData.streetAddress}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  streetAddress: event.target.value,
-                }))
-              }
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
-              placeholder="Mariahilfer Str. 10"
-              autoComplete="address-line1"
-            />
-          </label>
-          <label className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">City</span>
-            <input
-              type="text"
-              value={formData.city}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  city: event.target.value,
-                }))
-              }
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
-              placeholder={STORE_INFO.address.city}
-              autoComplete="address-level2"
-            />
-            {deliveryType === "delivery" && (
-              <span className="text-xs text-gray-500">
-                {matchedDeliveryCity
-                  ? `Delivery in ${matchedDeliveryCity.label} costs ${formatCurrency(matchedDeliveryCity.price)}.`
-                  : `Enter a supported city to see the exact delivery price. Default fee ${formatCurrency(STORE_INFO.delivery.cost)} applies otherwise.`}
-              </span>
-            )}
-          </label>
-          <label className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">
-              Postal code
-            </span>
-            <input
-              type="text"
-              value={formData.postalCode}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  postalCode: event.target.value,
-                }))
-              }
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
-              placeholder="1070"
-              autoComplete="postal-code"
-            />
-          </label>
-          <label className="flex flex-col gap-2 md:col-span-2">
-            <span className="text-sm font-medium text-gray-700">
-              Notes for courier or pickup
-            </span>
-            <textarea
-              rows={3}
-              value={formData.deliveryNotes}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  deliveryNotes: event.target.value,
-                }))
-              }
-              className="focus:border-secondary rounded-2xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
-              placeholder="Door code, floor, or pickup preferences"
-              autoComplete="address-line2"
-            />
-          </label>
-        </div>
-      </div>
-
-      <div className="rounded-3xl bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">
           How would you like to receive your balloons?
         </h2>
         <div className="mt-4 space-y-3">
@@ -1318,7 +1324,7 @@ function StepOne({
           <OptionCard
             icon={<Truck className="text-secondary h-5 w-5" />}
             title={`Courier delivery (${STORE_INFO.delivery.hours})`}
-            description={`+${formatCurrency(deliveryCost)} within ${matchedDeliveryCity?.label ?? STORE_INFO.address.city}`}
+            description="Choose your city"
             selected={deliveryType === "delivery"}
             onSelect={() => handleDeliveryTypeChange("delivery")}
           />
@@ -1326,17 +1332,114 @@ function StepOne({
         {deliveryType === "pickup" && (
           <label className="mt-4 flex flex-col gap-2">
             <span className="text-sm font-medium text-gray-700">
-              Preferred pickup date & time
+              Preferred pickup date & time (
+              {STORE_INFO.orderPolicy.minPickupDays} days ahead minimum)
             </span>
             <input
               type="datetime-local"
               value={pickupDateTime}
               onChange={(event) => setPickupDateTime(event.target.value)}
+              min={getMinPickupDateTime()}
               className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
             />
           </label>
         )}
       </div>
+
+      {deliveryType === "delivery" && (
+        <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Delivery details
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Address fields are prefilled from your profile so checkout stays
+            fast.
+          </p>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            {deliveryType === "delivery" && (
+              <div className="space-y-3 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">
+                    Courier service areas
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Tap a city to select
+                  </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {courierCities.map((city) => (
+                    <CourierCityCard
+                      key={city.id}
+                      city={city}
+                      selected={selectedCourierCityId === city.id}
+                      onSelect={() => onCourierCitySelect(city.id)}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500">
+                  Need another city? Message us on WhatsApp and we’ll help
+                  arrange a custom route.
+                </p>
+              </div>
+            )}
+            <label className="flex flex-col gap-2 md:col-span-2">
+              <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <MapPin className="h-4 w-4" /> Street and house number
+              </span>
+              <input
+                type="text"
+                value={formData.streetAddress}
+                onChange={(event) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    streetAddress: event.target.value,
+                  }))
+                }
+                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+                placeholder="Mariahilfer Str. 10"
+                autoComplete="address-line1"
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-gray-700">
+                Postal code
+              </span>
+              <input
+                type="text"
+                value={formData.postalCode}
+                onChange={(event) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    postalCode: event.target.value,
+                  }))
+                }
+                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+                placeholder="1070"
+                autoComplete="postal-code"
+              />
+            </label>
+            <label className="flex flex-col gap-2 md:col-span-2">
+              <span className="text-sm font-medium text-gray-700">
+                Notes for courier or pickup
+              </span>
+              <textarea
+                rows={3}
+                value={formData.deliveryNotes}
+                onChange={(event) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    deliveryNotes: event.target.value,
+                  }))
+                }
+                className="focus:border-secondary rounded-2xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+                placeholder="Door code, floor, or pickup preferences"
+                autoComplete="address-line2"
+              />
+            </label>
+          </div>
+        </div>
+      )}
 
       <div className="border-secondary/40 bg-secondary/5 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-dashed px-6 py-4">
         <div>

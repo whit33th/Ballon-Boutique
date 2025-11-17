@@ -18,7 +18,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CategoryGroupValue } from "@/constants/categories";
 import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
-import { uploadFileInChunks } from "@/lib/chunkedUploadClient";
+import { uploadImageKitFile } from "@/lib/imagekitUploadClient";
 import { api } from "../../convex/_generated/api";
 import type { Doc } from "../../convex/_generated/dataModel";
 import {
@@ -28,13 +28,13 @@ import {
   OrderMetricsCards,
   type OrderStatus,
   OrdersTable,
+  PaymentsTab,
   type PendingImage,
   ProductCard,
   type ProductCardData,
   ProductForm,
   type ProductFormValues,
   ProductMetricsCard,
-  PaymentsTab,
   productFormSchema,
   type StripePaymentListItem,
   type UploadProgressState,
@@ -424,27 +424,31 @@ export default function AdminPage() {
       }
 
       for (const pending of pendingImages) {
-        const result = await uploadFileInChunks(pending.file, {
+        const result = await uploadImageKitFile(pending.file, {
           folder,
-          onProgress: (fileProgress) => {
+          onProgress: ({ loaded }) => {
             if (!shouldTrackUpload) {
               return;
             }
-            const combinedUploaded =
-              completedBytes +
-              Math.min(pending.file.size, fileProgress.uploadedBytes);
-            const basePercentage =
+
+            const loadedBytes = Math.min(pending.file.size, loaded ?? 0);
+            const combinedUploaded = completedBytes + loadedBytes;
+            const rawPercentage =
               totalBytes > 0
-                ? Math.min(
-                    fileProgress.phase === "finalizing" ? 100 : 99,
-                    Math.round((combinedUploaded / totalBytes) * 100),
-                  )
+                ? Math.round((combinedUploaded / totalBytes) * 100)
                 : 100;
-            const status: UploadProgressState["status"] =
-              fileProgress.phase === "finalizing" ? "finalizing" : "uploading";
+            const atFileEnd = loadedBytes >= pending.file.size;
+            const status: UploadProgressState["status"] = atFileEnd
+              ? "finalizing"
+              : "uploading";
+            const cappedPercentage = Math.min(
+              status === "finalizing" ? 100 : 99,
+              rawPercentage,
+            );
+
             setUploadProgress({
               status,
-              percentage: basePercentage,
+              percentage: cappedPercentage,
               message:
                 status === "finalizing"
                   ? `Финализируем ${pending.file.name}`

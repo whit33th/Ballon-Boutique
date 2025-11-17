@@ -5,20 +5,22 @@ import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[background-color,color,border-color,opacity,filter] duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[background-color,color,border-color,opacity,filter,transform] duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-red-600/20 dark:aria-invalid:ring-red-600/40 aria-invalid:border-red-600 pointer-coarse:active:scale-[0.99]",
   {
     variants: {
       variant: {
         // default buttons are CTAs — use terracotta accent for strong visibility
-        default: "bg-accent text-on-accent hover:brightness-95",
+        default:
+          "bg-accent text-on-accent pointer-fine:hover:brightness-95 pointer-coarse:active:brightness-95",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-red-600 text-white pointer-fine:hover:bg-red-600/90 pointer-coarse:active:bg-red-600/90 focus-visible:ring-red-600/20 dark:focus-visible:ring-red-600/40 dark:bg-red-600/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary: "bg-secondary text-secondary-foreground hover:brightness-95",
+          "border bg-background shadow-xs pointer-fine:hover:bg-accent pointer-fine:hover:text-accent-foreground pointer-coarse:active:bg-accent pointer-coarse:active:text-accent-foreground dark:bg-input/30 dark:border-input dark:pointer-fine:hover:bg-input/50 dark:pointer-coarse:active:bg-input/50",
+        secondary:
+          "bg-secondary text-secondary-foreground pointer-fine:hover:brightness-95 pointer-coarse:active:brightness-95",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "pointer-fine:hover:bg-accent pointer-fine:hover:text-accent-foreground pointer-coarse:active:bg-accent pointer-coarse:active:text-accent-foreground dark:pointer-fine:hover:bg-accent/50 dark:pointer-coarse:active:bg-accent/50",
+        link: "text-primary underline-offset-4 pointer-fine:hover:underline pointer-coarse:active:underline",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

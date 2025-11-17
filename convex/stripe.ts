@@ -10,8 +10,8 @@ import { getStripeClient } from "./helpers/stripeClient";
 import {
   customerValidator,
   orderItemInputValidator,
-  paymentSourceValidator,
   type PaymentStatus,
+  paymentSourceValidator,
   paymentStatusValidator,
   shippingValidator,
 } from "./paymentMutations";

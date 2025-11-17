@@ -2,6 +2,7 @@
 
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ImageKitPicture from "@/components/ui/ImageKitPicture";
@@ -9,7 +10,6 @@ import { ADMIN_PREVIEW_IMAGE_TRANSFORMATION } from "@/lib/imagekit";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { type GuestCartItem, useGuestCart } from "../../lib/guestCart";
-import Link from "next/link";
 
 export default function CartPage() {
   const router = useRouter();

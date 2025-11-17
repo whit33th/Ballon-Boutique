@@ -50,13 +50,13 @@ body {
   font-family: var(--font-dm-sans), sans-serif;
 }
 
-button,
-a {
+button:hover:is(:not(:disabled)),
+a:is(:not(:disabled)) {
   cursor: pointer;
   transition: all 0.2s ease-in-out;
 }
-button:hover,
-a:hover {
+button:hover:is(:not(:disabled, :active)),
+a:hover:is(:not(:disabled, :active)) {
   opacity: 0.8;
 }
 

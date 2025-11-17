@@ -4,19 +4,19 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
 import { ConvexError } from "convex/values";
 import { useRouter } from "next/navigation";
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function AuthPage() {
+  const { isAuthenticated } = useConvexAuth();
   const { signIn } = useAuthActions();
 
-  const { isAuthenticated } = useConvexAuth();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
   const [submitting, setSubmitting] = useState(false);
 
   const router = useRouter();
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (isAuthenticated) {
       router.replace("/");
     }

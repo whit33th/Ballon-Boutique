@@ -11,7 +11,7 @@ const defaultCity = STORE_INFO.address.city;
 
 export const createEmptyAddressFields = (): AddressFields => ({
   streetAddress: "",
-  city: defaultCity,
+  city: "",
   postalCode: "",
   deliveryNotes: "",
 });

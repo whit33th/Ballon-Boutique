@@ -19,6 +19,8 @@ export function getImageKitServerClient(): ImageKit {
 
   cachedClient = new ImageKit({
     privateKey,
+    publicKey,
+    urlEndpoint,
   });
 
   return cachedClient;

@@ -4,28 +4,28 @@ import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 
 import { motion } from "motion/react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { api } from "@/convex/_generated/api";
 import { STORE_INFO } from "@/constants/config";
+import { api } from "@/convex/_generated/api";
+import { useConvexAvatarStorage } from "@/hooks/useConvexAvatarStorage";
 import {
+  type AddressFields,
   composeAddress,
   createEmptyAddressFields,
   parseAddress,
-  type AddressFields,
 } from "@/lib/address";
 import { AvatarPanel } from "./_components/AvatarPanel";
 import { InfoTile } from "./_components/InfoTile";
 import { OrdersPanel } from "./_components/OrdersPanel";
 import { PreferencesPanel } from "./_components/PreferencesPanel";
 import {
-  palette,
   fieldInputClass,
   fieldLabelClass,
   fieldTextareaClass,
+  palette,
 } from "./_components/palette";
-import { useConvexAvatarStorage } from "@/hooks/useConvexAvatarStorage";
 
 type TabId = "profile" | "orders" | "settings";
 
@@ -48,7 +48,7 @@ type ProfileFormData = {
 
 export default function ProfilePage() {
   const user = useQuery(api.auth.loggedInUser);
-  const orders = useQuery(api.orders.list);
+  const orders = useQuery(api.orders.list, user ? {} : "skip");
   const updateProfile = useMutation(api.users.updateProfile);
   const updateAvatar = useMutation(api.users.updateAvatar);
 
@@ -63,6 +63,8 @@ export default function ProfilePage() {
   }));
 
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const router = useRouter();
+  const hasRedirected = useRef(false);
   const { avatarUrl, uploadAvatar } = useConvexAvatarStorage(
     user?.imageFileId ?? null,
   );
@@ -160,6 +162,13 @@ export default function ProfilePage() {
     }
   };
 
+  useEffect(() => {
+    if (user === null && !hasRedirected.current) {
+      hasRedirected.current = true;
+      router.replace("/auth?redirect=/profile");
+    }
+  }, [router, user]);
+
   const formattedOrders = useMemo(() => orders ?? [], [orders]);
 
   if (user === undefined) {
@@ -180,30 +189,12 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user) {
+  if (user === null) {
     return (
-      <div className="bg-primary text-deep min-h-screen">
-        <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="mb-4 text-6xl">🔒</div>
-            <h2 className="text-deep mb-3 text-3xl font-semibold">
-              Sign in to view your profile
-            </h2>
-            <p className={`mb-6 text-base ${palette.mutedText}`}>
-              Access saved addresses, order history, and track your balloons in
-              one place.
-            </p>
-            <Link
-              href="/auth"
-              className="bg-accent text-on-accent inline-flex h-12 items-center justify-center rounded-full px-8 text-sm font-semibold tracking-wide uppercase transition hover:brightness-95"
-            >
-              Go to sign in
-            </Link>
-          </motion.div>
-        </div>
+      <div className="bg-primary text-deep flex min-h-screen items-center justify-center">
+        <p className="text-deep text-sm font-medium tracking-wide uppercase">
+          Redirecting to sign in...
+        </p>
       </div>
     );
   }
@@ -268,10 +259,10 @@ export default function ProfilePage() {
                     (currentIndex + offset + tabs.length) % tabs.length;
                   setActiveTab(tabs[nextIndex].id);
                 }}
-                className={`focus-visible:outline-accent flex flex-col rounded-3xl border px-6 py-5 text-left transition focus-visible:outline focus-visible:outline-offset-2 ${
+                className={`focus-visible:outline-accent flex flex-col rounded-3xl border bg-white px-6 py-5 text-left focus-visible:outline focus-visible:outline-offset-2 ${
                   isActive
-                    ? "border-[rgba(var(--secondary-rgb),0.7)] bg-white shadow-[0_25px_50px_-40px_rgba(52,137,152,0.9)]"
-                    : `${palette.softBorder} ${palette.softSurface} hover:border-[rgba(var(--secondary-rgb),0.4)]`
+                    ? "border-secondary/90"
+                    : `${palette.softBorder} hover:border-secondary/40`
                 }`}
               >
                 <span

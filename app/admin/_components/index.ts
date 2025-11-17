@@ -2,6 +2,7 @@ export { EmptyProductsState } from "./EmptyProductsState";
 export { ImageUpload } from "./ImageUpload";
 export { OrderMetricsCards } from "./OrderMetricsCards";
 export { OrdersTable } from "./OrdersTable";
+export { PaymentsTab } from "./PaymentsTab";
 export { ProductCard } from "./ProductCard";
 export {
   ProductForm,
@@ -9,6 +10,5 @@ export {
   productFormSchema,
 } from "./ProductForm";
 export { ProductMetricsCard } from "./ProductMetricsCard";
-export { PaymentsTab } from "./PaymentsTab";
 export * from "./types";
 export * from "./utils";

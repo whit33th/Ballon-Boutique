@@ -4,7 +4,7 @@ export const palette = {
   mutedText: "text-[rgba(var(--deep-rgb),0.65)]",
   subtleText: "text-[rgba(var(--deep-rgb),0.5)]",
   elevatedSurface: "bg-white/95",
-  softSurface: "bg-[rgba(var(--primary-rgb),0.75)]",
+  softSurface: "bg-[rgba(var(--primary-rgb),0.35)]",
   accentSurface: "bg-[rgba(var(--secondary-rgb),0.15)]",
   warmSurface: "bg-[rgba(var(--support-warm-rgb),0.22)]",
 } as const;

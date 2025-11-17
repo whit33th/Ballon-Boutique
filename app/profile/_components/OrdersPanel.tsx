@@ -1,12 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-
 import type { Doc } from "@/convex/_generated/dataModel";
-
 import { palette } from "./palette";
-import Image from "next/image";
 
 type OrdersPanelProps = {
   orders?: Doc<"orders">[];
@@ -34,7 +32,7 @@ export function OrdersPanel({ orders }: OrdersPanelProps) {
   if (formattedOrders.length === 0) {
     return (
       <div
-        className={`flex flex-col items-center gap-3 rounded-3xl border px-8 py-16 text-center ${
+        className={`bg-background/50 flex flex-col items-center gap-3 rounded-3xl border px-8 py-16 text-center ${
           palette.softBorder
         } ${palette.softSurface}`}
       >

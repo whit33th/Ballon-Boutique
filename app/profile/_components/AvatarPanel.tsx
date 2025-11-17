@@ -1,8 +1,8 @@
 "use client";
 
-import type { ChangeEvent, RefObject } from "react";
-import Image from "next/image";
 import { Camera, Loader2, UserRound } from "lucide-react";
+import Image from "next/image";
+import type { ChangeEvent, RefObject } from "react";
 import { SignOutButton } from "@/components/SignOutButton";
 import { palette } from "./palette";
 
@@ -56,7 +56,7 @@ export function AvatarPanel({
               />
             </div>
           ) : (
-            <div className="flex h-full w-full items-center justify-center rounded-full bg-[rgba(var(--secondary-rgb),0.2)]">
+            <div className="bg-background/70 flex h-full w-full items-center justify-center rounded-full">
               <UserRound className="text-secondary h-10 w-10" />
             </div>
           )}

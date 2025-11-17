@@ -3,7 +3,7 @@
 import { v } from "convex/values";
 import type Stripe from "stripe";
 import { internal } from "./_generated/api.js";
-import { action, query } from "./_generated/server";
+import { action, } from "./_generated/server";
 import { getStripeClient } from "./helpers/stripeClient";
 import { type PaymentStatus, paymentStatusValidator } from "./paymentMutations";
 
