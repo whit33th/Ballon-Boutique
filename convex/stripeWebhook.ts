@@ -2,7 +2,8 @@ import { internal } from "./_generated/api.js";
 import { httpAction } from "./_generated/server";
 
 export const stripeWebhook = httpAction(async (ctx, req) => {
-  const signature = req.headers.get("stripe-signature");
+  const signature = req.headers.get("stripe-signature") as string;
+
   if (!signature) {
     return new Response("Missing stripe-signature header", { status: 400 });
   }

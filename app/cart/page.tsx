@@ -2,6 +2,7 @@
 
 import { useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -145,24 +146,22 @@ export default function CartPage() {
 
   if (itemsToDisplay.length === 0) {
     return (
-      <div className="bg-primary">
-        <div className="container mx-auto px-4 py-16">
-          <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-4 text-6xl">🛒</div>
-            <h2 className="text-deep mb-2 text-2xl font-bold">
-              Your cart is empty
-            </h2>
-            <p className="text-deep/70 mb-8">
-              Add some beautiful balloons to get started!
-            </p>
-            <button
-              type="button"
-              onClick={() => router.push("/catalog")}
-              className="btn-accent rounded-lg px-6 py-3 font-semibold transition-opacity hover:opacity-90"
-            >
-              Continue Shopping
-            </button>
-          </div>
+      <div className="flex min-h-[calc(100vh-56px)] w-screen items-center justify-center text-center">
+        <div className="">
+          <ShoppingBag className="mx-auto mb-4 size-16" />
+          <h2 className="text-deep mb-2 text-2xl font-bold">
+            Your cart is empty
+          </h2>
+          <p className="text-deep/70 mb-8">
+            Add some beautiful balloons to get started!
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/catalog")}
+            className="btn-accent rounded-lg px-6 py-3 font-semibold transition-opacity hover:opacity-90"
+          >
+            Continue Shopping
+          </button>
         </div>
       </div>
     );

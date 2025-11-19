@@ -1,16 +1,19 @@
 "use client";
 
+import { useQuery } from "convex-helpers/react/cache";
+import { Mail, MapPin, Phone, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import ImageKitPicture from "@/components/ui/ImageKitPicture";
+import { BALLOON_COLORS } from "@/constants/colors";
+import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { palette } from "./palette";
 
 type OrdersPanelProps = {
   orders?: Doc<"orders">[];
 };
-
-const MAX_DETAIL_HEIGHT = 512;
 
 export function OrdersPanel({ orders }: OrdersPanelProps) {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -22,7 +25,7 @@ export function OrdersPanel({ orders }: OrdersPanelProps) {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={`order-skeleton-${index}`}
-            className="h-32 animate-pulse rounded-3xl bg-[rgba(var(--primary-rgb),0.6)]"
+            className="h-32 animate-pulse rounded-3xl bg-[rgba(var(--primary-rgb),0.06)]"
           />
         ))}
       </div>
@@ -81,11 +84,11 @@ type OrderCardProps = {
 };
 
 function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
+  const loggedInUser = useQuery(api.auth.loggedInUser);
+
   return (
     <div
-      className={`grid gap-3 rounded-3xl border px-6 py-5 transition ${
-        palette.softBorder
-      } bg-[rgba(var(--primary-rgb),0.85)] hover:border-[rgba(var(--accent-rgb),0.6)]`}
+      className={`grid gap-3 rounded-3xl border px-6 py-5 transition ${palette.softBorder} bg-primary hover:border-[rgba(var(--accent-rgb),0.6)]`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -98,9 +101,10 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
             #{order._id.slice(-8)}
           </p>
         </div>
+
         <div className="flex items-center gap-2 text-xs tracking-[0.2rem] uppercase">
           <div className="bg-accent text-on-accent rounded-full px-4 py-1 font-semibold">
-            ${order.totalAmount.toFixed(2)}
+            €{order.totalAmount.toFixed(2)}
           </div>
           <button
             type="button"
@@ -114,48 +118,228 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
           </button>
         </div>
       </div>
+
       <div
-        className={`flex flex-wrap items-center justify-between gap-3 text-sm ${
-          palette.mutedText
-        }`}
+        className={`flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between ${palette.mutedText}`}
       >
-        <span>{new Date(order._creationTime).toLocaleDateString()}</span>
-        <span>{order.items.length} item(s)</span>
-        <span>{order.shippingAddress}</span>
-        <span className="text-secondary rounded-full bg-[rgba(var(--secondary-rgb),0.18)] px-3 py-1 text-xs font-semibold tracking-[0.2rem] uppercase">
-          {order.status}
-        </span>
+        <div className="flex items-center gap-3">
+          <span>{new Date(order._creationTime).toLocaleDateString()}</span>
+          <span>{order.items.length} item(s)</span>
+        </div>
+
+        <div className="shrink-0">
+          <span className="text-secondary rounded-full bg-[rgba(var(--secondary-rgb),0.18)] px-3 py-1 text-xs font-semibold tracking-[0.2rem] uppercase">
+            {order.status}
+          </span>
+        </div>
       </div>
+
       <div
         id={`order-items-${order._id}`}
         className="overflow-hidden transition-[max-height] duration-300 ease-out"
-        style={{
-          maxHeight: isExpanded ? MAX_DETAIL_HEIGHT : 0,
-        }}
+        style={{ maxHeight: isExpanded ? "100%" : 0 }}
       >
         <div
-          className={`mt-3 space-y-3 rounded-2xl border border-dashed px-4 py-3 transition-opacity duration-200 ${
-            isExpanded ? "opacity-100" : "opacity-0"
-          }`}
+          className={`mt-3 space-y-3 transition-opacity duration-200 ${isExpanded ? "opacity-100" : "opacity-0"}`}
         >
-          {order.items.map((item) => (
-            <div
-              key={`${item.productId}-${item.productName}-${item.quantity}`}
-              className="flex items-center justify-between gap-4"
-            >
-              <div>
-                <p className="text-deep text-sm font-semibold">
-                  {item.productName}
-                </p>
-                <p className="text-muted text-xs">Qty: {item.quantity}</p>
-              </div>
-              <span className="text-accent text-sm font-semibold">
-                ${(item.price * item.quantity).toFixed(2)}
-              </span>
+          {/* Contact card — visually separated and left-aligned */}
+          <div
+            className={`w-full rounded-lg border bg-[rgba(var(--surface-rgb),0.02)] px-4 py-3 ${palette.softBorder}`}
+          >
+            <div className="mb-2 text-xs tracking-wide text-[rgba(var(--deep-rgb),0.45)] uppercase">
+              Recipient
             </div>
-          ))}
+
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <User size={16} className="text-[rgba(var(--deep-rgb),0.85)]" />
+                <span className="text-deep">{order.customerName}</span>
+              </div>
+
+              <div
+                className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
+              >
+                <Mail size={14} className="text-[rgba(var(--deep-rgb),0.6)]" />
+                <span className="max-w-[48ch] truncate">
+                  {order.customerEmail}
+                </span>
+              </div>
+
+              <div
+                className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
+              >
+                <MapPin
+                  size={14}
+                  className="text-[rgba(var(--deep-rgb),0.6)]"
+                />
+                <span className="max-w-[48ch] truncate">
+                  {order.shippingAddress}
+                </span>
+              </div>
+
+              {loggedInUser?.phone && (
+                <div
+                  className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
+                >
+                  <Phone
+                    size={14}
+                    className="text-[rgba(var(--deep-rgb),0.6)]"
+                  />
+                  <span className="truncate">{loggedInUser.phone}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Items — each item gets its own subtle card for separation */}
+          <div className="space-y-2">
+            {order.items.map((item, index) => (
+              <div
+                key={`${item.productId}-${index}`}
+                className={`rounded-md bg-[rgba(var(--surface-rgb),0.02)] px-3 py-2 ${
+                  index !== order.items.length - 1
+                    ? "border-b border-[rgba(var(--deep-rgb),0.06)]"
+                    : ""
+                }`}
+              >
+                <OrderItemRow item={item} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+type OrderItem = Doc<"orders">["items"][number];
+
+function OrderItemRow({ item }: { item: OrderItem }) {
+  const product = useQuery(api.products.get, { id: item.productId });
+  const colorHex = (() => {
+    const colorName = item.personalization?.color;
+    if (!colorName) return undefined;
+    const found = BALLOON_COLORS.find(
+      (c) => c.name.toLowerCase() === colorName.toLowerCase(),
+    );
+    return found ? found.hex : undefined;
+  })();
+
+  const total = item.price * item.quantity;
+  const totalStr = total.toFixed(2);
+  const [intPart, cents] = totalStr.split(".");
+
+  return (
+    <div>
+      <div className="py-3 sm:py-4">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
+          <div className="flex w-full gap-3">
+            <div className="bg-secondary/10 relative aspect-square h-10 w-10 shrink-0 overflow-hidden rounded-md sm:h-12 sm:w-12">
+              {product?.primaryImageUrl ? (
+                <ImageKitPicture
+                  src={product.primaryImageUrl}
+                  alt={item.productName}
+                  width={48}
+                  height={48}
+                  className="aspect-square object-cover"
+                  sizes="48px"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  🎈
+                </div>
+              )}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-deep text-sm font-semibold">
+                {item.productName}
+              </p>
+
+              {item.personalization && (
+                <div className="mt-1 flex flex-col items-start gap-1 sm:mt-2 sm:gap-2">
+                  {item.personalization.color && (
+                    <div className="flex flex-col items-start gap-1">
+                      <span
+                        className={`${palette.mutedText} text-[10px] font-semibold`}
+                      >
+                        color:
+                      </span>
+                      <span className="text-deep inline-flex items-center gap-1 rounded-full bg-white/50 px-0 py-0.5 text-xs font-medium sm:gap-2">
+                        <span
+                          className="h-4 w-4 shrink-0 rounded-full shadow-sm"
+                          style={{
+                            backgroundColor:
+                              colorHex ?? item.personalization.color,
+                            border:
+                              item.personalization.color === "White"
+                                ? "1px solid #ddd"
+                                : undefined,
+                          }}
+                        />
+                        <span className="whitespace-nowrap">
+                          {item.personalization.color}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+
+                  {item.personalization.text && (
+                    <div className="flex flex-col items-start gap-1">
+                      <span
+                        className={`${palette.mutedText} text-[10px] font-semibold`}
+                      >
+                        text:
+                      </span>
+                      <span className="text-deep inline-flex items-center rounded-full bg-white/50 px-0 py-0.5 text-xs font-medium italic">
+                        <span className="whitespace-nowrap">
+                          "{item.personalization.text}"
+                        </span>
+                      </span>
+                    </div>
+                  )}
+
+                  {item.personalization.number && (
+                    <div className="flex flex-col items-start gap-1">
+                      <span
+                        className={`${palette.mutedText} text-[10px] font-semibold`}
+                      >
+                        number:
+                      </span>
+                      <span className="text-deep inline-flex items-center rounded-full bg-white/50 px-0 py-0.5 text-xs font-medium">
+                        <span className="whitespace-nowrap">
+                          {item.personalization.number}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-3 flex w-full items-center justify-between gap-3 sm:mt-0 sm:w-auto sm:justify-start">
+            <span className="flex items-baseline gap-1">
+              <span className="text-accent text-lg font-semibold sm:text-xl">
+                €{intPart}
+              </span>
+              {cents !== "00" && (
+                <span className={`${palette.mutedText} text-xs sm:text-sm`}>
+                  .{cents}
+                </span>
+              )}
+            </span>
+
+            <span
+              className={`bg-secondary/10 text-deep inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-semibold ${palette.softBorder} min-w-[3ch] text-center shadow-sm sm:w-[3ch]`}
+            >
+              ×{item.quantity}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* divider removed — items are separated by their own subtle cards */}
     </div>
   );
 }

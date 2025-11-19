@@ -11,6 +11,7 @@ import {
   User,
   UserCircle,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -24,7 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { mapGuestCartForImport, useGuestCart } from "@/lib/guestCart";
 import { api } from "../../convex/_generated/api";
-import ImageKitPicture from "../ui/ImageKitPicture";
 import IconButton from "../ui/icon-button";
 
 export function Header() {
@@ -84,103 +84,33 @@ export function Header() {
     router,
   ]);
 
-  const pathname = usePathname();
-
-  // Определяем текущую страницу для мобильного меню
-  const getCurrentPage = () => {
-    if (pathname === "/" || pathname === "") return "Home";
-    if (pathname.startsWith("/catalog")) return "Catalog";
-    if (pathname.startsWith("/cart")) return "Cart";
-    if (pathname.startsWith("/checkout")) return "Checkout";
-    if (pathname.startsWith("/profile")) return "Profile";
-    if (pathname.startsWith("/auth")) return "Auth";
-    return "Home";
-  };
-
   return (
-    <header className="bg-primary/95 group sticky top-0 z-50 grid w-full grid-cols-3 border-b py-2 backdrop-blur-sm">
-      <ImageKitPicture
-        src="/hero-baloons.gif"
+    <header className="bg-primary/95 group sticky top-0 z-50 flex w-full grid-cols-3 justify-between border-b py-2 backdrop-blur-sm">
+      <Image
+        src="/imgs/gif/header-hover.webp"
         alt="Premium Balloons Collection"
-        width={100}
-        height={58}
-        className="absolute inset-0 -z-10 h-full w-full object-cover opacity-0 blur transition group-hover:opacity-15"
-        priority
-        transformation={[{ width: 1920, quality: 60, format: "auto" }]}
-        placeholderOptions={{ width: 64, quality: 15, blur: 45 }}
+        width={1000}
+        height={56}
+        sizes="56px"
+        className="absolute inset-0 -z-10 hidden h-full w-full scale-105 object-cover opacity-0 blur contrast-150 transition-opacity duration-400 group-hover:opacity-8 sm:block"
       />
 
-      <nav className="flex items-center gap-4 justify-self-start px-4 sm:gap-6 sm:px-8">
-        {/* Мобильное меню - показывает текущую страницу и dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="text-deep flex items-center gap-1 text-sm font-medium tracking-wide uppercase transition-colors hover:opacity-80 sm:hidden"
-            >
-              {getCurrentPage()}
-              <svg
-                className="h-3.5 w-3.5 transition-transform"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <title>Toggle menu</title>
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            className="border-secondary/20 w-fit"
-          >
-            <DropdownMenuItem asChild>
-              <Link
-                href="/"
-                className="text-deep hover:bg-secondary/10 cursor-pointer"
-              >
-                Home
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link
-                href="/catalog"
-                className="text-deep hover:bg-secondary/10 cursor-pointer"
-              >
-                Catalog
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Desktop меню - всегда видны ссылки */}
+      <nav className="flex items-center gap-2 justify-self-start px-4 sm:px-8">
         <Link
           href="/"
-          className="text-deep hidden text-sm font-medium tracking-wide uppercase transition-colors hover:opacity-80 sm:block"
+          className="text-deep text-md flex items-center gap-3 text-center font-semibold tracking-tight sm:text-xl"
         >
-          Home
-        </Link>
-        <Link
-          href="/catalog"
-          className="text-deep hidden text-sm font-medium tracking-wide uppercase transition-colors hover:opacity-80 sm:block"
-        >
-          Catalog
-        </Link>
-      </nav>
-      <div className="flex items-center justify-center">
-        <Link
-          href="/"
-          className="text-deep text-md flex items-center text-center font-semibold tracking-tight sm:text-xl"
-        >
+          <Image
+            className="rounded"
+            src="/logo.png"
+            alt="Logo"
+            width={30}
+            height={30}
+          />
           Ballon Boutique
         </Link>
-      </div>
+      </nav>
+      <div className="flex items-center justify-center"></div>
 
       <div className="flex items-center gap-0.5 justify-self-end px-1 sm:gap-3 sm:px-3">
         {user?.isAdmin ? (
@@ -188,6 +118,7 @@ export function Header() {
             <IconButton Icon={ShieldCheck} ariaLabel="Admin" />
           </Link>
         ) : null}
+        ё
         <AuthAction />
         <Link href="/cart" className="relative">
           <IconButton Icon={ShoppingBag} ariaLabel="Open cart" />

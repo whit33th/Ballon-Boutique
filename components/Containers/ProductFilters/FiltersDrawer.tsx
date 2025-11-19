@@ -42,12 +42,12 @@ export function FiltersDrawer() {
     }
 
     const queryString = params.toString();
-    router.push(queryString ? `/catalog?${queryString}` : "/catalog");
+    router.replace(queryString ? `/catalog?${queryString}` : "/catalog");
   };
 
   const getParam = (key: string) => searchParams.get(key) || "";
 
-  const hasActiveFilters = () => {
+  const _hasActiveFilters = () => {
     return !!(
       getParam("search") ||
       getParam("available") ||
@@ -59,7 +59,7 @@ export function FiltersDrawer() {
   };
 
   const clearFilters = () => {
-    router.push("/catalog");
+    router.replace("/catalog");
   };
 
   const handlePriceRangeSelect = (min: number, max: number | undefined) => {
@@ -78,7 +78,7 @@ export function FiltersDrawer() {
     }
 
     const queryString = params.toString();
-    router.push(queryString ? `/catalog?${queryString}` : "/catalog");
+    router.replace(queryString ? `/catalog?${queryString}` : "/catalog");
   };
 
   const isRangeActive = (min: number, max: number | undefined) => {
@@ -116,15 +116,14 @@ export function FiltersDrawer() {
                 Availability
               </h3>
               <Button
-                variant={getParam("available") ? "secondary" : "ghost"}
                 size="sm"
                 onClick={() =>
                   updateParam("available", getParam("available") ? "" : "true")
                 }
-                className={`h-10 rounded-xl px-4 font-medium tracking-wide uppercase transition-[background-color,box-shadow] duration-200 ${
+                className={`text-deep rounded-xl border-2 px-4 py-4.5 font-medium tracking-wide transition-[background-color,box-shadow] duration-200 ${
                   getParam("available")
-                    ? "btn-secondary text-on-secondary shadow-md"
-                    : "text-deep hover:bg-secondary/10 border-secondary border bg-transparent"
+                    ? "border-secondary bg-secondary/10"
+                    : "border-border/30 hover:border-secondary/50 bg-white/50"
                 }`}
               >
                 In Stock
@@ -178,17 +177,16 @@ export function FiltersDrawer() {
                 {PRICE_RANGES.map((range) => (
                   <Button
                     key={range.label}
-                    variant={
-                      isRangeActive(range.min, range.max)
-                        ? "secondary"
-                        : "ghost"
-                    }
                     size="sm"
-                    onClick={() => handlePriceRangeSelect(range.min, range.max)}
-                    className={`h-10 rounded-xl px-4 font-medium tracking-wide transition-[background-color,box-shadow] duration-200 ${
+                    onClick={() =>
                       isRangeActive(range.min, range.max)
-                        ? "btn-secondary text-on-secondary shadow-md"
-                        : "text-deep hover:bg-secondary/10 border-secondary border bg-transparent"
+                        ? handlePriceRangeSelect(0, undefined)
+                        : handlePriceRangeSelect(range.min, range.max)
+                    }
+                    className={`text-deep rounded-xl border-2 px-4 py-4.5 font-medium tracking-wide transition-[background-color,box-shadow] duration-200 ${
+                      isRangeActive(range.min, range.max)
+                        ? "border-secondary bg-secondary/10"
+                        : "border-border/30 hover:border-secondary/50 bg-white/50"
                     }`}
                   >
                     {range.label}
@@ -200,15 +198,13 @@ export function FiltersDrawer() {
         </div>
 
         <DrawerFooter className="pt-4">
-          {hasActiveFilters() && (
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              className="border-secondary text-deep hover:bg-secondary/10 w-full rounded-xl bg-transparent tracking-wide uppercase transition-[background-color,box-shadow] duration-200 hover:shadow-sm"
-            >
-              Clear All Filters
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="border-secondary text-deep hover:bg-secondary/10 w-full rounded-xl bg-transparent tracking-wide uppercase transition-[background-color,box-shadow] duration-200 hover:shadow-sm"
+          >
+            Clear All Filters
+          </Button>
           <DrawerClose asChild>
             <Button className="btn-secondary text-on-secondary w-full rounded-xl transition-colors hover:brightness-95">
               Apply Filters

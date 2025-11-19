@@ -24,7 +24,6 @@ type AvatarPanelProps = {
 
 export function AvatarPanel({
   user,
-  formattedOrdersCount,
   isUploadingAvatar,
   avatarInputRef,
   onAvatarFileChange,
@@ -95,12 +94,7 @@ export function AvatarPanel({
           <p className={`text-sm ${palette.mutedText}`}>{user.email}</p>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="rounded-full bg-[rgba(var(--accent-rgb),0.12)] px-4 py-2 text-xs font-medium tracking-widest text-[rgba(var(--deep-rgb),0.7)] uppercase">
-          {formattedOrdersCount} orders placed
-        </div>
-        <SignOutButton />
-      </div>
+      <SignOutButton />
     </div>
   );
 }

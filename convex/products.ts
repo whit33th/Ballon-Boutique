@@ -94,11 +94,7 @@ const randomColors = (count: number) => {
   return shuffled.slice(0, count);
 };
 
-type CategoryGroupValue =
-  | "balloons"
-  | "toy-in-balloon"
-  | "balloon-bouquets"
-  | "mini-sets";
+type CategoryGroupValue = "balloons" | "balloon-bouquets" | "mini-sets";
 
 const CATEGORY_GROUP_MAP: Record<
   string,
@@ -116,14 +112,6 @@ const CATEGORY_GROUP_MAP: Record<
   "surprise box": { group: "balloons", category: "Surprise Box" },
   "for any event": { group: "balloons", category: "Any Event" },
   "any event": { group: "balloons", category: "Any Event" },
-  "toy in a balloon": {
-    group: "toy-in-balloon",
-    category: "Toy in a Balloon",
-  },
-  "surprise in a balloon": {
-    group: "toy-in-balloon",
-    category: "Toy in a Balloon",
-  },
   "balloon bouquets": {
     group: "balloon-bouquets",
     category: "Balloon Bouquets",
@@ -134,7 +122,6 @@ const CATEGORY_GROUP_MAP: Record<
 
 const GROUP_DEFAULT_CATEGORY: Record<CategoryGroupValue, string> = {
   balloons: "Any Event",
-  "toy-in-balloon": "Toy in a Balloon",
   "balloon-bouquets": "Balloon Bouquets",
   "mini-sets": "Mini Sets",
 };
@@ -169,7 +156,6 @@ const normalizeCategoryGroupInput = (
   const normalized = rawGroup.trim().toLowerCase();
   if (
     normalized === "balloons" ||
-    normalized === "toy-in-balloon" ||
     normalized === "balloon-bouquets" ||
     normalized === "mini-sets"
   ) {
@@ -356,14 +342,6 @@ const SAMPLE_PRODUCTS: Array<{
     inStock: true,
     isPersonalizable: { name: true, number: true },
     availableColors: randomColors(4),
-  },
-  {
-    name: "Iridescent Haze Balloon",
-    description: "Opalescent finish that changes with every angle.",
-    price: 9,
-    categoryGroup: "toy-in-balloon",
-    categories: ["Toy in a Balloon"],
-    inStock: true,
   },
   {
     name: "Frosted Pearl Balloon",

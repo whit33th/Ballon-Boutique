@@ -3,7 +3,11 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
-import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
+import {
+  buildCatalogLink,
+  buildCategoryPagePath,
+  PRODUCT_CATEGORY_GROUPS,
+} from "@/constants/categories";
 
 export function CategorySection() {
   return (
@@ -21,19 +25,14 @@ export function CategorySection() {
           <span>Category</span>
         </h2>
       </div>
-      <div className="border-foreground grid w-full grid-cols-2 gap-0 border-t border-l sm:grid-cols-4">
+      <div className="border-foreground grid w-full grid-cols-3 gap-0 border-t border-l">
         {PRODUCT_CATEGORY_GROUPS.map((group, index) => {
-          const directCategory =
-            group.subcategories.length === 0
-              ? group.categoryValue
-              : undefined;
-          const query: Record<string, string> = {
-            categoryGroup: group.value,
-          };
-          if (directCategory) {
-            query.category = directCategory;
-          }
-          const href = { pathname: "/catalog" as const, query };
+          const hasSubcategories = group.subcategories.length > 0;
+          const href = hasSubcategories
+            ? buildCategoryPagePath(group.value)
+            : group.categoryValue
+              ? buildCatalogLink(group.value, { category: group.categoryValue })
+              : buildCatalogLink(group.value);
 
           // Assign colors based on category - matching product card theme
           const balloonColors = [
@@ -50,7 +49,7 @@ export function CategorySection() {
           return (
             <Link
               key={group.value}
-              href={href}
+              href={typeof href === "string" ? { pathname: href } : href}
               className="focus-visible:ring-accent focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <div className="border-foreground flex h-full flex-col border-r border-b">
@@ -64,6 +63,8 @@ export function CategorySection() {
                     alt={group.label}
                     fill
                     className="object-cover"
+                    priority
+                    loading="eager"
                   />
                 </div>
 
@@ -86,4 +87,3 @@ export function CategorySection() {
     </motion.section>
   );
 }
-

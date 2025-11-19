@@ -242,7 +242,7 @@ export function ProductGrid({ filters }: ProductGridProps) {
 
   if (products.length === 0) {
     return (
-      <div className="flex min-h-[calc(100vh-350px-100px)] w-full flex-1 flex-col items-center justify-center py-16 text-center">
+      <div className="flex min-h-[calc(100vh-305px)] w-full flex-1 flex-col items-center justify-center py-16 text-center">
         <Image
           src="/imgs/cat.png"
           alt="No balloons found"

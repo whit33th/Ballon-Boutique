@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { STORE_INFO } from "@/constants/config";
+import { COURIER_DELIVERY_CITIES } from "@/constants/delivery";
 import { api } from "@/convex/_generated/api";
 import { useConvexAvatarStorage } from "@/hooks/useConvexAvatarStorage";
 import {
@@ -206,7 +207,7 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className={`relative overflow-hidden rounded-[42px] border px-8 py-10 shadow-[0_40px_90px_-50px_rgba(15,23,42,0.35)] ${palette.softBorder} ${palette.elevatedSurface}`}
+          className={`relative overflow-hidden rounded-3xl border px-8 py-10 shadow-[0_40px_90px_-50px_rgba(15,23,42,0.35)] ${palette.softBorder} ${palette.elevatedSurface}`}
           style={{
             background:
               "linear-gradient(135deg, rgba(var(--primary-rgb),0.97) 0%, rgba(var(--support-warm-rgb),0.35) 45%, rgba(var(--secondary-rgb),0.12) 100%)",
@@ -285,7 +286,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className={`grid gap-6 rounded-[36px] border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
+              className={`grid gap-6 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
               role="tabpanel"
               id={tabPanelId("profile")}
               aria-labelledby={tabButtonId("profile")}
@@ -376,16 +377,33 @@ export default function ProfilePage() {
                   </label>
                   <label className={fieldLabelClass}>
                     City
+                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                      {COURIER_DELIVERY_CITIES.map((city) => {
+                        const selected = formData.city === city.name;
+                        return (
+                          <button
+                            key={city.id}
+                            type="button"
+                            onClick={() =>
+                              setFormData({ ...formData, city: city.name })
+                            }
+                            className={`focus:outline-accent flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition ${
+                              selected
+                                ? "border-secondary bg-[rgba(var(--secondary-rgb),0.08)]"
+                                : `${palette.softBorder} hover:border-secondary/40`
+                            }`}
+                          >
+                            {city.name}
+                          </button>
+                        );
+                      })}
+                    </div>
                     <input
+                      className="sr-only"
                       value={formData.city}
                       onChange={(event) =>
-                        setFormData({
-                          ...formData,
-                          city: event.target.value,
-                        })
+                        setFormData({ ...formData, city: event.target.value })
                       }
-                      className={fieldInputClass}
-                      placeholder={STORE_INFO.address.city}
                     />
                   </label>
                   <label className={fieldLabelClass}>
@@ -470,7 +488,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className={`grid gap-5 rounded-[36px] border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
+              className={`grid gap-5 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
               role="tabpanel"
               id={tabPanelId("orders")}
               aria-labelledby={tabButtonId("orders")}
@@ -494,7 +512,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45 }}
-              className={`grid gap-6 rounded-[36px] border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
+              className={`grid gap-6 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
               role="tabpanel"
               id={tabPanelId("settings")}
               aria-labelledby={tabButtonId("settings")}
@@ -510,13 +528,6 @@ export default function ProfilePage() {
               </div>
 
               <PreferencesPanel />
-
-              <div
-                className={`rounded-3xl border px-5 py-4 text-sm ${palette.softBorder} ${palette.softSurface} ${palette.mutedText}`}
-              >
-                We respect your inbox. You can update preferences or unsubscribe
-                at any time.
-              </div>
             </motion.div>
           ) : null}
         </section>

@@ -1,5 +1,6 @@
 "use node";
 
+import crypto from "node:crypto";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type Stripe from "stripe";
@@ -54,6 +55,13 @@ const summarizeItems = (
     .map((item) => `${item.quantity}x ${item.productName}`)
     .slice(0, 15)
     .join(", ");
+
+const sanitizeForStripe = (value: string) => {
+  // Stripe limits metadata values to 500 characters. Convert very long
+  // values to a short sha256 fingerprint so we never exceed that limit.
+  if (value.length <= 480) return value;
+  return `sha256:${crypto.createHash("sha256").update(value).digest("hex")}`;
+};
 
 const derivePaymentStatus = (
   stripeStatus: Stripe.PaymentIntent.Status,
@@ -143,13 +151,20 @@ export const submitPayment = action({
       amountMinor: draft.amountMinor.toString(),
     };
 
+    // Never send very long values to Stripe metadata. For the cart
+    // signature we store a short sha256 fingerprint instead of the full
+    // JSON payload which can exceed Stripe's 500 char limit.
     if (args.cartSignature) {
-      metadata.cartSignature = args.cartSignature;
+      const sigHash = `sha256:${crypto
+        .createHash("sha256")
+        .update(args.cartSignature)
+        .digest("hex")}`;
+      metadata.cartSignatureHash = sigHash;
     }
 
     if (args.metadata) {
       for (const [key, value] of Object.entries(args.metadata)) {
-        metadata[key] = value;
+        metadata[key] = sanitizeForStripe(value);
       }
     }
 

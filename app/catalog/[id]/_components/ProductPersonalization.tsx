@@ -141,7 +141,7 @@ export const ProductPersonalization = forwardRef<
             min="0"
             max="99"
             required
-            className={`text-deep h-11 w-full rounded-xl border-2 bg-white px-4 text-sm font-semibold transition-all outline-none focus:ring-2 ${
+            className={`text-deep h-11 w-full rounded-xl border-2 bg-white px-4 font-semibold transition-all outline-none focus:ring-2 ${
               !number.trim()
                 ? "border-accent/40 bg-accent/5 focus:border-accent/85 focus:ring-accent/10"
                 : "focus:border-accent focus:ring-accent/30 border-black/20"
@@ -171,7 +171,7 @@ export const ProductPersonalization = forwardRef<
             onChange={(e) => handleTextChange(e.target.value)}
             placeholder="Happy Birthday Anna..."
             maxLength={50}
-            className="text-deep focus:border-accent focus:ring-accent/30 h-11 w-full rounded-xl border-2 border-black/20 bg-white px-4 text-sm font-semibold transition-colors outline-none focus:ring-2"
+            className="text-deep focus:border-accent focus:ring-accent/30 h-11 w-full rounded-xl border-2 border-black/20 bg-white px-4 font-semibold transition-colors outline-none focus:ring-2"
           />
           {text.length > 0 && (
             <p className="text-deep/50 mt-1 text-xs">{text.length}/50</p>

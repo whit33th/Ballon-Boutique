@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const client = getImageKitServerClient();
-    await client.files.deleteFile(fileId);
+    await client.files.delete(fileId);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("ImageKit delete error", error);

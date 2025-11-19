@@ -1,8 +1,4 @@
-export type CategoryGroupValue =
-  | "balloons"
-  | "toy-in-balloon"
-  | "balloon-bouquets"
-  | "mini-sets";
+export type CategoryGroupValue = "balloons" | "balloon-bouquets" | "mini-sets";
 
 export interface CategoryDescriptor {
   label: string;
@@ -63,13 +59,6 @@ export const PRODUCT_CATEGORY_GROUPS: readonly CategoryGroup[] = [
     subcategories: BALLOON_SUBCATEGORIES,
   },
   {
-    value: "toy-in-balloon",
-    label: "Toy in a Balloon",
-    icon: "/imgs/categories/balloon-in-toys.jpg",
-    categoryValue: "Toy in a Balloon",
-    subcategories: [],
-  },
-  {
     value: "balloon-bouquets",
     label: "Bouquets",
     icon: "/imgs/categories/balloon-bouquets.jpg",
@@ -87,7 +76,6 @@ export const PRODUCT_CATEGORY_GROUPS: readonly CategoryGroup[] = [
 
 export const PRODUCT_CATEGORIES = [
   ...BALLOON_SUBCATEGORIES.map((subcategory) => subcategory.value),
-  "Toy in a Balloon",
   "Balloon Bouquets",
   "Mini Sets",
 ] as const;
@@ -117,3 +105,35 @@ export const PRIMARY_CATEGORY_CARDS = PRODUCT_CATEGORY_GROUPS.map(
     description,
   }),
 );
+
+export const CATEGORY_GROUP_SLUGS = {
+  balloons: "balloons",
+  "balloon-bouquets": "balloon-bouquets",
+  "mini-sets": "mini-sets",
+} as const satisfies Record<CategoryGroupValue, string>;
+
+export type CategorySlug = (typeof CATEGORY_GROUP_SLUGS)[CategoryGroupValue];
+
+export const SLUG_TO_CATEGORY_GROUP: Record<string, CategoryGroupValue> =
+  Object.entries(CATEGORY_GROUP_SLUGS).reduce(
+    (acc, [group, slug]) => {
+      acc[slug] = group as CategoryGroupValue;
+      acc[group] = group as CategoryGroupValue;
+      return acc;
+    },
+    {} as Record<string, CategoryGroupValue>,
+  );
+
+export const buildCategoryPagePath = (group: CategoryGroupValue) =>
+  `/${CATEGORY_GROUP_SLUGS[group]}`;
+
+export const buildCatalogLink = (
+  group: CategoryGroupValue,
+  params?: Record<string, string>,
+) => {
+  const query: Record<string, string> = {
+    categoryGroup: group,
+    ...(params ?? {}),
+  };
+  return { pathname: "/catalog", query } as const;
+};

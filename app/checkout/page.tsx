@@ -1,6 +1,25 @@
 "use client";
 
 import {
+  getWhatsAppLink,
+  STORE_INFO,
+  WHATSAPP_MESSAGES,
+} from "@/constants/config";
+import {
+  COURIER_DELIVERY_CITIES,
+  type CourierDeliveryCity,
+} from "@/constants/delivery";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import type { ProductWithImage } from "@/convex/helpers/products";
+import {
+  type AddressFields,
+  composeAddress,
+  createEmptyAddressFields,
+  parseAddress,
+} from "@/lib/address";
+import { type GuestCartItem, useGuestCart } from "@/lib/guestCart";
+import {
   CardElement,
   Elements,
   PaymentRequestButtonElement,
@@ -29,25 +48,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-  getWhatsAppLink,
-  STORE_INFO,
-  WHATSAPP_MESSAGES,
-} from "@/constants/config";
-import {
-  COURIER_DELIVERY_CITIES,
-  type CourierDeliveryCity,
-} from "@/constants/delivery";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import type { ProductWithImage } from "@/convex/helpers/products";
-import {
-  type AddressFields,
-  composeAddress,
-  createEmptyAddressFields,
-  parseAddress,
-} from "@/lib/address";
-import { type GuestCartItem, useGuestCart } from "@/lib/guestCart";
 
 const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 if (!publishableKey) {
@@ -104,6 +104,127 @@ const getMinPickupDateTime = (): string => {
   // Format to datetime-local format: YYYY-MM-DDTHH:mm
   return date.toISOString().slice(0, 16);
 };
+
+/**
+ * Helper: turn Stripe/Convex/server errors into user-friendly English messages
+ */
+
+// biome-ignore lint/suspicious/noExplicitAny: <no type for now>
+function mapStripeErrorToMessage(err: any): string {
+  if (!err) {
+    return "Payment couldn’t be completed. Try another card or method.";
+  }
+  // Normalize into a raw string for fallback cleaning
+  let raw =
+    typeof err === "string" ? err : (err?.message ?? JSON.stringify(err ?? ""));
+  raw = String(raw || "");
+
+  // Strip common Convex/transport prefixes and bracketed metadata that may appear
+  // e.g. "[CONVEX A(stripe:submitPayment)] [Request ID: ...] Server Error Uncaught Error: ..."
+  raw = raw.replace(/\[[^\]]+\]\s*/g, "");
+  raw = raw.replace(/\bServer Error\b[:\s]*/i, "");
+  raw = raw.replace(/\bUncaught Error:?\s*/i, "");
+  raw = raw.replace(/^Uncaught:\s*/i, "");
+  // Remove Convex/handler suffix like "Called by client" that can be prepended/appended
+  raw = raw.replace(/\bCalled by client\b[:\s-]*/gi, "");
+  // Remove accidental duplicate phrases and collapse whitespace
+  raw = raw.replace(/\bCalled by client\b/gi, "");
+  raw = raw.replace(/\s{2,}/g, " ").trim();
+
+  // Try to extract structured codes from common shapes returned by Stripe / Convex
+  let code: string | null = null;
+
+  // If err is an object, check common properties first
+  if (typeof err === "object" && err !== null) {
+    code = (err.decline_code ||
+      err.declineCode ||
+      err.code ||
+      err.type ||
+      err.stripeCode ||
+      err.error?.code ||
+      err.error?.decline_code) as string | null;
+    // Convex sometimes wraps details inside an `info` / `details` / `payload` property
+    if (!code) {
+      const maybe =
+        err.info || err.details || err.payload || err.lastError || err.error;
+      if (maybe && typeof maybe === "object") {
+        code = (maybe.decline_code ||
+          maybe.code ||
+          maybe.type ||
+          maybe.stripeCode) as string | null;
+      }
+    }
+  }
+
+  // If not found, try to parse a JSON blob from the message
+  if (!code) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        code =
+          parsed.decline_code ||
+          parsed.code ||
+          parsed.type ||
+          parsed.stripeCode ||
+          parsed.error?.code ||
+          parsed.error?.decline_code ||
+          null;
+      }
+    } catch (_) {
+      // not JSON — ignore
+    }
+  }
+
+  // Try regex fallback on the raw text for known decline codes
+  if (!code) {
+    const found = raw.match(
+      /\b(generic_decline|insufficient_funds|lost_card|stolen_card|expired_card|incorrect_cvc|processing_error|incorrect_number|card_velocity_exceeded|card_declined)\b/i,
+    );
+    code = found ? found[0] : null;
+  }
+
+  switch (String(code ?? "").toLowerCase()) {
+    case "insufficient_funds":
+      return "Your card has insufficient funds. Try another card or contact your bank.";
+    case "lost_card":
+      return "This card has been reported lost. Use a different card.";
+    case "stolen_card":
+      return "This card was reported stolen. Use a different card.";
+    case "generic_decline":
+    case "card_declined":
+      return "The card was declined by the issuer. Try another card or contact the bank.";
+    case "expired_card":
+      return "This card has expired. Use a different card.";
+    case "incorrect_cvc":
+      return "Incorrect CVC. Please check the three-digit code on the back of the card.";
+    case "processing_error":
+      return "There was a processing error. Please try again or use a different card.";
+    case "incorrect_number":
+      return "The card number appears incorrect. Please check and try again.";
+    case "card_velocity_exceeded":
+      return "Too many attempts with this card. Try again later or use another payment method.";
+    default: {
+      // fallback: show cleaned message without internal stack / convex codes
+      // remove verbose prefixes like "Error: " or "Convex..." and strip stack traces
+      let cleaned = raw
+        .replace(/^error:\s*/i, "")
+        .replace(/convex[:#\s]*[\w-]*/i, "")
+        // remove common stack/trace sections or object dumps
+        .replace(/\{.*"stack".*\}/i, "")
+        .replace(/at\s+[\w./<>:-]+\s*\(.+\)/gi, "")
+        .replace(/\n\s*at\s.+/gi, "")
+        .trim();
+
+      // If cleaned contains a quoted message field, extract it
+      const quoted = cleaned.match(/"message"\s*[:=]\s*"([^"]+)"/i);
+      if (quoted?.[1]) cleaned = quoted[1];
+
+      // final safety: do not expose huge raw payloads
+      if (cleaned.length > 0 && cleaned.length < 400) return cleaned;
+      return "Payment couldn’t be completed. Try another card or method.";
+    }
+  }
+}
 
 type DeliveryType = "pickup" | "delivery";
 type PaymentMethod = "full_online" | "cash";
@@ -227,8 +348,8 @@ function OnlinePaymentFormFields({
     } catch (error) {
       setErrorMessage(
         error instanceof Error
-          ? error.message
-          : "We couldn’t process the payment right now.",
+          ? mapStripeErrorToMessage(error.message)
+          : mapStripeErrorToMessage(error),
       );
     } finally {
       setIsPaying(false);
@@ -270,8 +391,8 @@ function OnlinePaymentFormFields({
         event.complete("fail");
         setErrorMessage(
           error instanceof Error
-            ? error.message
-            : "Express payment failed. Please try another method.",
+            ? mapStripeErrorToMessage(error.message)
+            : mapStripeErrorToMessage(error),
         );
       } finally {
         setIsPaying(false);
@@ -672,6 +793,18 @@ export default function CheckoutPage() {
         deliveryNotes: prev.deliveryNotes || parsedAddress.deliveryNotes,
       } satisfies CheckoutFormData;
     });
+    // If the parsed city matches one of our courier delivery areas, preselect it
+    try {
+      const parsed = parseAddress(user.address);
+      const matched = COURIER_DELIVERY_CITIES.find(
+        (c) =>
+          c.name.toLowerCase() === parsed.city.toLowerCase() ||
+          c.id.toLowerCase() === parsed.city.toLowerCase(),
+      );
+      setSelectedCourierCityId(matched ? matched.id : null);
+    } catch {
+      // ignore parse errors — don't block checkout
+    }
   }, [user]);
 
   const deliveryCost =
@@ -831,10 +964,12 @@ export default function CheckoutPage() {
     }
 
     if (paymentLookup.status === "failed" && paymentLookup.lastError) {
-      setPaymentError(paymentLookup.lastError);
+      const friendly = mapStripeErrorToMessage(paymentLookup.lastError);
+      setPaymentError(friendly);
       setIsAwaitingOrder(false);
       setPendingPaymentIntentId(null);
-      toast.error(paymentLookup.lastError);
+      toast.error(friendly);
+      // Do not redirect — keep user on the payment form and show the friendly message
       return;
     }
 
@@ -845,7 +980,7 @@ export default function CheckoutPage() {
         clearGuestCart();
       }
       toast.success("Payment confirmed! Redirecting to your receipt.");
-      router.push(`/order-confirmation/${paymentLookup.orderId}`);
+      router.replace(`/checkout/confirmant/${paymentLookup.orderId}`);
     }
   }, [
     paymentLookup,
@@ -907,12 +1042,12 @@ export default function CheckoutPage() {
       }
 
       toast.success("Order placed! Confirmation is on the way to your email.");
-      router.push(`/order-confirmation/${orderId}`);
+      router.replace(`/checkout/confirmant/${orderId}`);
     } catch (error) {
       toast.error(
         error instanceof Error
-          ? error.message
-          : "We couldn’t place the order. Please try again.",
+          ? mapStripeErrorToMessage(error.message)
+          : mapStripeErrorToMessage(error),
       );
     } finally {
       setIsCashSubmitting(false);
@@ -967,9 +1102,9 @@ export default function CheckoutPage() {
         }
 
         if (syncResult.status === "failed") {
+          // sanitize server error before throwing so UI never shows raw Convex payload
           throw new Error(
-            syncResult.lastError ??
-              "The bank declined this payment attempt. Try another card.",
+            mapStripeErrorToMessage(syncResult.lastError ?? null),
           );
         }
 
@@ -1039,16 +1174,15 @@ export default function CheckoutPage() {
           return;
         }
 
-        throw new Error(
-          response.lastError ??
-            "Payment couldn’t be completed. Try another card or method.",
-        );
+        // Map server lastError to friendly message
+        throw new Error(mapStripeErrorToMessage(response.lastError ?? null));
       } catch (error) {
         const message =
           error instanceof Error
-            ? error.message
-            : "We couldn’t submit the payment. Please try again.";
+            ? mapStripeErrorToMessage(error.message)
+            : mapStripeErrorToMessage(error);
         setPaymentError(message);
+        // rethrow so parent flows can catch if they want
         throw new Error(message);
       } finally {
         setIsSubmittingPayment(false);
@@ -1583,7 +1717,7 @@ function StepTwo({
             </button>
             {whatsappConfirmed && (
               <p className="text-secondary text-sm font-medium">
-                ✅ Message sent. We will confirm and prep the balloons once we
+                Message sent. We will confirm and prep the balloons once we
                 reply.
               </p>
             )}

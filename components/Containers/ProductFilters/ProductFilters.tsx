@@ -6,10 +6,6 @@ import {
   CATEGORY_TO_GROUP,
   PRODUCT_CATEGORY_GROUPS,
 } from "@/constants/categories";
-import {
-  CategoryGroupCard,
-  MobileSubcategoryCarousel,
-} from "./CategoryFilters";
 import { FiltersDrawer } from "./FiltersDrawer";
 import { SearchInput } from "./SearchInput";
 import { SortByButton } from "./SortByButton";
@@ -58,7 +54,7 @@ export function ProductFilters() {
     ? (CATEGORY_TO_GROUP[normalizedCategory] ?? null)
     : null;
   const activeGroup = normalizedGroup ?? derivedGroup ?? null;
-  const activeCategory = normalizedCategory ?? "";
+  const _activeCategory = normalizedCategory ?? "";
   const selectedGroup = useMemo(() => {
     if (activeGroup) {
       return (
@@ -70,11 +66,11 @@ export function ProductFilters() {
     return PRODUCT_CATEGORY_GROUPS[0] ?? null;
   }, [activeGroup]);
 
-  const shouldShowMobileCarousel = Boolean(
+  const _shouldShowMobileCarousel = Boolean(
     selectedGroup && selectedGroup.subcategories.length > 0,
   );
 
-  const handleNavigate = useCallback(
+  const _handleNavigate = useCallback(
     (params: URLSearchParams) => {
       const queryString = params.toString();
       router.push(queryString ? `/catalog?${queryString}` : "/catalog");
@@ -82,98 +78,98 @@ export function ProductFilters() {
     [router],
   );
 
-  const handleGroupSelect = useCallback(
-    (groupValue: CategoryGroupValue) => {
-      const params = new URLSearchParams(searchParams.toString());
+  // const _handleGroupSelect = useCallback(
+  //   (groupValue: CategoryGroupValue) => {
+  //     const params = new URLSearchParams(searchParams.toString());
 
-      // Если кликаем на ту же группу и нет выбранной подкатегории (или выбрана, но мы хотим очистить)
-      if (activeGroup === groupValue && !activeCategory) {
-        params.delete("categoryGroup");
-        params.delete("category");
-        params.delete("search");
-        handleNavigate(params);
-        return;
-      }
+  //     // Если кликаем на ту же группу и нет выбранной подкатегории (или выбрана, но мы хотим очистить)
+  //     if (activeGroup === groupValue && !activeCategory) {
+  //       params.delete("categoryGroup");
+  //       params.delete("category");
+  //       params.delete("search");
+  //       handleNavigate(params);
+  //       return;
+  //     }
 
-      // Если кликаем на ту же группу, но есть выбранная подкатегория - очищаем и категорию
-      if (activeGroup === groupValue && activeCategory) {
-        params.delete("categoryGroup");
-        params.delete("category");
-        params.delete("search");
-        handleNavigate(params);
-        return;
-      }
+  //     // Если кликаем на ту же группу, но есть выбранная подкатегория - очищаем и категорию
+  //     if (activeGroup === groupValue && activeCategory) {
+  //       params.delete("categoryGroup");
+  //       params.delete("category");
+  //       params.delete("search");
+  //       handleNavigate(params);
+  //       return;
+  //     }
 
-      params.set("categoryGroup", groupValue);
+  //     params.set("categoryGroup", groupValue);
 
-      const group = PRODUCT_CATEGORY_GROUPS.find(
-        (candidate) => candidate.value === groupValue,
-      );
+  //     const group = PRODUCT_CATEGORY_GROUPS.find(
+  //       (candidate) => candidate.value === groupValue,
+  //     );
 
-      if (group && group.subcategories.length === 0 && group.categoryValue) {
-        params.set("category", group.categoryValue);
-      } else {
-        params.delete("category");
-      }
+  //     if (group && group.subcategories.length === 0 && group.categoryValue) {
+  //       params.set("category", group.categoryValue);
+  //     } else {
+  //       params.delete("category");
+  //     }
 
-      handleNavigate(params);
-    },
-    [activeGroup, activeCategory, handleNavigate, searchParams],
-  );
+  //     handleNavigate(params);
+  //   },
+  //   [activeGroup, activeCategory, handleNavigate, searchParams],
+  // );
 
-  const handleShowAllInGroup = useCallback(
-    (groupValue?: CategoryGroupValue) => {
-      const targetGroup = groupValue ?? activeGroup;
-      if (!targetGroup) {
-        return;
-      }
-      const params = new URLSearchParams(searchParams.toString());
+  // const _handleShowAllInGroup = useCallback(
+  //   (groupValue?: CategoryGroupValue) => {
+  //     const targetGroup = groupValue ?? activeGroup;
+  //     if (!targetGroup) {
+  //       return;
+  //     }
+  //     const params = new URLSearchParams(searchParams.toString());
 
-      // Если это та же группа и нет категории - убираем группу полностью
-      if (activeGroup === targetGroup && !activeCategory) {
-        params.delete("categoryGroup");
-        params.delete("category");
-        params.delete("search");
-      } else {
-        // Иначе показываем все в группе (удаляем категорию и поиск)
-        params.delete("category");
-        params.delete("search");
-        params.set("categoryGroup", targetGroup);
-      }
+  //     // Если это та же группа и нет категории - убираем группу полностью
+  //     if (activeGroup === targetGroup && !activeCategory) {
+  //       params.delete("categoryGroup");
+  //       params.delete("category");
+  //       params.delete("search");
+  //     } else {
+  //       // Иначе показываем все в группе (удаляем категорию и поиск)
+  //       params.delete("category");
+  //       params.delete("search");
+  //       params.set("categoryGroup", targetGroup);
+  //     }
 
-      handleNavigate(params);
-    },
-    [activeGroup, activeCategory, handleNavigate, searchParams],
-  );
+  //     handleNavigate(params);
+  //   },
+  //   [activeGroup, activeCategory, handleNavigate, searchParams],
+  // );
 
-  const handleSubcategorySelect = useCallback(
-    (subcategoryValue: string, groupValue?: CategoryGroupValue) => {
-      const targetGroup = groupValue ?? activeGroup;
-      if (!targetGroup) {
-        return;
-      }
-      const params = new URLSearchParams(searchParams.toString());
-      const isSameGroup = targetGroup === activeGroup;
+  // const _handleSubcategorySelect = useCallback(
+  //   (subcategoryValue: string, groupValue?: CategoryGroupValue) => {
+  //     const targetGroup = groupValue ?? activeGroup;
+  //     if (!targetGroup) {
+  //       return;
+  //     }
+  //     const params = new URLSearchParams(searchParams.toString());
+  //     const isSameGroup = targetGroup === activeGroup;
 
-      // Если кликаем на ту же подкатегорию - очищаем её
-      if (isSameGroup && activeCategory === subcategoryValue) {
-        params.delete("category");
-        params.delete("categoryGroup");
-        params.delete("search");
-      } else {
-        // Если выбираем другую подкатегорию
-        params.set("category", subcategoryValue);
-        params.set("categoryGroup", targetGroup);
-      }
+  //     // Если кликаем на ту же подкатегорию - очищаем её
+  //     if (isSameGroup && activeCategory === subcategoryValue) {
+  //       params.delete("category");
+  //       params.delete("categoryGroup");
+  //       params.delete("search");
+  //     } else {
+  //       // Если выбираем другую подкатегорию
+  //       params.set("category", subcategoryValue);
+  //       params.set("categoryGroup", targetGroup);
+  //     }
 
-      handleNavigate(params);
-    },
-    [activeCategory, activeGroup, handleNavigate, searchParams],
-  );
+  //     handleNavigate(params);
+  //   },
+  //   [activeCategory, activeGroup, handleNavigate, searchParams],
+  // );
 
   return (
-    <div className="relative flex flex-col gap-3 rounded-3xl bg-[rgba(var(--primary-rgb),0.45)] px-4 py-4 shadow-[0_12px_40px_rgba(var(--deep-rgb),0.04)] sm:gap-4 sm:px-7 sm:py-6">
-      <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:grid-cols-4">
+    <div className="relative flex flex-col gap-3 rounded-3xl px-4 py-4 shadow-[0_12px_40px_rgba(var(--deep-rgb),0.04)] sm:gap-4 sm:px-7 sm:py-6">
+      {/* <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:grid-cols-4">
         {PRODUCT_CATEGORY_GROUPS.map((group) => {
           const isActiveGroup = activeGroup === group.value;
 
@@ -190,9 +186,9 @@ export function ProductFilters() {
             />
           );
         })}
-      </div>
+      </div> */}
 
-      {shouldShowMobileCarousel && selectedGroup ? (
+      {/* {shouldShowMobileCarousel && selectedGroup ? (
         <MobileSubcategoryCarousel
           group={selectedGroup}
           activeCategory={activeCategory}
@@ -200,7 +196,7 @@ export function ProductFilters() {
           onShowAll={handleShowAllInGroup}
           onSubcategorySelect={handleSubcategorySelect}
         />
-      ) : null}
+      ) : null} */}
 
       <div className="block sm:hidden">
         <SearchInput />
