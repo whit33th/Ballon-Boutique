@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { DM_Sans } from "next/font/google";
 import { Toaster } from "sonner";
 import { Footer, Header } from "@/components/Containers";
@@ -44,6 +46,8 @@ export default async function RootLayout({
             </AppImageKitProvider>
           </ConvexProvider>
         </ConvexAuthNextjsServerProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
