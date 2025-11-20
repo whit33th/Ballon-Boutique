@@ -372,12 +372,12 @@ export default function ProfilePage() {
                         })
                       }
                       className={fieldInputClass}
-                      placeholder="Sandgasse 3"
+                      placeholder="Mariahilfer Str. 10"
                     />
                   </label>
                   <label className={fieldLabelClass}>
                     City
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                    <div className="mt-2 flex flex-wrap gap-2.5">
                       {COURIER_DELIVERY_CITIES.map((city) => {
                         const selected = formData.city === city.name;
                         return (
@@ -387,10 +387,10 @@ export default function ProfilePage() {
                             onClick={() =>
                               setFormData({ ...formData, city: city.name })
                             }
-                            className={`focus:outline-accent flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition ${
+                            className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${
                               selected
-                                ? "border-secondary bg-[rgba(var(--secondary-rgb),0.08)]"
-                                : `${palette.softBorder} hover:border-secondary/40`
+                                ? "border-accent bg-[rgba(var(--accent-rgb),0.08)]"
+                                : `${palette.softBorder} hover:border-accent/40`
                             }`}
                           >
                             {city.name}

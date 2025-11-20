@@ -48,7 +48,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           {...props}
           className={cn(
-            "flex-1 border-none bg-transparent text-sm text-slate-900 outline-none focus:outline-none",
+            "flex-1 border-none bg-transparent text-slate-900 outline-none focus:outline-none",
             isInvalid && "placeholder:text-destructive/70 text-destructive",
             className,
           )}

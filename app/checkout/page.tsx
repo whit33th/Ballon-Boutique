@@ -471,8 +471,7 @@ function OnlinePaymentFormFields({
       <div className="bg-primary/5 flex items-start gap-3 rounded-2xl p-3 text-sm text-gray-700">
         <ShieldCheck className="text-secondary h-5 w-5" />
         <p>
-          Pay with Apple/Google Pay or the secure card form below. Stripe
-          encrypts every method and keeps it PCI compliant.
+          Your payment details are protected with industry-standard encryption.
         </p>
       </div>
       {errorMessage && (
@@ -536,7 +535,7 @@ function OptionCard({
         <p className="flex h-full items-center gap-2 text-sm font-semibold text-gray-900">
           {title}
           {badge && (
-            <span className="bg-secondary/15 text-secondary rounded-full px-2 py-0.5 text-xs font-medium">
+            <span className="bg-secondary/15 text-secondary rounded-full px-2 py-0.5 text-center text-xs font-medium">
               {badge}
             </span>
           )}
@@ -942,12 +941,23 @@ export default function CheckoutPage() {
   };
 
   const handleWhatsAppConfirm = () => {
-    const message = WHATSAPP_MESSAGES.orderConfirmation(
+    const itemsList = (itemsToDisplay ?? []).map((item) => {
+      const name = isServerCartItem(item)
+        ? item.product.name
+        : item.product.name;
+      const quantity = item.quantity;
+      const personalization = item.personalization ?? null;
+      return { name, quantity, personalization };
+    });
+
+    const message = WHATSAPP_MESSAGES.orderConfirmationDe(
       formData.customerName,
       formData.customerEmail,
       normalizedShippingAddress,
       deliveryType,
       pickupDateTime,
+      itemsList,
+      Math.round(total * 100) / 100,
     );
     const whatsappLink = getWhatsAppLink(message);
     window.open(whatsappLink, "_blank");
@@ -1388,7 +1398,7 @@ function StepOne({
                   customerName: event.target.value,
                 }))
               }
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
               placeholder="e.g., Anna Mayer"
               autoComplete="name"
             />
@@ -1407,7 +1417,7 @@ function StepOne({
                   customerEmail: event.target.value,
                 }))
               }
-              className={`rounded-xl border px-4 py-3 text-sm transition outline-none ${
+              className={`rounded-xl border px-4 py-3 transition outline-none ${
                 emailHasError
                   ? "border-red-500"
                   : "focus:border-secondary border-gray-200"
@@ -1434,7 +1444,7 @@ function StepOne({
                   phone: event.target.value,
                 }))
               }
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
               placeholder="Include country code"
               autoComplete="tel"
             />
@@ -1474,7 +1484,7 @@ function StepOne({
               value={pickupDateTime}
               onChange={(event) => setPickupDateTime(event.target.value)}
               min={getMinPickupDateTime()}
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
             />
           </label>
         )}
@@ -1529,7 +1539,7 @@ function StepOne({
                     streetAddress: event.target.value,
                   }))
                 }
-                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
                 placeholder="Mariahilfer Str. 10"
                 autoComplete="address-line1"
               />
@@ -1548,7 +1558,7 @@ function StepOne({
                     postalCode: event.target.value,
                   }))
                 }
-                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
+                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
                 placeholder="1070"
                 autoComplete="postal-code"
               />
@@ -1640,7 +1650,7 @@ function StepTwo({
           <OptionCard
             icon={<CreditCard className="text-secondary h-5 w-5" />}
             title="Instant online payment"
-            description="Stripe Elements + Apple Pay or Google Pay"
+            description="Via credit/debit card or link"
             selected={paymentMethod === "full_online"}
             onSelect={() => setPaymentMethod("full_online")}
           />
@@ -1697,9 +1707,9 @@ function StepTwo({
               type="button"
               onClick={handleWhatsAppConfirm}
               disabled={!isFormValid}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#111B21] px-4 py-3 text-[#FCF5EB] shadow-md transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#111B21] px-4 py-2 text-[#FCF5EB] shadow-md transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#25D366]">
+              <span className="flex size-10 items-center justify-center rounded-lg bg-[#25D366]">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"

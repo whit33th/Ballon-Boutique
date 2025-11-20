@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { useState } from "react";
 import {
   type FieldErrors,
   type UseFormReturn,
@@ -7,6 +8,14 @@ import {
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -104,6 +113,7 @@ export function ProductForm({
   onClearImages,
   onCollapse,
 }: ProductFormProps) {
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const categoryGroup = useWatch({
     control: form.control,
     name: "categoryGroup",
@@ -541,23 +551,50 @@ export function ProductForm({
             )}
           >
             {isEditing && onDelete ? (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={() => {
-                  if (
-                    !window.confirm(
-                      "Удалить этот товар? Это действие нельзя отменить.",
-                    )
-                  ) {
-                    return;
-                  }
-                  void onDelete();
-                }}
-                disabled={isDeleting}
-              >
-                {isDeleting ? "Удаляем..." : "Удалить товар"}
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => setIsDeleteOpen(true)}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Удаляем..." : "Удалить товар"}
+                </Button>
+
+                <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Удалить товар?</DialogTitle>
+                      <DialogDescription>
+                        Это действие нельзя отменить. Все данные товара будут
+                        удалены. Вы уверены, что хотите продолжить?
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setIsDeleteOpen(false)}
+                      >
+                        Отмена
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={async () => {
+                          try {
+                            await onDelete();
+                          } finally {
+                            setIsDeleteOpen(false);
+                          }
+                        }}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? "Удаляем..." : "Подтвердить удаление"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </>
             ) : null}
 
             <div className="flex items-center gap-3">

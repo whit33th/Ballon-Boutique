@@ -92,7 +92,7 @@ export function Header() {
         width={1000}
         height={56}
         sizes="56px"
-        className="absolute inset-0 -z-10 hidden h-full w-full scale-105 object-cover opacity-0 blur contrast-150 transition-opacity duration-400 group-hover:opacity-8 sm:block"
+        className="absolute inset-0 -z-10 hidden h-full w-full object-cover opacity-0 blur contrast-150 transition-opacity duration-400 group-hover:opacity-8 sm:block"
       />
 
       <nav className="flex items-center gap-2 justify-self-start px-4 sm:px-8">

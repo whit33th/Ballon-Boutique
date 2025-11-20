@@ -10,5 +10,5 @@ export const palette = {
 } as const;
 
 export const fieldLabelClass = `flex flex-col gap-2 text-sm ${palette.mutedText}`;
-export const fieldInputClass = `h-12 rounded-2xl border px-4 text-sm font-medium text-deep transition outline-none focus:border-[var(--accent)] bg-white/95 ${palette.softBorder}`;
-export const fieldTextareaClass = `rounded-2xl border px-4 py-3 text-sm font-medium text-deep transition outline-none focus:border-[var(--accent)] bg-white/95 ${palette.softBorder}`;
+export const fieldInputClass = `h-12 rounded-2xl border px-4 font-medium text-deep transition outline-none focus:border-[var(--accent)] bg-white/95 ${palette.softBorder}`;
+export const fieldTextareaClass = `rounded-2xl border px-4 py-3 font-medium text-deep transition outline-none focus:border-[var(--accent)] bg-white/95 ${palette.softBorder}`;

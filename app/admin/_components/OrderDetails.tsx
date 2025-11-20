@@ -190,6 +190,7 @@ export function OrderDetails({ order }: Props) {
               {order.customerEmail}
             </span>
           </div>
+          {/* biome-ignore lint/suspicious/noExplicitAny: <no type for now> */}
           {(order as any).phone && (
             <div>
               <span className="text-xs font-semibold text-slate-500">

@@ -109,10 +109,42 @@ export const WHATSAPP_MESSAGES = {
     shippingAddress: string,
     deliveryType: string,
     pickupDateTime?: string,
+    items?: Array<{
+      name: string;
+      quantity: number;
+      personalization?: {
+        text?: string;
+        color?: string;
+        number?: string;
+      } | null;
+    }> | null,
+    total?: number,
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Самовывоз" : "Доставка";
     const dateTime = pickupDateTime || "не указано";
-    return `Добрый день! Я хочу подтвердить заказ.\n\nИмя: ${customerName}\nEmail: ${customerEmail}\nАдрес: ${shippingAddress}\nСпособ доставки: ${deliveryText}\nДата и время: ${dateTime}`;
+
+    let itemsText = "";
+    if (items?.length) {
+      itemsText =
+        "\n\nТовары:\n" +
+        items
+          .map((it) => {
+            const parts = [`- ${it.name} x${it.quantity}`];
+            if (it.personalization) {
+              const p = it.personalization;
+              if (p.color) parts.push(`цвет: ${p.color}`);
+              if (p.text) parts.push(`текст: "${p.text}"`);
+              if (p.number) parts.push(`номер: ${p.number}`);
+            }
+            return parts.join(", ");
+          })
+          .join("\n");
+    }
+
+    const totalText =
+      typeof total === "number" ? `\n\nИтого: ${total} EUR` : "";
+
+    return `Добрый день! Я хочу подтвердить заказ.\n\nИмя: ${customerName}\nEmail: ${customerEmail}\nАдрес: ${shippingAddress}\nСпособ доставки: ${deliveryText}\nДата и время: ${dateTime}${itemsText}${totalText}`;
   },
 
   orderConfirmationDe: (
@@ -121,10 +153,42 @@ export const WHATSAPP_MESSAGES = {
     shippingAddress: string,
     deliveryType: string,
     pickupDateTime?: string,
+    items?: Array<{
+      name: string;
+      quantity: number;
+      personalization?: {
+        text?: string;
+        color?: string;
+        number?: string;
+      } | null;
+    }> | null,
+    total?: number,
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Abholung" : "Lieferung";
     const dateTime = pickupDateTime || "nicht angegeben";
-    return `Guten Tag! Ich möchte meine Bestellung bestätigen.\n\nName: ${customerName}\nEmail: ${customerEmail}\nAdresse: ${shippingAddress}\nLieferart: ${deliveryText}\nDatum und Uhrzeit: ${dateTime}`;
+
+    let itemsText = "";
+    if (items?.length) {
+      itemsText =
+        "\n\nProdukte:\n" +
+        items
+          .map((it) => {
+            const parts = [`- ${it.name} x${it.quantity}`];
+            if (it.personalization) {
+              const p = it.personalization;
+              if (p.color) parts.push(`Farbe: ${p.color}`);
+              if (p.text) parts.push(`Text: "${p.text}"`);
+              if (p.number) parts.push(`Nummer: ${p.number}`);
+            }
+            return parts.join(", ");
+          })
+          .join("\n");
+    }
+
+    const totalText =
+      typeof total === "number" ? `\n\nGesamt: ${total} EUR` : "";
+
+    return `Guten Tag! Ich möchte meine Bestellung bestätigen.\n\nName: ${customerName}\nEmail: ${customerEmail}\nAdresse: ${shippingAddress}\nLieferart: ${deliveryText}\nDatum und Uhrzeit: ${dateTime}${itemsText}${totalText}`;
   },
 };
 

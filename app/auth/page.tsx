@@ -113,7 +113,7 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="btn-accent mt-4 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60 sm:text-base"
+            className="btn-accent mt-4 inline-flex items-center justify-center rounded-lg px-4 py-2 font-semibold transition-opacity hover:opacity-90 disabled:opacity-60 sm:text-base"
           >
             {submitting
               ? "Working..."
