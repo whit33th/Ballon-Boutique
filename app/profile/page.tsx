@@ -207,13 +207,12 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className={`relative overflow-hidden rounded-3xl border px-8 py-10 shadow-[0_40px_90px_-50px_rgba(15,23,42,0.35)] ${palette.softBorder} ${palette.elevatedSurface}`}
+          className={`relative overflow-hidden rounded-3xl border px-8 py-10 drop-shadow-xl ${palette.softBorder} ${palette.elevatedSurface}`}
           style={{
             background:
               "linear-gradient(135deg, rgba(var(--primary-rgb),0.97) 0%, rgba(var(--support-warm-rgb),0.35) 45%, rgba(var(--secondary-rgb),0.12) 100%)",
           }}
         >
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,rgba(var(--accent-rgb),0.35),transparent_65%)]" />
           <AvatarPanel
             user={user}
             formattedOrdersCount={formattedOrders.length}

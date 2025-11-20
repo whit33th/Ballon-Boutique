@@ -65,7 +65,9 @@ export default function CategoryCards({ group }: CategoryCardsProps) {
             href={href}
             className="focus-visible:ring-accent focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
-            <div className="border-foreground flex h-full flex-col border-r border-b">
+            <div
+              className={`border-foreground flex h-full flex-col border-r border-b`}
+            >
               <div
                 className="relative aspect-square w-full"
                 style={{ backgroundColor: "#f6f7fb" }}

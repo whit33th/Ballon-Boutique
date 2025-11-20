@@ -6,7 +6,7 @@
  * Format: country code + phone number without + or spaces
  * Example: "436641234567" for Austrian number +43 664 1234567
  */
-export const WHATSAPP_NUMBER = "48572296004";
+export const WHATSAPP_NUMBER = "4369020084085";
 
 /**
  * Store Information
@@ -25,14 +25,14 @@ export const STORE_INFO = {
   },
 
   contact: {
-    email: "service@ballonboutique.at",
-    phone: "+43 660 713 90 12",
-    phoneDisplay: "+43 660 713 90 12",
+    email: "ballonboutique.at@gmail.com",
+    phone: "+43 690 200 84085",
+    phoneDisplay: "+43 690 200 84085",
   },
 
   legal: {
-    companyName: "Ballon Boutique e.U.",
-    owner: "Ekaterina Petrova",
+    companyName: "Ballon Boutique .",
+    owner: "Alexandra Sidak",
     registrationNumber: "FN 582931 z",
     vatNumber: "ATU78965432",
     competentAuthority: "Bezirkshauptmannschaft Murtal",
@@ -75,9 +75,9 @@ export const PAYMENT_CONFIG = {
   methods: {
     fullOnline: {
       enabled: true,
-      label: "Полная онлайн-оплата / Full Online Payment",
-      labelRu: "Полная онлайн-оплата",
-      labelDe: "Vollständige Online-Zahlung",
+      label: "Online Payment",
+      labelRu: "Онлайн-оплата",
+      labelDe: "Online-Zahlung",
       description:
         "Оплатите заказ полностью онлайн — набор будет забронирован сразу после оплаты",
     },
@@ -85,7 +85,7 @@ export const PAYMENT_CONFIG = {
       enabled: true,
       requiresWhatsapp: true,
       onlyForPickup: true,
-      label: "Оплата наличными / Cash Payment",
+      label: "Cash Payment",
       labelRu: "Оплата наличными",
       labelDe: "Barzahlung",
       description:

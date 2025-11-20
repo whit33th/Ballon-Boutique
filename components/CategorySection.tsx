@@ -25,7 +25,7 @@ export function CategorySection() {
           <span>Category</span>
         </h2>
       </div>
-      <div className="border-foreground grid w-full grid-cols-3 gap-0 border-t border-l">
+      <div className="border-foreground grid w-full grid-cols-3 gap-0 border-t">
         {PRODUCT_CATEGORY_GROUPS.map((group, index) => {
           const hasSubcategories = group.subcategories.length > 0;
           const href = hasSubcategories
