@@ -14,7 +14,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { BALLOON_COLORS } from "@/constants/colors";
+import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 
 const PRICE_RANGES = [
   { label: "Up to €5", min: 0, max: 5 },
@@ -155,7 +155,7 @@ export function FiltersDrawer() {
                     <div
                       className="h-6 w-6 shrink-0 rounded-full shadow-sm"
                       style={{
-                        backgroundColor: color.hex,
+                        ...getColorStyle(color.name, color.hex),
                         border:
                           color.name === "White" ? "1px solid #ddd" : "none",
                       }}

@@ -24,6 +24,23 @@ export const BALLOON_COLORS = [
   { name: "Champagne", hex: "#F7E7CE", label: "Champagne" },
   { name: "Burgundy", hex: "#800020", label: "Burgundy" },
   { name: "Emerald", hex: "#50C878", label: "Emerald" },
+  { name: "Mix", hex: "#CCCCCC", label: "Mix" },
 ] as const;
 
 export type BalloonColor = (typeof BALLOON_COLORS)[number]["name"];
+
+export const isMixColor = (name?: string | null) =>
+  !!name && name.toLowerCase() === "mix";
+
+export function getColorStyle(name?: string | null, hex?: string | null) {
+  if (isMixColor(name)) {
+    return {
+      background:
+        "radial-gradient(circle at 20% 18%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 22%), radial-gradient(circle at 72% 72%, rgba(255,235,205,0.40) 0%, rgba(255,235,205,0) 40%), linear-gradient(135deg, #FF7FA6 0%, #70B8FF 50%, #67E0B0 100%)",
+    } as React.CSSProperties;
+  }
+
+  return {
+    backgroundColor: hex ?? undefined,
+  } as React.CSSProperties;
+}

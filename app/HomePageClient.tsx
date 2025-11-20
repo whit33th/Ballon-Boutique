@@ -23,13 +23,7 @@ export function HomePageClient({
 
   return (
     <main className="flex min-h-screen flex-col">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Hero />
-      </motion.div>
+      <Hero />
 
       <div className="flex flex-col gap-6">
         <CategorySection />

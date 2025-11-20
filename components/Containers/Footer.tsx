@@ -73,12 +73,12 @@ const sections: FooterSection[] = [
     links: [
       {
         label: "Instagram",
-        href: "https://www.instagram.com/ballonboutique.at?igsh=YWFhZjl4c2U1a29q",
+        href: STORE_INFO.social.instagram,
         external: true,
       },
       {
         label: "Facebook",
-        href: "https://www.facebook.com/share/1JrBrLkJ1M/",
+        href: STORE_INFO.social.facebook,
         external: true,
       },
     ],
@@ -134,7 +134,7 @@ export const Footer = () => {
               </div> */}
 
               <a
-                href="https://www.instagram.com/ballonboutique.at"
+                href={STORE_INFO.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center transition-opacity hover:opacity-80"
@@ -143,20 +143,20 @@ export const Footer = () => {
                 <Instagram className="size-5" />
               </a>
               <a
-                href="https://www.facebook.com/share/1JrBrLkJ1M/"
+                href={STORE_INFO.social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center transition-opacity hover:opacity-80"
-                aria-label="Instagram profile"
+                aria-label="Facebook profile"
               >
                 <Facebook className="size-5" />
               </a>
               <a
-                href="mailto:ballonboutique.at@gmail.com"
+                href={`mailto:${STORE_INFO.contact.email}`}
                 className="flex items-center transition-opacity hover:opacity-80"
                 aria-label="Email"
               >
-                @ballonboutique.at
+                {STORE_INFO.contact.email}
               </a>
             </div>
           </div>

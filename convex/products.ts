@@ -90,6 +90,7 @@ const BALLOON_COLORS = [
   "Turquoise",
   "Champagne",
   "Burgundy",
+  "Mix",
   "Emerald",
 ];
 

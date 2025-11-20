@@ -5,13 +5,14 @@ import {
   PRODUCT_CATEGORY_GROUPS,
   SLUG_TO_CATEGORY_GROUP,
 } from "@/constants/categories";
+export const dynamicParams = false;
+export const dynamic = "force-static";
 
 const STATIC_SLUGS = Object.values(CATEGORY_GROUP_SLUGS) as Array<
   (typeof CATEGORY_GROUP_SLUGS)[keyof typeof CATEGORY_GROUP_SLUGS]
 >;
-
 export function generateStaticParams() {
-  return STATIC_SLUGS.map((category) => ({ category }));
+  return STATIC_SLUGS.map((category) => ({ category: category }));
 }
 
 export default async function CategoryLandingPage({

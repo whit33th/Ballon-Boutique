@@ -61,7 +61,6 @@ export function ProductCarousel({
   }, [api]);
 
   // Check state
-  const _currentSlide = api?.selectedScrollSnap();
   return (
     <section className="flex flex-col overflow-hidden">
       {/* Header */}
@@ -79,7 +78,7 @@ export function ProductCarousel({
           href="/catalog"
           className="flex items-center gap-2 text-sm transition-[gap] duration-200 hover:gap-3"
         >
-          More products
+          All products
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
@@ -116,12 +115,12 @@ export function ProductCarousel({
             <CarouselPrevious
               disabled={disabled}
               aria-label="Scroll products backward"
-              className="left-0 z-50 h-12 w-12 -translate-x-2/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:left-6 lg:h-9 lg:w-9 lg:translate-x-0"
+              className="left-0 z-50 h-12 w-12 -translate-x-2/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:left-6 lg:h-9 lg:w-9 lg:translate-x-0"
             />
             <CarouselNext
               disabled={disabled}
               aria-label="Scroll products forward"
-              className="right-0 z-50 h-12 w-12 translate-x-2/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:right-6 lg:h-9 lg:w-9 lg:translate-x-0"
+              className="right-0 z-50 h-12 w-12 translate-x-2/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-0 lg:right-6 lg:h-9 lg:w-9 lg:translate-x-0"
             />
           </div>
         </Carousel>

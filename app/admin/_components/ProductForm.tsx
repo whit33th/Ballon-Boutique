@@ -35,7 +35,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { CategoryGroupValue } from "@/constants/categories";
 import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
-import { BALLOON_COLORS } from "@/constants/colors";
+import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "./ImageUpload";
 import type { PendingImage, UploadProgressState } from "./types";
@@ -483,7 +483,7 @@ export function ProductForm({
                             <span
                               className="h-3 w-3 rounded-full"
                               style={{
-                                backgroundColor: color.hex,
+                                ...getColorStyle(color.name, color.hex),
                               }}
                             />
                             {color.label}

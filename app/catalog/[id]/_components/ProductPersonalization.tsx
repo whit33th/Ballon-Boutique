@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, type RefObject, useState } from "react";
-import { BALLOON_COLORS } from "@/constants/colors";
+import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 
 interface PersonalizationOptions {
   text?: string;
@@ -104,7 +104,7 @@ export const ProductPersonalization = forwardRef<
                 <div
                   className="h-12 w-12 shrink-0 rounded-full shadow-md"
                   style={{
-                    backgroundColor: color.hex,
+                    ...getColorStyle(color.name, color.hex),
                     border: color.name === "White" ? "1px solid #ddd" : "none",
                   }}
                 />
@@ -143,7 +143,7 @@ export const ProductPersonalization = forwardRef<
             required
             className={`text-deep h-11 w-full rounded-xl border-2 bg-white px-4 font-semibold transition-all outline-none focus:ring-2 ${
               !number.trim()
-                ? "border-accent/40 bg-accent/5 focus:border-accent/85 focus:ring-accent/10"
+                ? "bg-accent/5 focus:border-accent/85 focus:ring-accent/10 border-black/20"
                 : "focus:border-accent focus:ring-accent/30 border-black/20"
             }`}
           />

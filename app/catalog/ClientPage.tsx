@@ -62,17 +62,16 @@ export default function CatalogPage() {
   };
 
   const normalizedGroup = normalizeGroup(filters.categoryGroup);
-  const group =
-    PRODUCT_CATEGORY_GROUPS.find(
-      (candidate) => candidate.value === normalizedGroup,
-    ) ?? PRODUCT_CATEGORY_GROUPS[0];
+  const group = PRODUCT_CATEGORY_GROUPS.find(
+    (candidate) => candidate.value === normalizedGroup,
+  );
 
   const categoryParam = filters.category;
   const normalizedCategory = categoryParam
     ? categoryParam.toLowerCase().trim()
     : "";
   const subcategory =
-    group.subcategories.find(
+    group?.subcategories.find(
       (s) => s.value.toLowerCase() === normalizedCategory,
     ) ?? null;
 
@@ -84,12 +83,12 @@ export default function CatalogPage() {
             <div className="text-deep/50 flex flex-wrap items-center gap-3 text-xs font-semibold tracking-[0.35em] uppercase">
               <span>Catalog</span>
             </div>
-            <div className="">
+            <div>
               <div className="flex flex-wrap items-center gap-4 sm:flex-nowrap">
                 <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-                  {group.label}
+                  {group ? group.label : "All Products"}
                 </h1>
-                {subcategory ? (
+                {group && subcategory ? (
                   <span className="inline-flex items-center gap-3 self-center">
                     <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-1 shadow-sm ring-1 ring-slate-100">
                       <span className="h-2 w-2 rounded-full bg-slate-500" />
@@ -102,8 +101,9 @@ export default function CatalogPage() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* {group.icon ? (
+        {/* {group.icon ? (
             <div className="relative z-10 hidden aspect-square w-24 flex-none justify-self-end overflow-hidden rounded-2xl border border-white/60 bg-linear-to-br from-white to-slate-50 shadow-inner sm:block sm:w-36">
               <Image
                 src={group.icon}
@@ -115,7 +115,6 @@ export default function CatalogPage() {
               />
             </div>
           ) : null} */}
-        </div>
       </div>
       <ProductFilters />
       <ProductGrid filters={filters} />

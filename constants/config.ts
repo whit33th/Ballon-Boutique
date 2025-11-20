@@ -30,6 +30,11 @@ export const STORE_INFO = {
     phoneDisplay: "+43 690 200 84085",
   },
 
+  social: {
+    instagram: "https://www.instagram.com/ballonboutique.at",
+    facebook: "https://www.facebook.com/share/1JrBrLkJ1M/",
+  },
+
   legal: {
     companyName: "Ballon Boutique .",
     owner: "Alexandra Sidak",

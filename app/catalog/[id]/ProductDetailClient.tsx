@@ -3,6 +3,7 @@
 import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { motion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -171,7 +172,12 @@ export default function ProductDetailClient({ preloaded }: Props) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="mb-4 text-6xl">❌</div>
+            <Image
+              src="/imgs/cat.png"
+              alt="Product Not Found"
+              width={150}
+              height={150}
+            />
             <h2 className="mb-2 text-3xl font-semibold text-black">
               Product not found
             </h2>
@@ -179,10 +185,10 @@ export default function ProductDetailClient({ preloaded }: Props) {
               The product you're looking for doesn't exist.
             </p>
             <Link
-              href="/catalog"
+              href="/"
               className="inline-flex h-12 items-center justify-center rounded-full bg-black px-8 text-sm font-semibold tracking-wide text-white uppercase transition hover:bg-black/90"
             >
-              Back to Catalog
+              Back to home
             </Link>
           </motion.div>
         </div>

@@ -32,7 +32,6 @@ const BOUQUET_CATEGORY_VALUES = [
   "For Kids Girls",
   "For Her",
   "For Him",
-
   "Any Event",
 ] as const;
 
@@ -68,7 +67,7 @@ export const PRODUCT_CATEGORY_GROUPS: readonly CategoryGroup[] = [
   {
     value: "mini-sets",
     label: "Mini Sets",
-    icon: "/imgs/categories/mini-sets.jpg",
+    icon: "/imgs/categories/mini-sets-new.jpg",
     categoryValue: "Mini Sets",
     subcategories: [],
   },

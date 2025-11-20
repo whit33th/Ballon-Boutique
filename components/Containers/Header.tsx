@@ -1,28 +1,13 @@
 "use client";
 
-import { useAuthActions } from "@convex-dev/auth/react";
 import { Authenticated, Unauthenticated, useMutation } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
-
-import {
-  LogOut,
-  ShieldCheck,
-  ShoppingBag,
-  User,
-  UserCircle,
-} from "lucide-react";
+import { ShieldCheck, ShoppingBag, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { UserNav } from "@/components/ui/user-nav";
 import { mapGuestCartForImport, useGuestCart } from "@/lib/guestCart";
 import { api } from "../../convex/_generated/api";
 import IconButton from "../ui/icon-button";
@@ -87,6 +72,7 @@ export function Header() {
   return (
     <header className="bg-primary/95 group sticky top-0 z-50 flex w-full grid-cols-3 justify-between border-b py-2 backdrop-blur-sm">
       <Image
+        unoptimized
         src="/imgs/gif/header-hover.webp"
         alt="Premium Balloons Collection"
         width={1000}
@@ -133,46 +119,13 @@ export function Header() {
 }
 
 function AuthAction() {
-  const { signOut } = useAuthActions();
   const user = useQuery(api.auth.loggedInUser);
 
   return (
     <>
       <Authenticated>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              aria-label="Account menu"
-              className="text-deep flex h-10 w-10 items-center justify-center rounded-full bg-transparent outline-black/5 backdrop-blur-xs transition-colors hover:bg-black/10 hover:opacity-80 hover:outline"
-            >
-              <User className="h-5 w-5 text-current" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>
-              {user?.name || user?.email || "My Account"}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link
-                href="/profile"
-                className="flex cursor-pointer items-center gap-2"
-              >
-                <UserCircle className="h-4 w-4" />
-                Profile
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => void signOut()}
-              className="text-terracotta flex cursor-pointer items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Use the shared `UserNav` component for the account menu (pass full user so imageFileId is available) */}
+        <UserNav user={user ?? undefined} />
       </Authenticated>
       <Unauthenticated>
         <Link

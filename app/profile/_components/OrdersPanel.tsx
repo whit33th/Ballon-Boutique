@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import ImageKitPicture from "@/components/ui/ImageKitPicture";
-import { BALLOON_COLORS } from "@/constants/colors";
+import { BALLOON_COLORS, getColorStyle, } from "@/constants/colors";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { palette } from "./palette";
@@ -269,8 +269,10 @@ function OrderItemRow({ item }: { item: OrderItem }) {
                         <span
                           className="h-4 w-4 shrink-0 rounded-full shadow-sm"
                           style={{
-                            backgroundColor:
-                              colorHex ?? item.personalization.color,
+                            ...getColorStyle(
+                              item.personalization.color,
+                              colorHex,
+                            ),
                             border:
                               item.personalization.color === "White"
                                 ? "1px solid #ddd"

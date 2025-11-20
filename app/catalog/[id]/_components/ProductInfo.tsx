@@ -92,7 +92,7 @@ export const ProductInfo = memo(function ProductInfo({
           whileTap={{ scale: 0.97 }}
           onClick={handleAddToCart}
           disabled={!inStock}
-          className="btn-accent text-on-accent mt-2 inline-flex h-14 items-center justify-center rounded-xl text-sm font-bold tracking-widest uppercase shadow-lg transition-[box-shadow,filter,opacity] duration-200 hover:shadow-xl hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:shadow-lg"
+          className="focus-visible:border-ring focus-visible:ring-ring/50 bg-accent text-on-accent inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-6 text-sm font-medium whitespace-nowrap transition-[background-color,color,border-color,opacity,filter,transform] duration-200 outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-red-600 aria-invalid:ring-red-600/20 dark:aria-invalid:ring-red-600/40 pointer-coarse:active:scale-[0.99] pointer-coarse:active:brightness-95 pointer-fine:hover:brightness-95 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
         >
           {!inStock ? "Sold out" : "Add to cart"}
         </motion.button>

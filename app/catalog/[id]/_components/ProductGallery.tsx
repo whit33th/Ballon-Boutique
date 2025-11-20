@@ -141,7 +141,7 @@ export const ProductGallery = memo(function ProductGallery({
                 priority={slide.index === 0}
                 loading={slide.index === 0 ? "eager" : "lazy"}
                 className="z-50 aspect-3/4 h-full w-full object-contain drop-shadow"
-                sizes="(min-width: 640px) 800px, 100vw"
+                sizes="(min-width: 1024px) 50vw, 100vw"
                 transformation={PRODUCT_DETAIL_IMAGE_TRANSFORMATION}
                 placeholderOptions={{ width: 48, quality: 12, blur: 45 }}
               />

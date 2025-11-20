@@ -14,7 +14,7 @@ import {
   CheckoutResultShell,
   CheckoutResultSkeleton,
 } from "@/app/checkout/_components/CheckoutResultShell";
-import { BALLOON_COLORS } from "@/constants/colors";
+import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { getFormattedAddress, STORE_INFO } from "@/constants/config";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -175,8 +175,10 @@ export default function CheckoutConfirmantPage() {
                           <span
                             className="h-3 w-3 shrink-0 rounded-full border"
                             style={{
-                              backgroundColor:
-                                colorHex ?? item.personalization.color,
+                              ...getColorStyle(
+                                item.personalization.color,
+                                colorHex,
+                              ),
                               borderColor:
                                 item.personalization.color === "White"
                                   ? "#ddd"

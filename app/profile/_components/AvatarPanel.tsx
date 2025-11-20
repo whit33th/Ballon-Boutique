@@ -50,7 +50,7 @@ export function AvatarPanel({
                 alt={`Avatar of ${user.name ?? "customer"}`}
                 fill
                 sizes="112px"
-                className="rounded-full object-cover invert group-hover:animate-[spin_3s_linear_infinite]"
+                className="animate-[spin_3s_linear_infinite] rounded-full object-cover invert"
                 priority
               />
             </div>

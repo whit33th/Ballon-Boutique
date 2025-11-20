@@ -15,26 +15,16 @@ interface CategoryCardsProps {
 // No longer rendering ProductCard directly so these types are unused.
 
 export default function CategoryCards({ group }: CategoryCardsProps) {
-  const fallbackImages = [
-    "/baloons2.png",
-    "/baloons3.png",
-    "/imgs/cat.png",
-    "/baloons4.png",
-  ];
-
-  // Provide specific images for well-known subcategories for better clarity.
-  // Keys are normalized (lowercase) subcategory values.
   const SUBCATEGORY_IMAGES: Record<string, string> = {
-    "for kids boys": "/imgs/baloonsGif/1.jpg",
-    "for kids girls": "/imgs/baloonsGif/2.jpg",
-    "for her": "/imgs/categories/balloons.jpg",
-    "for him": "/imgs/categories/balloon-in-toys.jpg",
-    love: "/imgs/categories/mini-sets.jpg",
-    mom: "/imgs/baloonsGif/3.jpg",
-    anniversary: "/imgs/baloonsGif/4.jpg",
-    "baby birth": "/imgs/cat.png",
-    "surprise box": "/imgs/baloonsGif/3.jpg",
-    "any event": "/imgs/categories/balloon-bouquets.jpg",
+    "for kids boys": "/imgs/subcategories/balloons/kids-for-him.jpg",
+    "for kids girls": "/imgs/subcategories/balloons/kids-for-her.jpg",
+    "for her": "/imgs/subcategories/balloons/for-her.jpg",
+    "for him": "/imgs/subcategories/balloons/for-him.jpg",
+    love: "/imgs/subcategories/balloons/love.jpg",
+    mom: "/imgs/subcategories/balloons/mom.jpg",
+    anniversary: "/imgs/subcategories/balloons/anniversary.jpg",
+    "baby birth": "/imgs/subcategories/balloons/baby-birth.jpg",
+    "surprise box": "/imgs/subcategories/balloons/surprise-box.jpg",
   };
 
   return (
@@ -44,13 +34,10 @@ export default function CategoryCards({ group }: CategoryCardsProps) {
       transition={{ duration: 0.5, ease: "easeInOut" }}
       className="border-foreground grid w-full grid-cols-2 border-t sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] 2xl:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
     >
-      {group.subcategories.map((subcategory, index) => {
+      {group.subcategories.map((subcategory) => {
         const normalized = subcategory.value.toLowerCase();
         const imgFromMap = SUBCATEGORY_IMAGES[normalized];
-        const img =
-          imgFromMap ??
-          (group.icon as string | undefined) ??
-          fallbackImages[index % fallbackImages.length];
+
         const href = {
           pathname: "/catalog",
           query: {
@@ -73,10 +60,11 @@ export default function CategoryCards({ group }: CategoryCardsProps) {
                 style={{ backgroundColor: "#f6f7fb" }}
               >
                 <Image
-                  src={img}
+                  src={imgFromMap}
                   alt={subcategory.label}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1280px) 260px, 300px"
                 />
               </div>
 
