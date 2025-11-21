@@ -31,36 +31,43 @@ export const addressSchema = z.object({
     .transform((val) => val || ""),
 });
 
-// Optional address schema for profile (all fields optional, but validated if provided)
+// Optional address schema for profile (all fields optional, but validated)
 export const optionalAddressSchema = z
   .object({
     streetAddress: z
       .string()
       .refine(
-        (val) => !val || val.trim().length === 0 || (val.trim().length >= 3 && val.trim().length <= 200),
+        (val) =>
+          !val ||
+          val.trim().length === 0 ||
+          (val.trim().length >= 3 && val.trim().length <= 200),
         {
-          message: "Street and house number must be 3-200 characters if provided.",
-        }
+          message: "Street and house number must be 3-200 characters.",
+        },
       )
       .optional()
       .or(z.literal("")),
     city: z
       .string()
       .refine(
-        (val) => !val || val.trim().length === 0 || (val.trim().length >= 2 && val.trim().length <= 100),
+        (val) =>
+          !val ||
+          val.trim().length === 0 ||
+          (val.trim().length >= 2 && val.trim().length <= 100),
         {
-          message: "City must be 2-100 characters if provided.",
-        }
+          message: "City must be 2-100 characters.",
+        },
       )
       .optional()
       .or(z.literal("")),
     postalCode: z
       .string()
       .refine(
-        (val) => !val || val.trim().length === 0 || /^\d{3,10}$/.test(val.trim()),
+        (val) =>
+          !val || val.trim().length === 0 || /^\d{3,10}$/.test(val.trim()),
         {
-          message: "Postal code must be 3-10 digits if provided.",
-        }
+          message: "Postal code must be 3-10 digits.",
+        },
       )
       .optional()
       .or(z.literal("")),
@@ -69,8 +76,8 @@ export const optionalAddressSchema = z
       .refine(
         (val) => !val || val.trim().length === 0 || val.trim().length <= 500,
         {
-          message: "Delivery notes must be under 500 characters if provided.",
-        }
+          message: "Delivery notes must be under 500 characters.",
+        },
       )
       .optional()
       .or(z.literal("")),

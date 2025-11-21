@@ -1,12 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
+import {
+  type Preloaded,
+  useMutation,
+  usePreloadedQuery,
+} from "convex/react";
 import { motion } from "motion/react";
-import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { type Resolver, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -17,26 +20,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import Input from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { STORE_INFO } from "@/constants/config";
 import { COURIER_DELIVERY_CITIES } from "@/constants/delivery";
 import { api } from "@/convex/_generated/api";
 import { useConvexAvatarStorage } from "@/hooks/useConvexAvatarStorage";
 import {
-  type AddressFields,
   createEmptyAddressFields,
-  optionalAddressSchema,
-  parseAddress,
 } from "@/lib/address";
 import { AvatarPanel } from "./_components/AvatarPanel";
 import { InfoTile } from "./_components/InfoTile";
@@ -67,23 +58,84 @@ const phoneRegex = /^[+]?[\d\s()-]{6,}$/;
 const profileDetailsSchema = z.object({
   name: z
     .string()
-    .min(2, "Full name must be at least 2 characters.")
-    .max(120, "Full name must be under 120 characters."),
+    .optional()
+    .refine(
+      (val) => !val || val.trim().length === 0 || val.trim().length >= 2,
+      {
+        message: "Full name must be at least 2 characters.",
+      },
+    ),
   email: z
     .string()
-    .min(1, "Email address is required.")
-    .email("Enter a valid email address."),
+    .optional()
+    .refine(
+      (val) =>
+        !val ||
+        val.trim().length === 0 ||
+        z.string().email().safeParse(val).success,
+      {
+        message: "Enter a valid email address or leave the field empty.",
+      },
+    ),
   phone: z
     .string()
     .optional()
     .refine(
-      (value) => !value || phoneRegex.test(value.trim()),
-      "Enter a valid phone number or leave the field empty.",
+      (val) => !val || val.trim().length === 0 || phoneRegex.test(val.trim()),
+      {
+        message: "Enter a valid phone number or leave the field empty.",
+      },
     ),
-  address: optionalAddressSchema.optional(),
+  address: z
+    .object({
+      streetAddress: z
+        .string()
+        .refine(
+          (val) =>
+            !val ||
+            val.trim().length === 0 ||
+            (val.trim().length >= 3 && val.trim().length <= 200),
+          {
+            message: "Street and house number must be 3-200 characters.",
+          },
+        )
+        .default(""),
+      city: z
+        .string()
+        .refine(
+          (val) =>
+            !val ||
+            val.trim().length === 0 ||
+            (val.trim().length >= 2 && val.trim().length <= 100),
+          {
+            message: "City must be 2-100 characters.",
+          },
+        )
+        .default(""),
+      postalCode: z
+        .string()
+        .refine(
+          (val) =>
+            !val || val.trim().length === 0 || /^\d{3,10}$/.test(val.trim()),
+          {
+            message: "Postal code must be 3-10 digits.",
+          },
+        )
+        .default(""),
+      deliveryNotes: z
+        .string()
+        .refine(
+          (val) => !val || val.trim().length === 0 || val.trim().length <= 500,
+          {
+            message: "Delivery notes must be under 500 characters.",
+          },
+        )
+        .default(""),
+    })
+    .optional(),
 });
 
-type ProfileDetailsFormValues = z.infer<typeof profileDetailsSchema>;
+type ProfileFormData = z.input<typeof profileDetailsSchema>;
 
 interface IProfilePage {
   preloadedUser: Preloaded<typeof api.auth.loggedInUser>;
@@ -95,25 +147,27 @@ export default function ProfilePageClient({
   preloadedOrders,
 }: IProfilePage) {
   const user = usePreloadedQuery(preloadedUser);
+
   const orders = usePreloadedQuery(preloadedOrders);
   const updateProfile = useMutation(api.users.updateProfile);
   const updateAvatar = useMutation(api.users.updateAvatar);
-  const deleteAccount = useMutation(api.users.deleteAccount as any);
+  const deleteAccount = useMutation(api.users.deleteAccount);
 
   const [activeTab, setActiveTab] = useState<TabId>("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const form = useForm<ProfileDetailsFormValues>({
-    resolver: zodResolver(
-      profileDetailsSchema,
-    ) as Resolver<ProfileDetailsFormValues>,
+
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(profileDetailsSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
     defaultValues: {
       name: "",
       email: "",
       phone: "",
-      ...createEmptyAddressFields(),
+      address: createEmptyAddressFields(),
     },
   });
 
@@ -121,23 +175,7 @@ export default function ProfilePageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const _hasRedirected = useRef(false);
-  const { avatarUrl: avatarUrlFromStorage, uploadAvatar } =
-    useConvexAvatarStorage(user?.imageFileId ?? null);
-
-  // Use user's saved address when not editing, form values when editing
-  const displayAddress = useMemo(() => {
-    if (!isEditing && user) {
-      // Handle both old string format and new object format
-      if (typeof user.address === "string") {
-        return parseAddress(user.address);
-      } else if (user.address) {
-        return user.address;
-      }
-      return createEmptyAddressFields();
-    }
-    const formValues = form.getValues();
-    return formValues.address || createEmptyAddressFields();
-  }, [isEditing, user, form]);
+  const { uploadAvatar } = useConvexAvatarStorage(user?.imageFileId ?? null);
 
   const resetFormFromUser = useCallback(() => {
     if (!user) {
@@ -145,33 +183,20 @@ export default function ProfilePageClient({
         name: "",
         email: "",
         phone: "",
-        address: {
-          streetAddress: "",
-          city: "",
-          postalCode: "",
-          deliveryNotes: "",
-        },
+        address: createEmptyAddressFields(),
       });
       return;
     }
 
-    // Handle both old string format and new object format
-    let parsedAddress: AddressFields;
-    if (typeof user.address === "string") {
-      parsedAddress = parseAddress(user.address);
-    } else if (user.address) {
-      parsedAddress = user.address;
-    } else {
-      parsedAddress = createEmptyAddressFields();
-    }
+    const addressFields = user.address ?? createEmptyAddressFields();
 
     form.reset({
       name: user.name ?? "",
       email: user.email ?? "",
       phone: user.phone ?? "",
-      address: parsedAddress,
+      address: addressFields,
     });
-  }, [form, user]);
+  }, [user, form]);
 
   useEffect(() => {
     if (!isEditing) {
@@ -213,49 +238,48 @@ export default function ProfilePageClient({
     [updateAvatar, uploadAvatar],
   );
 
-  const handleUpdateProfile = useCallback(
-    async (values: ProfileDetailsFormValues) => {
-      try {
-        const addressToSend = values.address
-          ? {
-              streetAddress: values.address.streetAddress || "",
-              city: values.address.city || "",
-              postalCode: values.address.postalCode || "",
-              deliveryNotes: values.address.deliveryNotes || "",
-            }
-          : undefined;
+  const handleUpdateProfile = form.handleSubmit(async (_data) => {
+    try {
+      // Get all form values to ensure we capture empty strings
+      const formValues = form.getValues();
 
-        const updated = await updateProfile({
-          name: values.name || undefined,
-          email: values.email || undefined,
-          phone: values.phone || undefined,
-          address: addressToSend,
-        });
+      const addressFields = formValues.address
+        ? {
+            streetAddress: formValues.address.streetAddress ?? "",
+            city: formValues.address.city ?? "",
+            postalCode: formValues.address.postalCode ?? "",
+            deliveryNotes: formValues.address.deliveryNotes ?? "",
+          }
+        : createEmptyAddressFields();
 
-        // Handle both old string format and new object format
-        let parsedAddress: AddressFields;
-        if (typeof updated?.address === "string") {
-          parsedAddress = parseAddress(updated.address);
-        } else if (updated?.address) {
-          parsedAddress = updated.address;
-        } else {
-          parsedAddress = createEmptyAddressFields();
-        }
+      // Always send fields if they are present in the form (even if empty)
+      // This allows clearing fields by sending empty strings
+      // If field exists in form (even if empty), send it to allow clearing
+      const phoneValue =
+        formValues.phone !== undefined ? formValues.phone.trim() : undefined;
+      const nameValue =
+        formValues.name !== undefined ? formValues.name.trim() : undefined;
 
-        form.reset({
-          name: updated?.name ?? "",
-          email: updated?.email ?? "",
-          phone: updated?.phone ?? "",
-          address: parsedAddress,
-        });
-        toast.success("Profile updated successfully!");
-        setIsEditing(false);
-      } catch (_error) {
-        toast.error("Failed to update profile");
-      }
-    },
-    [form, updateProfile],
-  );
+      // Email is read-only, don't send it in the update
+      const updated = await updateProfile({
+        name: nameValue !== undefined ? nameValue || "" : undefined,
+        phone: phoneValue !== undefined ? phoneValue || "" : undefined,
+        address: addressFields,
+      });
+      const addressFieldsFromUpdate =
+        updated?.address ?? createEmptyAddressFields();
+      form.reset({
+        name: updated?.name ?? "",
+        email: updated?.email ?? "",
+        phone: updated?.phone ?? "",
+        address: addressFieldsFromUpdate,
+      });
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+    } catch (_error) {
+      toast.error("Failed to update profile");
+    }
+  });
 
   // useEffect(() => {
   //   if (user === null && !hasRedirected.current) {
@@ -326,9 +350,7 @@ export default function ProfilePageClient({
             isUploadingAvatar={isUploadingAvatar}
             avatarInputRef={avatarInputRef}
             onAvatarFileChange={handleAvatarFileChange}
-            // Prefer the `image` field stored on the user document (full URL).
-            // If it's not set, fall back to the storage-derived URL.
-            avatarUrl={user.image ?? avatarUrlFromStorage}
+            avatarUrl={user?.image ?? null}
           />
         </motion.section>
 
@@ -358,9 +380,9 @@ export default function ProfilePageClient({
                   // the query param entirely.
                   try {
                     if (tab.id === "profile") {
-                      router.replace("/profile");
+                      void router.replace("/profile");
                     } else {
-                      router.replace(`?tab=${tab.id}`);
+                      void router.replace(`?tab=${tab.id}`);
                     }
                   } catch (_e) {
                     // ignore router errors
@@ -445,202 +467,180 @@ export default function ProfilePageClient({
               </div>
 
               {isEditing ? (
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(handleUpdateProfile)}
-                    className="grid gap-5 md:grid-cols-2"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem className={fieldLabelClass}>
-                          <FormLabel>Full name</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Jane Balloon"
-                              className={fieldInputClass}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                <form
+                  onSubmit={handleUpdateProfile}
+                  className="grid gap-5 md:grid-cols-2"
+                >
+                  <label className={fieldLabelClass}>
+                    Full name
+                    <input
+                      {...form.register("name")}
+                      className={fieldInputClass}
+                      placeholder="Jane Balloon"
                     />
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem className={fieldLabelClass}>
-                          <FormLabel>Email address</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="email"
-                              placeholder="you@example.com"
-                              className={fieldInputClass}
-                              disabled
-                              readOnly
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          <p className="mt-1 text-xs text-[rgba(var(--deep-rgb),0.5)]">
-                            Email cannot be changed. Contact support if you need
-                            to update it.
-                          </p>
-                        </FormItem>
-                      )}
+                    {form.formState.errors.name && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.name.message}
+                      </p>
+                    )}
+                  </label>
+                  <label className={fieldLabelClass}>
+                    Email address
+                    <input
+                      type="email"
+                      {...form.register("email")}
+                      readOnly
+                      className={`${fieldInputClass} cursor-not-allowed opacity-60`}
+                      placeholder="you@example.com"
                     />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem className={fieldLabelClass}>
-                          <FormLabel>Phone number</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Include country code"
-                              className={fieldInputClass}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                    {form.formState.errors.email && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.email.message}
+                      </p>
+                    )}
+                  </label>
+                  <label className={fieldLabelClass}>
+                    Phone number
+                    <input
+                      {...form.register("phone")}
+                      className={fieldInputClass}
+                      placeholder="Include country code"
                     />
-                    <FormField
-                      control={form.control}
-                      name="address.streetAddress"
-                      render={({ field }) => (
-                        <FormItem
-                          className={`${fieldLabelClass} md:col-span-2`}
-                        >
-                          <FormLabel>Street &amp; house number</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Mariahilfer Str. 10"
-                              className={fieldInputClass}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                    {form.formState.errors.phone && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.phone.message}
+                      </p>
+                    )}
+                  </label>
+                  <label className={`${fieldLabelClass} md:col-span-2`}>
+                    Street & house number
+                    <input
+                      {...form.register("address.streetAddress")}
+                      className={fieldInputClass}
+                      placeholder="Mariahilfer Str. 10"
                     />
-                    <FormField
-                      control={form.control}
-                      name="address.city"
-                      render={({ field }) => (
-                        <FormItem className={fieldLabelClass}>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <div className="mt-2 flex flex-wrap gap-2.5">
-                              {COURIER_DELIVERY_CITIES.map((city) => {
-                                const selected = field.value === city.name;
-                                return (
-                                  <button
-                                    key={city.id}
-                                    type="button"
-                                    onClick={() => field.onChange(city.name)}
-                                    className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${
-                                      selected
-                                        ? "border-accent bg-[rgba(var(--accent-rgb),0.08)]"
-                                        : `${palette.softBorder} hover:border-accent/40`
-                                    }`}
-                                  >
-                                    {city.name}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="address.postalCode"
-                      render={({ field }) => (
-                        <FormItem className={fieldLabelClass}>
-                          <FormLabel>Postal code</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder={STORE_INFO.address.postalCode}
-                              className={fieldInputClass}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="address.deliveryNotes"
-                      render={({ field }) => (
-                        <FormItem
-                          className={`${fieldLabelClass} md:col-span-2`}
-                        >
-                          <FormLabel>
-                            Delivery notes (door code, floor…)
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              rows={3}
-                              placeholder="Ring the bell twice, leave at reception, etc."
-                              className={fieldTextareaClass}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex flex-wrap items-center gap-3 md:col-span-2">
-                      <motion.button
-                        whileTap={{ scale: 0.97 }}
-                        type="submit"
-                        disabled={form.formState.isSubmitting}
-                        className="bg-accent text-on-accent inline-flex h-12 items-center justify-center rounded-full px-6 text-xs font-semibold tracking-widest uppercase transition hover:brightness-95 disabled:opacity-60"
-                      >
-                        {form.formState.isSubmitting
-                          ? "Saving…"
-                          : "Save changes"}
-                      </motion.button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          resetFormFromUser();
-                          setIsEditing(false);
-                        }}
-                        className={`text-deep inline-flex h-12 items-center justify-center rounded-full border px-6 text-xs font-semibold tracking-widest uppercase transition hover:bg-[rgba(var(--primary-rgb),0.8)] ${palette.softBorder}`}
-                      >
-                        Discard
-                      </button>
+                    {form.formState.errors.address?.streetAddress && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.streetAddress.message}
+                      </p>
+                    )}
+                  </label>
+                  <label className={fieldLabelClass}>
+                    City
+                    <div className="mt-2 flex flex-wrap gap-2.5">
+                      {COURIER_DELIVERY_CITIES.map((city) => {
+                        const selected =
+                          form.watch("address.city") === city.name;
+                        return (
+                          <button
+                            key={city.id}
+                            type="button"
+                            onClick={() =>
+                              form.setValue("address.city", city.name)
+                            }
+                            className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                              selected
+                                ? "border-accent bg-[rgba(var(--accent-rgb),0.08)]"
+                                : `${palette.softBorder} hover:border-accent/40`
+                            }`}
+                          >
+                            {city.name}
+                          </button>
+                        );
+                      })}
                     </div>
-                  </form>
-                </Form>
+                    <input
+                      className="sr-only"
+                      {...form.register("address.city")}
+                    />
+                    {form.formState.errors.address?.city && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.city.message}
+                      </p>
+                    )}
+                  </label>
+                  <label className={fieldLabelClass}>
+                    Postal code
+                    <input
+                      {...form.register("address.postalCode")}
+                      className={fieldInputClass}
+                      placeholder={STORE_INFO.address.postalCode}
+                    />
+                    {form.formState.errors.address?.postalCode && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.postalCode.message}
+                      </p>
+                    )}
+                  </label>
+                  <label className={`${fieldLabelClass} md:col-span-2`}>
+                    Delivery notes (door code, floor…)
+                    <textarea
+                      {...form.register("address.deliveryNotes")}
+                      rows={3}
+                      className={fieldTextareaClass}
+                      placeholder="Ring the bell twice, leave at reception, etc."
+                    />
+                    {form.formState.errors.address?.deliveryNotes && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.deliveryNotes.message}
+                      </p>
+                    )}
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      type="submit"
+                      className="bg-accent text-on-accent inline-flex h-12 items-center justify-center rounded-full px-6 text-xs font-semibold tracking-widest uppercase transition hover:brightness-95"
+                    >
+                      Save changes
+                    </motion.button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetFormFromUser();
+                        setIsEditing(false);
+                      }}
+                      className={`text-deep inline-flex h-12 items-center justify-center rounded-full border px-6 text-xs font-semibold tracking-widest uppercase transition hover:bg-[rgba(var(--primary-rgb),0.8)] ${palette.softBorder}`}
+                    >
+                      Discard
+                    </button>
+                  </div>
+                </form>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2">
-                  <InfoTile label="Full name" value={user.name ?? "Not set"} />
-                  <InfoTile label="Email" value={user.email ?? "Not set"} />
-                  <InfoTile label="Phone" value={user.phone || "Not set"} />
+                  <InfoTile
+                    label="Full name"
+                    value={user.name?.trim() || "Not set"}
+                  />
+                  <InfoTile
+                    label="Email"
+                    value={user.email?.trim() || "Not set"}
+                  />
+                  <InfoTile
+                    label="Phone"
+                    value={user.phone?.trim() || "Not set"}
+                  />
                   <InfoTile
                     label="Street & house number"
-                    value={displayAddress.streetAddress || "Not set"}
+                    value={
+                      form.watch("address.streetAddress")?.trim() || "Not set"
+                    }
                   />
                   <InfoTile
                     label="City"
-                    value={displayAddress.city || "Not set"}
+                    value={form.watch("address.city")?.trim() || "Not set"}
                   />
                   <InfoTile
                     label="Postal code"
-                    value={displayAddress.postalCode || "Not set"}
+                    value={
+                      form.watch("address.postalCode")?.trim() || "Not set"
+                    }
                   />
                   <InfoTile
                     label="Delivery notes"
-                    value={displayAddress.deliveryNotes || "Not set"}
+                    value={
+                      form.watch("address.deliveryNotes")?.trim() || "Not set"
+                    }
                     fullWidth
                   />
                 </div>
@@ -695,36 +695,40 @@ export default function ProfilePageClient({
 
               <PreferencesPanel />
 
-              <div className="mt-6 border-t pt-6">
-                <h3 className="text-deep text-lg font-semibold">Danger zone</h3>
-                <p className={`text-sm ${palette.mutedText} mt-1`}>
-                  Permanently delete your account and all personal data. This
-                  action cannot be undone.
+              <div className="mt-8 border-t pt-6">
+                <h3 className="text-deep mb-4 text-lg font-semibold">
+                  Danger Zone
+                </h3>
+                <p className={`mb-4 text-sm ${palette.mutedText}`}>
+                  Once you delete your account, there is no going back. Please
+                  be certain.
                 </p>
-
-                <div className="mt-4">
-                  <Button
-                    variant="destructive"
-                    onClick={() => setIsDeleteOpen(true)}
-                  >
-                    Delete account
-                  </Button>
-                </div>
-
-                <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <Dialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete Account
+                    </Button>
+                  </DialogTrigger>
                   <DialogContent>
                     <DialogHeader className="space-y-2">
-                      <DialogTitle>Delete account?</DialogTitle>
+                      <DialogTitle>Delete Account</DialogTitle>
                       <DialogDescription>
-                        This will permanently delete your account and cannot be
-                        undone. Are you sure you want to continue?
+                        Are you sure you want to delete your account? This
+                        action cannot be undone. All your data will be
+                        permanently removed.
                       </DialogDescription>
                     </DialogHeader>
-
                     <DialogFooter>
                       <Button
-                        variant="ghost"
-                        onClick={() => setIsDeleteOpen(false)}
+                        variant="outline"
+                        onClick={() => setIsDeleteDialogOpen(false)}
+                        disabled={isDeletingAccount}
                       >
                         Cancel
                       </Button>
@@ -734,37 +738,22 @@ export default function ProfilePageClient({
                           setIsDeletingAccount(true);
                           try {
                             await deleteAccount({});
-                            // Очищаем все хранилища
-                            localStorage.clear();
-                            sessionStorage.clear();
-                            document.cookie.split(";").forEach((c) => {
-                              document.cookie = c
-                                .replace(/^ +/, "")
-                                .replace(
-                                  /=.*/,
-                                  "=;expires=" +
-                                    new Date().toUTCString() +
-                                    ";path=/",
-                                );
-                              window.location.replace("/auth" as Route);
-                              window.location.reload();
-                            });
-                            toast.success("Account deleted");
-                            router.replace("/"); // или другой редирект
-                          } catch (e) {
+                            window.location.replace("/auth");
+                          } catch (error) {
+                            console.error("Failed to delete account:", error);
                             toast.error(
-                              e instanceof Error
-                                ? e.message
-                                : "Failed to delete account",
+                              "Failed to delete account. Please try again.",
                             );
-                          } finally {
                             setIsDeletingAccount(false);
-                            setIsDeleteOpen(false);
+                          } finally {
+                            // Refresh in case of any issues
+                            window.location.reload();
                           }
                         }}
                         disabled={isDeletingAccount}
+                        className="bg-red-600 hover:bg-red-700"
                       >
-                        {isDeletingAccount ? "Deleting..." : "Delete account"}
+                        {isDeletingAccount ? "Deleting..." : "Delete Account"}
                       </Button>
                     </DialogFooter>
                   </DialogContent>

@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,13 +8,7 @@ import {
 
 export function CategorySection() {
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className="relative w-full overflow-hidden"
-    >
+    <section className="relative w-full overflow-hidden">
       <div className="flex items-center justify-between p-4 px-4">
         <h2 className="flex max-w-2xl gap-1.5 truncate text-xl leading-tight md:text-2xl">
           <span>Shop by</span>
@@ -116,6 +107,6 @@ export function CategorySection() {
           </div>
         </Link>
       </div>
-    </motion.section>
+    </section>
   );
 }

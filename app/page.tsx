@@ -1,19 +1,23 @@
 import { preloadQuery } from "convex/nextjs";
+import { CategorySection } from "@/components/CategorySection";
+import { Hero } from "@/components/Containers";
+import { AnimatedSection } from "@/components/ui/animated-section";
+import RainbowArcText from "@/components/ui/rainbow-text";
 import { api } from "@/convex/_generated/api";
-import { HomePageClient } from "./HomePageClient";
+import { ProductCarousels } from "./ProductCarousels";
 
 export default async function HomePage() {
-  // Prefetch bestsellers data on the server
+  // Preload data on the server using preloadQuery
   const preloadedBestsellers = await preloadQuery(api.products.list, {
-    // API expects `sort` (one of price-low, price-high, name-asc, name-desc, default).
-    // Use `default` to get the repository's default ordering (popularity/bestsellers).
-    sort: "default",
+    order: "orderCount-desc",
     paginationOpts: {
       cursor: null,
       numItems: 8,
     },
   });
-  const preloadedNewArrivals = await preloadQuery(api.products.getNewProducts, {
+
+  const preloadedNewArrivals = await preloadQuery(api.products.list, {
+    order: "createdAt-desc",
     paginationOpts: {
       cursor: null,
       numItems: 8,
@@ -21,9 +25,28 @@ export default async function HomePage() {
   });
 
   return (
-    <HomePageClient
-      preloadedBestsellers={preloadedBestsellers}
-      preloadedNewArrivals={preloadedNewArrivals}
-    />
+    <main className="flex min-h-screen flex-col">
+      <AnimatedSection>
+        <Hero />
+      </AnimatedSection>
+
+      <div className="flex flex-col gap-6">
+        <AnimatedSection>
+          <CategorySection />
+        </AnimatedSection>
+
+        {/* Product Carousels - Client Component with preloaded data */}
+        <ProductCarousels
+          preloadedBestsellers={preloadedBestsellers}
+          preloadedNewArrivals={preloadedNewArrivals}
+        />
+      </div>
+
+      {/* Rainbow Text */}
+      <RainbowArcText
+        className="py-5 text-[10vw] sm:text-[8vw]"
+        text="Lift Your Day"
+      />
+    </main>
   );
 }
