@@ -14,13 +14,36 @@ import {
 import ImageKitPicture from "@/components/ui/ImageKitPicture";
 import { api } from "@/convex/_generated/api";
 // removed per-item queries to comply with Rules of Hooks
-import type { Doc } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { ADMIN_PREVIEW_IMAGE_TRANSFORMATION } from "@/lib/imagekit";
 import type { OrderStatus } from "./types";
 import { ORDER_STATUS_META } from "./types";
 import { formatCurrency, formatDateTime } from "./utils";
 
 type Props = { order: Doc<"orders"> };
+
+type OrderItem = Doc<"orders">["items"][number];
+type OrderItemWithOptionalImage = OrderItem & {
+  productImageUrl?: string | null;
+};
+type OrderWithOptionalPhone = Doc<"orders"> & {
+  phone?: string | null;
+};
+
+const getOrderPhone = (order: Doc<"orders">): string | null => {
+  const { phone } = order as OrderWithOptionalPhone;
+  return typeof phone === "string" && phone.trim().length > 0
+    ? phone
+    : null;
+};
+
+const getProductImageUrl = (item: OrderItem): string | null => {
+  const { productImageUrl } = item as OrderItemWithOptionalImage;
+  if (typeof productImageUrl === "string" && productImageUrl.trim().length > 0) {
+    return productImageUrl;
+  }
+  return null;
+};
 
 export function OrderDetails({ order }: Props) {
   const _currency = order.currency ?? "EUR";
@@ -31,16 +54,16 @@ export function OrderDetails({ order }: Props) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Prepare fallback images for items that lack `productImageUrl`.
-  const missingIds = Array.from(
+  const missingIds: Array<Id<"products">> = Array.from(
     new Set(
       order.items
-        .filter((it) => !(it as any).productImageUrl)
-        .map((it) => it.productId),
+        .filter((item) => !getProductImageUrl(item))
+        .map((item) => item.productId),
     ),
   );
 
   const fetchedProducts = useQuery(
-    missingIds.length > 0 ? api.products.getMany : (null as any),
+    api.products.getMany,
     missingIds.length > 0 ? { ids: missingIds } : "skip",
   );
 
@@ -53,6 +76,8 @@ export function OrderDetails({ order }: Props) {
       );
     }
   }
+
+  const orderPhone = getOrderPhone(order);
 
   const confirmChange = useCallback(async () => {
     if (!pendingStatus) return;
@@ -190,15 +215,13 @@ export function OrderDetails({ order }: Props) {
               {order.customerEmail}
             </span>
           </div>
-          {/* biome-ignore lint/suspicious/noExplicitAny: <no type for now> */}
-          {(order as any).phone && (
+          {orderPhone && (
             <div>
               <span className="text-xs font-semibold text-slate-500">
                 Телефон:{" "}
               </span>
               <span className="text-xs text-slate-500">
-                {/* biome-ignore lint/suspicious/noExplicitAny: <no type for now> */}
-                {(order as any).phone}
+                {orderPhone}
               </span>
             </div>
           )}
@@ -259,8 +282,7 @@ export function OrderDetails({ order }: Props) {
             // Avoid calling hooks inside loops — prefer item.productImageUrl,
             // otherwise fall back to the first image from the product we fetched.
             const imageUrl =
-              // biome-ignore lint/suspicious/noExplicitAny: <no type for now>
-              (item as any).productImageUrl ??
+              getProductImageUrl(item) ??
               productImageById.get(item.productId) ??
               null;
             return (

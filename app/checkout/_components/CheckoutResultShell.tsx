@@ -23,9 +23,7 @@ export function CheckoutResultShell({
   children,
 }: CheckoutResultShellProps) {
   const toneClasses =
-    tone === "success"
-      ? "text-green-600 bg-white/90"
-      : "text-red-600 bg-white";
+    tone === "success" ? "text-green-600 bg-white/90" : "text-red-600 bg-white";
   const accentClasses =
     tone === "success"
       ? "bg-secondary/10 text-secondary"
@@ -40,13 +38,13 @@ export function CheckoutResultShell({
               <div className="mb-3 flex items-center justify-center">
                 <span className="text-5xl sm:text-6xl">{icon}</span>
               </div>
-              <span className="text-xs font-semibold uppercase tracking-[0.2em]">
+              <span className="text-xs font-semibold tracking-[0.2em] uppercase">
                 {badge}
               </span>
               <h1 className="mt-3 text-2xl font-semibold text-gray-900 sm:text-3xl">
                 {title}
               </h1>
-              <p className="text-gray-600">{description}</p>
+              <p className="mt-1 text-gray-600">{description}</p>
               {highlight}
             </div>
             <div className={cn("p-6 sm:p-8", toneClasses)}>{children}</div>
@@ -68,4 +66,3 @@ export function CheckoutResultSkeleton() {
     </div>
   );
 }
-

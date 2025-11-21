@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { mutation } from "./_generated/server";
 import { requireUser } from "./helpers/auth";
 import { optionalAddressValidator } from "./validators/address";
@@ -151,7 +151,7 @@ export const deleteAccount = mutation({
 
     // Attempt to delete any uploaded avatar from storage
     try {
-      const previousFileId = (user as any)?.imageFileId;
+      const previousFileId = user.imageFileId;
       if (previousFileId && isStorageId(previousFileId)) {
         try {
           await ctx.storage.delete(previousFileId as Id<"_storage">);
@@ -180,10 +180,16 @@ export const deleteAccount = mutation({
           .collect(),
       ]);
 
+      type AuthSessionDoc = Doc<"authSessions">;
+      type AuthAccountDoc = Doc<"authAccounts">;
+      type AuthRefreshTokenDoc = Doc<"authRefreshTokens">;
+      type AuthVerificationCodeDoc = Doc<"authVerificationCodes">;
+      type AuthVerifierDoc = Doc<"authVerifiers">;
+
       const [authRefreshTokens, authVerificationCodes, authVerifiers] =
         await Promise.all([
           (
-            await asyncMap(authSessions, async (session: any) => {
+            await asyncMap(authSessions, async (session: AuthSessionDoc) => {
               return ctx.db
                 .query("authRefreshTokens")
                 .withIndex("sessionId", (q) => q.eq("sessionId", session._id))
@@ -191,7 +197,7 @@ export const deleteAccount = mutation({
             })
           ).flat(),
           (
-            await asyncMap(authAccounts, async (account: any) => {
+            await asyncMap(authAccounts, async (account: AuthAccountDoc) => {
               return ctx.db
                 .query("authVerificationCodes")
                 .withIndex("accountId", (q) => q.eq("accountId", account._id))
@@ -199,7 +205,7 @@ export const deleteAccount = mutation({
             })
           ).flat(),
           (
-            await asyncMap(authSessions, async (session: any) => {
+            await asyncMap(authSessions, async (session: AuthSessionDoc) => {
               return ctx.db
                 .query("authVerifiers")
                 .withIndex("sessionId", (q) => q.eq("sessionId", session._id))
@@ -209,11 +215,22 @@ export const deleteAccount = mutation({
         ]);
 
       await Promise.all([
-        asyncMap(authSessions, (session: any) => ctx.db.delete(session._id)),
-        asyncMap(authAccounts, (account: any) => ctx.db.delete(account._id)),
-        asyncMap(authRefreshTokens, (token: any) => ctx.db.delete(token._id)),
-        asyncMap(authVerificationCodes, (code: any) => ctx.db.delete(code._id)),
-        asyncMap(authVerifiers, (verifier: any) => ctx.db.delete(verifier._id)),
+        asyncMap(authSessions, (session: AuthSessionDoc) =>
+          ctx.db.delete(session._id),
+        ),
+        asyncMap(authAccounts, (account: AuthAccountDoc) =>
+          ctx.db.delete(account._id),
+        ),
+        asyncMap(authRefreshTokens, (token: AuthRefreshTokenDoc) =>
+          ctx.db.delete(token._id),
+        ),
+        asyncMap(
+          authVerificationCodes,
+          (code: AuthVerificationCodeDoc) => ctx.db.delete(code._id),
+        ),
+        asyncMap(authVerifiers, (verifier: AuthVerifierDoc) =>
+          ctx.db.delete(verifier._id),
+        ),
       ]);
     } catch (_e) {
       // If anything goes wrong while cleaning auth records, continue with user deletion

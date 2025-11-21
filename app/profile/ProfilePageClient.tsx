@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { motion } from "motion/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -171,7 +171,6 @@ export default function ProfilePageClient({
 
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
   const _hasRedirected = useRef(false);
   const { uploadAvatar } = useConvexAvatarStorage(user?.imageFileId ?? null);
 
@@ -286,18 +285,19 @@ export default function ProfilePageClient({
   //   }
   // }, [router, user]);
 
-  // Initialise active tab from the `tab` query parameter when the
-  // component mounts or when search params change. If `tab` is invalid
-  // or absent, keep the default.
+  // Initialise active tab from the `tab` query parameter only on mount.
+  // Use window.location.search to avoid triggering re-renders.
   useEffect(() => {
-    const tabParam = searchParams.get("tab");
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get("tab");
 
     if (tabParam === "orders" || tabParam === "settings") {
       setActiveTab(tabParam as TabId);
     } else {
       setActiveTab("profile");
     }
-  }, [searchParams]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
 
   const formattedOrders = useMemo(() => orders ?? [], [orders]);
 
@@ -376,14 +376,20 @@ export default function ProfilePageClient({
                   // Update the URL so the active tab is preserved in history
                   // and shareable. If the 'profile' tab is selected, remove
                   // the query param entirely.
+                  // Use window.history to avoid triggering re-renders from useSearchParams
                   try {
+                    const newUrl =
+                      tab.id === "profile"
+                        ? "/profile"
+                        : `/profile?tab=${tab.id}`;
+                    window.history.pushState({}, "", newUrl);
+                  } catch (_e) {
+                    // Fallback to router if window.history fails
                     if (tab.id === "profile") {
                       void router.replace("/profile");
                     } else {
                       void router.replace(`?tab=${tab.id}`);
                     }
-                  } catch (_e) {
-                    // ignore router errors
                   }
                 }}
                 onKeyDown={(event) => {

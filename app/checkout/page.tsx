@@ -28,7 +28,13 @@ import {
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ChangeEvent, FocusEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { type Resolver, type UseFormReturn, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -909,23 +915,16 @@ export default function CheckoutPage() {
       parsedAddress = createEmptyAddressFields();
     }
 
-    const ensureValue = (
-      field: keyof CheckoutDetailsFormValues,
-      nextValue:
-        | string
-        | {
-            streetAddress: string;
-            city: string;
-            postalCode: string;
-            deliveryNotes: string;
-          },
+    const ensureValue = <K extends keyof CheckoutDetailsFormValues>(
+      field: K,
+      nextValue: CheckoutDetailsFormValues[K],
     ) => {
       const currentValue = form.getValues(field);
       if (
         !currentValue ||
         (typeof currentValue === "string" && !currentValue.trim())
       ) {
-        form.setValue(field, nextValue as any, {
+        form.setValue(field, nextValue, {
           shouldDirty: false,
           shouldValidate: false,
         });
@@ -1782,12 +1781,12 @@ function StepOne({
                   field.onChange(value);
                 };
 
-                const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
                   const value = e.target.value;
                   validateAndSetValue(value);
                 };
 
-                const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+                const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
                   const value = e.target.value;
                   validateAndSetValue(value);
                   field.onBlur();
@@ -1946,7 +1945,8 @@ function StepOne({
             onClick={() => {
               void proceedToPaymentStep();
             }}
-            className="btn-accent rounded-full px-6 py-3 text-sm font-semibold"
+            disabled={!isFormValid}
+            className="btn-accent rounded-full px-6 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
           >
             Go to payment
           </button>

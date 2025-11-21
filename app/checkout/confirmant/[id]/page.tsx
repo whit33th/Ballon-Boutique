@@ -1,5 +1,6 @@
 "use client";
 
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { useQuery } from "convex-helpers/react/cache";
 import {
   ArrowRight,
@@ -17,7 +18,7 @@ import {
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { getFormattedAddress, STORE_INFO } from "@/constants/config";
 import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { composeAddress } from "@/lib/address";
 
 const formatCurrency = (value: number, currency = "EUR") =>
@@ -26,6 +27,16 @@ const formatCurrency = (value: number, currency = "EUR") =>
     currency,
     maximumFractionDigits: 2,
   }).format(value);
+
+type OrderWithPhoneFields = Doc<"orders"> & {
+  phone?: string | null;
+  customerPhone?: string | null;
+};
+
+const resolveOrderPhone = (order: Doc<"orders">): string => {
+  const extendedOrder = order as OrderWithPhoneFields;
+  return extendedOrder.phone ?? extendedOrder.customerPhone ?? "";
+};
 
 export default function CheckoutConfirmantPage() {
   const params = useParams();
@@ -74,13 +85,23 @@ export default function CheckoutConfirmantPage() {
     <CheckoutResultShell
       tone="success"
       badge="Checkout complete"
-      title="Payment received — order confirmed"
-      description="We locked your items and emailed the receipt. You can find the details below."
-      icon="🎉"
+      title={` ${order.paymentMethod === "full_online" ? "Payment received — order confirmed" : "Order confirmed - we prepare for pickup"}`}
+      description="We locked your items. You can find the details below."
+      icon={
+        <DotLottieReact
+          className="h-auto w-36"
+          src="https://lottie.host/313578b9-e6af-4e10-a4ec-eb98361ddc12/AZahlXk7Pt.lottie"
+          loop
+          autoplay
+        />
+      }
       highlight={
         order.pickupDateTime ? (
-          <p className="mt-4 text-sm text-gray-700">
-            Pickup window: {new Date(order.pickupDateTime).toLocaleString()}
+          <p className="text-secondary ring-secondary/10 mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/70 px-4 py-2 text-sm font-semibold ring-1">
+            <CalendarCheck2 className="h-4 w-4" />
+            <span>
+              Pickup window: {new Date(order.pickupDateTime).toLocaleString()}
+            </span>
           </p>
         ) : null
       }
@@ -92,7 +113,7 @@ export default function CheckoutConfirmantPage() {
               <p className="text-xs font-semibold tracking-[0.18em] text-gray-500 uppercase">
                 Order reference
               </p>
-              <p className="font-mono text-sm break-all text-gray-900">
+              <p className="mt-0.5 font-mono text-sm break-all text-gray-900">
                 {order._id}
               </p>
             </div>
@@ -247,9 +268,9 @@ export default function CheckoutConfirmantPage() {
                 {order.customerName}
               </p>
               <p className="text-sm whitespace-pre-line text-gray-600">
-                {typeof order.shippingAddress === "string" 
-                  ? order.shippingAddress 
-                  : order.shippingAddress 
+                {typeof order.shippingAddress === "string"
+                  ? order.shippingAddress
+                  : order.shippingAddress
                     ? composeAddress(order.shippingAddress)
                     : "—"}
               </p>
@@ -274,9 +295,7 @@ export default function CheckoutConfirmantPage() {
             }
             const title = `Order ${order._id}`;
             const confirmUrl = `${window.location.origin}/checkout/confirmant/${order._id}`;
-            const customerPhone =
-              // biome-ignore lint/suspicious/noExplicitAny: <no type for now>
-              (order as any).phone ?? (order as any).customerPhone ?? "";
+            const customerPhone = resolveOrderPhone(order);
             const paymentLabel = order.paymentMethod
               ? order.paymentMethod === "full_online"
                 ? "Full online payment"
@@ -287,11 +306,16 @@ export default function CheckoutConfirmantPage() {
                     : String(order.paymentMethod)
               : "";
             const deliveryFeeForPrint = order.deliveryFee ?? 0;
-            const shippingAddressForPrint = typeof order.shippingAddress === "string"
-              ? order.shippingAddress
-              : order.shippingAddress
-                ? composeAddress(order.shippingAddress)
-                : "—";
+            const shippingAddressForPrint =
+              typeof order.shippingAddress === "string"
+                ? order.shippingAddress
+                : order.shippingAddress
+                  ? composeAddress(order.shippingAddress)
+                  : "—";
+            const pickupWindowForPrint =
+              order.paymentMethod === "cash" && order.pickupDateTime
+                ? new Date(order.pickupDateTime).toLocaleString()
+                : "";
 
             const lines = order.items
               .map((it) => {
@@ -314,6 +338,11 @@ export default function CheckoutConfirmantPage() {
                   ${customerPhone ? `<div>Phone: ${customerPhone}</div>` : ""}
                   <div>Shipping: ${shippingAddressForPrint}</div>
                   ${paymentLabel ? `<div>Payment method: ${paymentLabel}</div>` : ""}
+                  ${
+                    pickupWindowForPrint
+                      ? `<div>Pickup window: ${pickupWindowForPrint}</div>`
+                      : ""
+                  }
                   <hr/>
                   
                   ${lines}
