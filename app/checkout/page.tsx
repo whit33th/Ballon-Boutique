@@ -308,6 +308,21 @@ const checkoutDetailsSchema = z
           path: ["pickupDateTime"],
           message: "Pickup date and time is required.",
         });
+        return;
+      }
+
+      // Validate that pickup date is not earlier than minimum days
+      const selectedDate = new Date(data.pickupDateTime);
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + STORE_INFO.orderPolicy.minPickupDays);
+      minDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate < minDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["pickupDateTime"],
+          message: `Pickup date must be at least ${STORE_INFO.orderPolicy.minPickupDays} days in advance.`,
+        });
       }
       // For pickup, address is not required and not validated
       return;
@@ -1742,23 +1757,62 @@ function StepOne({
             <FormField
               control={form.control}
               name="pickupDateTime"
-              render={({ field }) => (
-                <FormItem className="mt-4 flex flex-col gap-2">
-                  <FormLabel className="text-sm font-medium text-gray-700">
-                    Preferred pickup date & time (
-                    {STORE_INFO.orderPolicy.minPickupDays} days ahead minimum)
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="datetime-local"
-                      min={getMinPickupDateTime()}
-                      className="rounded-xl border-gray-200 px-4 py-3 text-base"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const minDateTime = getMinPickupDateTime();
+                const minDate = new Date(minDateTime);
+
+                const validateAndSetValue = (value: string) => {
+                  if (!value) {
+                    field.onChange("");
+                    return;
+                  }
+
+                  const selectedDate = new Date(value);
+                  
+                  // If selected date is before minimum, set to minimum
+                  if (selectedDate < minDate) {
+                    field.onChange(minDateTime);
+                    // Trigger validation to show error message
+                    setTimeout(() => {
+                      form.trigger("pickupDateTime");
+                    }, 0);
+                    return;
+                  }
+
+                  field.onChange(value);
+                };
+
+                const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = e.target.value;
+                  validateAndSetValue(value);
+                };
+
+                const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+                  const value = e.target.value;
+                  validateAndSetValue(value);
+                  field.onBlur();
+                };
+
+                return (
+                  <FormItem className="mt-4 flex flex-col gap-2">
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Preferred pickup date & time (
+                      {STORE_INFO.orderPolicy.minPickupDays} days ahead minimum)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="datetime-local"
+                        min={minDateTime}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        className="rounded-xl border-gray-200 px-4 py-3 text-base"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
           )}
         </div>

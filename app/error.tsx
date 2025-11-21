@@ -10,15 +10,16 @@ import "./globals.css";
 
 export default function ErrorPage({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
 }) {
   useEffect(() => {
     console.error(error);
   }, [error]);
 
+  const handleReset = () => {
+    window.location.reload();
+  };
   return (
     <div className="bg-background flex min-h-[calc(100vh-56px)] items-center justify-center px-4 antialiased">
       <div className="w-full max-w-2xl text-center">
@@ -46,7 +47,7 @@ export default function ErrorPage({
 
         {/* Action buttons */}
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button size="lg" className="min-w-40" onClick={() => reset()}>
+          <Button size="lg" className="min-w-40" onClick={handleReset}>
             Try again
           </Button>
           <Button asChild size="lg" className="min-w-40">

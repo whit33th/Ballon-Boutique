@@ -53,6 +53,7 @@ export function AvatarPanel({
                 sizes="112px"
                 className="z-10 scale-95 rounded-full object-cover"
                 priority
+                loading="eager"
               />
               <Image
                 src={resolvedAvatar}
@@ -61,6 +62,7 @@ export function AvatarPanel({
                 sizes="112px"
                 className="animate-[spin_3s_linear_infinite] rounded-full object-cover invert"
                 priority
+                loading="eager"
               />
             </div>
           ) : (
