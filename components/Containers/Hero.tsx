@@ -1,15 +1,6 @@
-"use client";
-
-import { motion } from "motion/react";
-
 export const Hero = () => {
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className="container mx-auto px-4 py-12 text-center md:py-16"
-    >
+    <section className="container mx-auto px-4 py-12 text-center md:py-16">
       {/* <Image
         src={"/imgs/baloonsGif/1.jpg"}
         alt="hero img"
@@ -33,6 +24,6 @@ export const Hero = () => {
         </div>
         <div className="via-border h-px flex-1 bg-linear-to-r from-transparent to-transparent" />
       </div>
-    </motion.section>
+    </section>
   );
 };

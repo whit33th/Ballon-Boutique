@@ -21,6 +21,7 @@ interface UserNavProps {
     name?: string;
     email?: string;
     imageFileId?: string;
+    image?: string;
   };
 }
 
@@ -34,11 +35,13 @@ export function UserNav({ user }: UserNavProps) {
         .map((n) => n[0])
         .join("")
         .toUpperCase()
-    : "";
+    : null;
 
-  const { avatarUrl } = useConvexAvatarStorage(
+  const avatarUrlFromRecord = currentUser?.image ?? null;
+  const { avatarUrl: avatarUrlFromStorage } = useConvexAvatarStorage(
     currentUser?.imageFileId ?? null,
   );
+  const avatarUrl = avatarUrlFromRecord ?? avatarUrlFromStorage;
   const { signOut } = useAuthActions();
 
   return (
@@ -81,12 +84,12 @@ export function UserNav({ user }: UserNavProps) {
               </div>
             ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-[#D4A574] to-[#E8C4A0] text-lg font-semibold text-white">
-                {userInitials}
+                {userInitials ?? <User className="h-6 w-6" />}
               </div>
             )}
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[#2D2A27]">
-                {currentUser?.name || "Guest User"}
+                {currentUser?.name || "Balloon Lover"}
               </p>
               <p className="truncate text-xs text-[#6B6662]">
                 {currentUser?.email || "guest@example.com"}

@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CardElement,
   Elements,
@@ -28,7 +29,19 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { type Resolver, type UseFormReturn, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import Input from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   getWhatsAppLink,
   STORE_INFO,
@@ -43,6 +56,7 @@ import type { Id } from "@/convex/_generated/dataModel";
 import type { ProductWithImage } from "@/convex/helpers/products";
 import {
   type AddressFields,
+  addressSchema,
   composeAddress,
   createEmptyAddressFields,
   parseAddress,
@@ -257,11 +271,81 @@ type CheckoutItemInput = {
   };
 };
 
-type CheckoutFormData = AddressFields & {
-  customerName: string;
-  customerEmail: string;
-  phone: string;
-};
+const phoneRegex = /^[+]?[\d\s()-]{6,}$/;
+
+const checkoutDetailsSchema = z
+  .object({
+    customerName: z.string().min(2, "Full name must be at least 2 characters."),
+    customerEmail: z
+      .string()
+      .min(1, "Email is required.")
+      .email("Enter a valid email address."),
+    phone: z
+      .string()
+      .optional()
+
+      .refine(
+        (value) => !value || phoneRegex.test(value.trim()),
+        "Enter a valid phone number or leave the field empty.",
+      ),
+    deliveryType: z.enum(["pickup", "delivery"]),
+    pickupDateTime: z.string().optional(),
+    address: z
+      .object({
+        streetAddress: z.string().optional(),
+        city: z.string().optional(),
+        postalCode: z.string().optional(),
+        deliveryNotes: z.string().optional(),
+      })
+      .optional(),
+    courierCityId: z.string().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.deliveryType === "pickup") {
+      if (!data.pickupDateTime?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["pickupDateTime"],
+          message: "Pickup date and time is required.",
+        });
+      }
+      // For pickup, address is not required and not validated
+      return;
+    }
+
+    // For delivery, validate courier city and address
+    if (!data.courierCityId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["courierCityId"],
+        message: "Select a courier city to continue.",
+      });
+    }
+
+    // For delivery, address is required and must be valid
+    if (!data.address) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["address"],
+        message: "Address is required for delivery.",
+      });
+    } else {
+      // Validate address fields for delivery
+      const addressResult = addressSchema.safeParse(data.address);
+      if (!addressResult.success) {
+        // Add all address field errors
+        addressResult.error.issues.forEach((issue) => {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["address", ...issue.path],
+            message: issue.message,
+          });
+        });
+      }
+    }
+  });
+
+type CheckoutDetailsFormValues = z.infer<typeof checkoutDetailsSchema>;
 
 type OnlinePaymentFormProps = {
   amountLabel: string;
@@ -738,19 +822,24 @@ export default function CheckoutPage() {
   const cartOnlyTotal = isAuthenticated ? (cartTotal?.total ?? 0) : guestTotal;
 
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
-  const [formData, setFormData] = useState<CheckoutFormData>(() => ({
-    customerName: "",
-    customerEmail: "",
-    phone: "",
-    ...createEmptyAddressFields(),
-  }));
-  const [deliveryType, setDeliveryType] = useState<DeliveryType>("pickup");
+  const form = useForm<CheckoutDetailsFormValues>({
+    resolver: zodResolver(
+      checkoutDetailsSchema,
+    ) as Resolver<CheckoutDetailsFormValues>,
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      customerName: user?.name ?? "",
+      customerEmail: user?.email ?? "",
+      phone: user?.phone ?? "",
+      deliveryType: "pickup",
+      pickupDateTime: "",
+      address: user?.address ?? createEmptyAddressFields(),
+      courierCityId: null,
+    } as CheckoutDetailsFormValues,
+  });
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("full_online");
-  const [pickupDateTime, setPickupDateTime] = useState("");
-  const [selectedCourierCityId, setSelectedCourierCityId] = useState<
-    string | null
-  >(null);
   const [whatsappConfirmed, setWhatsappConfirmed] = useState(false);
   const [isCashSubmitting, setIsCashSubmitting] = useState(false);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
@@ -765,6 +854,22 @@ export default function CheckoutPage() {
       ? { paymentIntentId: pendingPaymentIntentId }
       : "skip",
   );
+  const deliveryType = form.watch("deliveryType");
+  const pickupDateTime = form.watch("pickupDateTime") ?? "";
+  const selectedCourierCityId = form.watch("courierCityId") ?? null;
+  const customerName = form.watch("customerName");
+  const customerEmail = form.watch("customerEmail");
+  const phone = form.watch("phone") ?? "";
+  const address = form.watch("address") ?? {
+    streetAddress: "",
+    city: "",
+    postalCode: "",
+    deliveryNotes: "",
+  };
+  const _streetAddress = address.streetAddress;
+  const _postalCode = address.postalCode;
+  const _city = address.city;
+  const _deliveryNotes = address.deliveryNotes;
   const selectedCourierCity = useMemo(() => {
     if (!selectedCourierCityId) {
       return undefined;
@@ -779,32 +884,124 @@ export default function CheckoutPage() {
       return;
     }
 
-    setFormData((prev) => {
-      const parsedAddress = parseAddress(user.address);
-      return {
-        ...prev,
-        customerName: prev.customerName || user.name || "",
-        customerEmail: user.email ?? prev.customerEmail,
-        phone: prev.phone || user.phone || "",
-        streetAddress: prev.streetAddress || parsedAddress.streetAddress,
-        postalCode: prev.postalCode || parsedAddress.postalCode,
-        city: prev.city || parsedAddress.city,
-        deliveryNotes: prev.deliveryNotes || parsedAddress.deliveryNotes,
-      } satisfies CheckoutFormData;
-    });
-    // If the parsed city matches one of our courier delivery areas, preselect it
-    try {
-      const parsed = parseAddress(user.address);
-      const matched = COURIER_DELIVERY_CITIES.find(
-        (c) =>
-          c.name.toLowerCase() === parsed.city.toLowerCase() ||
-          c.id.toLowerCase() === parsed.city.toLowerCase(),
-      );
-      setSelectedCourierCityId(matched ? matched.id : null);
-    } catch {
-      // ignore parse errors — don't block checkout
+    // Handle both old string format and new object format
+    let parsedAddress: AddressFields;
+    if (typeof user.address === "string") {
+      parsedAddress = parseAddress(user.address);
+    } else if (user.address) {
+      parsedAddress = user.address;
+    } else {
+      parsedAddress = createEmptyAddressFields();
     }
-  }, [user]);
+
+    const ensureValue = (
+      field: keyof CheckoutDetailsFormValues,
+      nextValue:
+        | string
+        | {
+            streetAddress: string;
+            city: string;
+            postalCode: string;
+            deliveryNotes: string;
+          },
+    ) => {
+      const currentValue = form.getValues(field);
+      if (
+        !currentValue ||
+        (typeof currentValue === "string" && !currentValue.trim())
+      ) {
+        form.setValue(field, nextValue as any, {
+          shouldDirty: false,
+          shouldValidate: false,
+        });
+      }
+    };
+
+    ensureValue("customerName", user.name ?? "");
+    if (user.email) {
+      form.setValue("customerEmail", user.email, {
+        shouldDirty: false,
+        shouldValidate: false,
+      });
+    }
+    ensureValue("phone", user.phone ?? "");
+
+    // Always update address if user has address data and current address is empty
+    const currentAddress = form.getValues("address");
+    const isCurrentAddressEmpty =
+      !currentAddress ||
+      (!currentAddress.streetAddress?.trim() &&
+        !currentAddress.postalCode?.trim() &&
+        !currentAddress.city?.trim());
+    const hasUserAddress =
+      parsedAddress.streetAddress?.trim() ||
+      parsedAddress.postalCode?.trim() ||
+      parsedAddress.city?.trim();
+
+    if (isCurrentAddressEmpty && hasUserAddress) {
+      // Set address object directly
+      form.setValue(
+        "address",
+        {
+          streetAddress: parsedAddress.streetAddress || "",
+          city: parsedAddress.city || "",
+          postalCode: parsedAddress.postalCode || "",
+          deliveryNotes: parsedAddress.deliveryNotes || "",
+        },
+        {
+          shouldDirty: false,
+          shouldValidate: false,
+        },
+      );
+
+      // Also set individual fields to ensure they're properly bound
+      if (parsedAddress.streetAddress?.trim()) {
+        form.setValue("address.streetAddress", parsedAddress.streetAddress, {
+          shouldDirty: false,
+          shouldValidate: false,
+        });
+      }
+      if (parsedAddress.postalCode?.trim()) {
+        form.setValue("address.postalCode", parsedAddress.postalCode, {
+          shouldDirty: false,
+          shouldValidate: false,
+        });
+      }
+      if (parsedAddress.city?.trim()) {
+        form.setValue("address.city", parsedAddress.city, {
+          shouldDirty: false,
+          shouldValidate: false,
+        });
+      }
+      if (parsedAddress.deliveryNotes?.trim()) {
+        form.setValue("address.deliveryNotes", parsedAddress.deliveryNotes, {
+          shouldDirty: false,
+          shouldValidate: false,
+        });
+      }
+    }
+
+    const currentCourier = form.getValues("courierCityId");
+    if (!currentCourier) {
+      try {
+        const matched = COURIER_DELIVERY_CITIES.find((c) => {
+          const candidate = parsedAddress.city.toLowerCase();
+          return (
+            c.name.toLowerCase() === candidate ||
+            c.id.toLowerCase() === candidate
+          );
+        });
+        if (matched) {
+          form.setValue("courierCityId", matched.id, {
+            shouldDirty: false,
+            shouldValidate: false,
+          });
+        }
+      } catch {
+        // ignore parse errors — don't block checkout
+      }
+    }
+  }, [user, form]);
 
   const deliveryCost =
     deliveryType === "delivery" && selectedCourierCity
@@ -812,54 +1009,31 @@ export default function CheckoutPage() {
       : 0;
   const total = cartOnlyTotal + deliveryCost;
 
-  const shippingAddress = useMemo(
-    () =>
-      composeAddress({
-        streetAddress: formData.streetAddress,
-        postalCode: formData.postalCode,
-        city: formData.city,
-        deliveryNotes: formData.deliveryNotes,
-      }),
-    [
-      formData.streetAddress,
-      formData.postalCode,
-      formData.city,
-      formData.deliveryNotes,
-    ],
-  );
+  // Get shipping address directly from form values to ensure we use the latest input
+  const shippingAddress = useMemo(() => {
+    const formAddress = form.getValues("address");
+    return {
+      streetAddress: (
+        formAddress?.streetAddress ||
+        address.streetAddress ||
+        ""
+      ).trim(),
+      city: (formAddress?.city || address.city || "").trim(),
+      postalCode: (formAddress?.postalCode || address.postalCode || "").trim(),
+      deliveryNotes: (
+        formAddress?.deliveryNotes ||
+        address.deliveryNotes ||
+        ""
+      ).trim(),
+    };
+  }, [address, form]);
 
-  const normalizedShippingAddress = useMemo(() => {
-    const compiled = shippingAddress.trim();
-    if (compiled) {
-      return compiled;
-    }
-    if (deliveryType === "pickup") {
-      const storeAddress = `${STORE_INFO.address.street}, ${STORE_INFO.address.city}`;
-      return formData.deliveryNotes
-        ? `${storeAddress}\n${formData.deliveryNotes.trim()}`
-        : storeAddress;
-    }
-    return "";
-  }, [shippingAddress, deliveryType, formData.deliveryNotes]);
+  const _normalizedShippingAddress = useMemo(() => {
+    return shippingAddress;
+  }, [shippingAddress]);
 
   const isEmailReadOnly = Boolean(user?.email);
-
-  const isValidEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const hasDeliveryAddress =
-    formData.streetAddress.trim() !== "" &&
-    formData.postalCode.trim() !== "" &&
-    (deliveryType === "delivery"
-      ? Boolean(selectedCourierCity)
-      : formData.city.trim() !== "");
-
-  const isFormValid =
-    formData.customerName.trim() !== "" &&
-    formData.customerEmail.trim() !== "" &&
-    isValidEmail(formData.customerEmail) &&
-    (deliveryType === "delivery" ? hasDeliveryAddress : true) &&
-    (deliveryType === "pickup" ? pickupDateTime.trim() !== "" : true);
+  const isFormValid = form.formState.isValid;
 
   const checkoutItems: CheckoutItemInput[] = useMemo(() => {
     if (!itemsToDisplay) {
@@ -883,7 +1057,7 @@ export default function CheckoutPage() {
     });
   }, [itemsToDisplay]);
 
-  const cartSignature = useMemo(() => {
+  const _cartSignature = useMemo(() => {
     return JSON.stringify({
       items: checkoutItems.map((item) => ({
         productId: item.productId,
@@ -892,9 +1066,9 @@ export default function CheckoutPage() {
       })),
       deliveryType,
       pickupDateTime,
-      address: normalizedShippingAddress,
-      email: formData.customerEmail,
-      name: formData.customerName,
+      address: shippingAddress,
+      email: customerEmail,
+      name: customerName,
       total,
       paymentMethod,
     });
@@ -902,34 +1076,51 @@ export default function CheckoutPage() {
     checkoutItems,
     deliveryType,
     pickupDateTime,
-    normalizedShippingAddress,
-    formData.customerEmail,
-    formData.customerName,
+    customerEmail,
+    customerName,
     total,
     paymentMethod,
+    shippingAddress,
   ]);
 
   const handleDeliveryTypeChange = (type: DeliveryType) => {
-    setDeliveryType(type);
+    form.setValue("deliveryType", type, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
     if (type === "delivery") {
-      setPickupDateTime("");
-      if (!selectedCourierCityId) {
-        setFormData((prev) => ({
-          ...prev,
-          city: "",
-        }));
+      form.setValue("pickupDateTime", "", {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      if (!form.getValues("courierCityId")) {
+        const currentAddress =
+          form.getValues("address") ?? createEmptyAddressFields();
+        form.setValue(
+          "address",
+          { ...currentAddress, city: "" },
+          {
+            shouldDirty: false,
+            shouldValidate: false,
+          },
+        );
       }
     }
   };
 
   const handleCourierCitySelect = (cityId: string) => {
-    setSelectedCourierCityId(cityId);
     const city = COURIER_DELIVERY_CITIES.find((option) => option.id === cityId);
     if (city) {
-      setFormData((prev) => ({
-        ...prev,
-        city: city.name,
-      }));
+      const currentAddress =
+        form.getValues("address") ?? createEmptyAddressFields();
+      form.setValue(
+        "address",
+        { ...currentAddress, city: city.name },
+        {
+          shouldDirty: true,
+          shouldValidate: true,
+        },
+      );
     }
   };
 
@@ -941,6 +1132,20 @@ export default function CheckoutPage() {
   };
 
   const handleWhatsAppConfirm = () => {
+    // Get all current values from form to ensure we use the latest input
+    const formValues = form.getValues();
+    const currentAddress = formValues.address ?? createEmptyAddressFields();
+    const currentShippingAddress = {
+      streetAddress: (currentAddress.streetAddress || "").trim(),
+      city: (currentAddress.city || "").trim(),
+      postalCode: (currentAddress.postalCode || "").trim(),
+      deliveryNotes: (currentAddress.deliveryNotes || "").trim(),
+    };
+    const currentCustomerName = (formValues.customerName || "").trim();
+    const currentCustomerEmail = (formValues.customerEmail || "").trim();
+    const currentDeliveryType = formValues.deliveryType;
+    const currentPickupDateTime = (formValues.pickupDateTime || "").trim();
+
     const itemsList = (itemsToDisplay ?? []).map((item) => {
       const name = isServerCartItem(item)
         ? item.product.name
@@ -951,11 +1156,11 @@ export default function CheckoutPage() {
     });
 
     const message = WHATSAPP_MESSAGES.orderConfirmationDe(
-      formData.customerName,
-      formData.customerEmail,
-      normalizedShippingAddress,
-      deliveryType,
-      pickupDateTime,
+      currentCustomerName,
+      currentCustomerEmail,
+      composeAddress(currentShippingAddress),
+      currentDeliveryType,
+      currentPickupDateTime,
       itemsList,
       Math.round(total * 100) / 100,
     );
@@ -1001,7 +1206,8 @@ export default function CheckoutPage() {
   ]);
 
   const handleCashCheckout = useCallback(async () => {
-    if (!isFormValid) {
+    const isReady = await form.trigger();
+    if (!isReady) {
       toast.error("Please add contact details and your address first.");
       return;
     }
@@ -1016,33 +1222,52 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Get all current values from form to ensure we use the latest input
+    const formValues = form.getValues();
+    const currentAddress = formValues.address ?? createEmptyAddressFields();
+    const currentShippingAddress = {
+      streetAddress: (currentAddress.streetAddress || "").trim(),
+      city: (currentAddress.city || "").trim(),
+      postalCode: (currentAddress.postalCode || "").trim(),
+      deliveryNotes: (currentAddress.deliveryNotes || "").trim(),
+    };
+    const currentCustomerName = (formValues.customerName || "").trim();
+    const currentCustomerEmail = (formValues.customerEmail || "").trim();
+    const _currentPhone = (formValues.phone || "").trim();
+    const currentDeliveryType = formValues.deliveryType;
+    const currentPickupDateTime = (formValues.pickupDateTime || "").trim();
+
     setIsCashSubmitting(true);
     try {
       let orderId: Id<"orders"> | null = null;
 
       if (isAuthenticated) {
         orderId = await createOrder({
-          customerName: formData.customerName,
-          customerEmail: formData.customerEmail,
-          shippingAddress: normalizedShippingAddress,
-          deliveryType,
+          customerName: currentCustomerName,
+          customerEmail: currentCustomerEmail,
+          shippingAddress: currentShippingAddress,
+          deliveryType: currentDeliveryType,
           paymentMethod,
           whatsappConfirmed:
             paymentMethod === "cash" ? whatsappConfirmed : undefined,
           pickupDateTime:
-            deliveryType === "pickup" ? pickupDateTime : undefined,
+            currentDeliveryType === "pickup"
+              ? currentPickupDateTime
+              : undefined,
         });
       } else {
         orderId = await createGuestOrder({
-          customerName: formData.customerName,
-          customerEmail: formData.customerEmail,
-          shippingAddress: normalizedShippingAddress,
-          deliveryType,
+          customerName: currentCustomerName,
+          customerEmail: currentCustomerEmail,
+          shippingAddress: currentShippingAddress,
+          deliveryType: currentDeliveryType,
           paymentMethod,
           whatsappConfirmed:
             paymentMethod === "cash" ? whatsappConfirmed : undefined,
           pickupDateTime:
-            deliveryType === "pickup" ? pickupDateTime : undefined,
+            currentDeliveryType === "pickup"
+              ? currentPickupDateTime
+              : undefined,
           items: guestItems.map((item) => ({
             productId: item.productId as Id<"products">,
             quantity: item.quantity,
@@ -1063,7 +1288,7 @@ export default function CheckoutPage() {
       setIsCashSubmitting(false);
     }
   }, [
-    isFormValid,
+    form,
     paymentMethod,
     whatsappConfirmed,
     itemsToDisplay,
@@ -1071,11 +1296,6 @@ export default function CheckoutPage() {
     createOrder,
     createGuestOrder,
     guestItems,
-    deliveryType,
-    pickupDateTime,
-    formData.customerName,
-    formData.customerEmail,
-    normalizedShippingAddress,
     clearGuestCart,
     router,
   ]);
@@ -1090,7 +1310,8 @@ export default function CheckoutPage() {
       paymentSource: "card" | "payment_request";
       stripe: import("@stripe/stripe-js").Stripe | null;
     }) => {
-      if (!isFormValid) {
+      const isReady = await form.trigger();
+      if (!isReady) {
         throw new Error("Fill in the contact details to continue to payment.");
       }
       if (checkoutItems.length === 0) {
@@ -1122,20 +1343,51 @@ export default function CheckoutPage() {
         setIsAwaitingOrder(true);
       };
 
+      // Get all current values from form to ensure we use the latest input
+      const formValues = form.getValues();
+      const currentAddress = formValues.address ?? createEmptyAddressFields();
+      const currentShippingAddress = {
+        streetAddress: (currentAddress.streetAddress || "").trim(),
+        city: (currentAddress.city || "").trim(),
+        postalCode: (currentAddress.postalCode || "").trim(),
+        deliveryNotes: (currentAddress.deliveryNotes || "").trim(),
+      };
+      const currentCustomerName = (formValues.customerName || "").trim();
+      const currentCustomerEmail = (formValues.customerEmail || "").trim();
+      const currentPhone = (formValues.phone || "").trim();
+      const currentDeliveryType = formValues.deliveryType;
+      const currentPickupDateTime = (formValues.pickupDateTime || "").trim();
+
+      // Recalculate cart signature with current form values to ensure data integrity
+      const currentCartSignature = JSON.stringify({
+        items: checkoutItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          personalization: item.personalization ?? null,
+        })),
+        deliveryType: currentDeliveryType,
+        pickupDateTime: currentPickupDateTime,
+        address: currentShippingAddress,
+        email: currentCustomerEmail,
+        name: currentCustomerName,
+        total,
+        paymentMethod,
+      });
+
       try {
         const response = await submitStripePayment({
           items: checkoutItems,
           customer: {
-            name: formData.customerName,
-            email: formData.customerEmail,
-            phone: formData.phone.trim() || undefined,
+            name: currentCustomerName,
+            email: currentCustomerEmail,
+            phone: currentPhone || undefined,
           },
           shipping: {
-            address: normalizedShippingAddress,
-            deliveryType,
+            address: currentShippingAddress,
+            deliveryType: currentDeliveryType,
             pickupDateTime:
-              deliveryType === "pickup"
-                ? pickupDateTime || undefined
+              currentDeliveryType === "pickup"
+                ? currentPickupDateTime || undefined
                 : undefined,
             deliveryFee: deliveryCost || undefined,
           },
@@ -1145,7 +1397,7 @@ export default function CheckoutPage() {
             currency: DISPLAY_CURRENCY,
           },
           paymentMethodId,
-          cartSignature,
+          cartSignature: currentCartSignature,
           paymentSource,
         });
 
@@ -1199,28 +1451,53 @@ export default function CheckoutPage() {
       }
     },
     [
-      isFormValid,
+      form,
       checkoutItems,
       submitStripePayment,
-      formData.customerName,
-      formData.customerEmail,
-      formData.phone,
-      normalizedShippingAddress,
-      deliveryType,
-      pickupDateTime,
       deliveryCost,
       total,
-      cartSignature,
+      paymentMethod,
       syncStripePaymentIntent,
     ],
   );
 
-  const proceedToPaymentStep = () => {
-    if (!isFormValid) {
-      toast.error("Please complete all required fields.");
+  const proceedToPaymentStep = async () => {
+    // Trigger validation for all fields to show errors
+    const isReady = await form.trigger();
+    if (!isReady) {
+      // Wait a bit for error messages to render, then scroll to first error
+      setTimeout(() => {
+        // Find first error message (FormMessage has role="alert")
+        const firstErrorMessage = document.querySelector('[role="alert"]');
+        if (firstErrorMessage) {
+          // Scroll to the form item containing the error
+          const formItem = firstErrorMessage.closest('[data-slot="form-item"]');
+          if (formItem) {
+            formItem.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else {
+            firstErrorMessage.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }
+        }
+      }, 100);
       return;
     }
     setCurrentStep(2);
+
+    // Smooth scroll to the top of the checkout form container
+    if (typeof window !== "undefined") {
+      try {
+        const mainEl = document.querySelector("main.container");
+        const top = mainEl
+          ? mainEl.getBoundingClientRect().top + window.scrollY
+          : 0;
+        window.scrollTo({ top, behavior: "smooth" });
+      } catch (_e) {
+        // fail silently if scrolling is not available
+      }
+    }
   };
 
   const returnToDetailsStep = () => {
@@ -1279,16 +1556,11 @@ export default function CheckoutPage() {
             <section className="space-y-6">
               {currentStep === 1 ? (
                 <StepOne
-                  formData={formData}
-                  setFormData={setFormData}
-                  isValidEmail={isValidEmail}
+                  form={form}
                   deliveryType={deliveryType}
                   selectedCourierCity={selectedCourierCity}
-                  selectedCourierCityId={selectedCourierCityId}
                   courierCities={COURIER_DELIVERY_CITIES}
                   onCourierCitySelect={handleCourierCitySelect}
-                  pickupDateTime={pickupDateTime}
-                  setPickupDateTime={setPickupDateTime}
                   handleDeliveryTypeChange={handleDeliveryTypeChange}
                   proceedToPaymentStep={proceedToPaymentStep}
                   isFormValid={isFormValid}
@@ -1306,9 +1578,9 @@ export default function CheckoutPage() {
                   handleCashCheckout={handleCashCheckout}
                   returnToDetailsStep={returnToDetailsStep}
                   customer={{
-                    name: formData.customerName,
-                    email: formData.customerEmail,
-                    phone: formData.phone,
+                    name: customerName,
+                    email: customerEmail,
+                    phone,
                   }}
                   total={total}
                   isSubmittingPayment={isSubmittingPayment}
@@ -1336,272 +1608,297 @@ export default function CheckoutPage() {
 }
 
 type StepOneProps = {
-  formData: CheckoutFormData;
-  setFormData: React.Dispatch<React.SetStateAction<CheckoutFormData>>;
-  isValidEmail: (email: string) => boolean;
+  form: UseFormReturn<CheckoutDetailsFormValues>;
   deliveryType: DeliveryType;
   selectedCourierCity?: CourierDeliveryCity;
-  selectedCourierCityId: string | null;
   courierCities: CourierDeliveryCity[];
   onCourierCitySelect: (cityId: string) => void;
-  pickupDateTime: string;
-  setPickupDateTime: (value: string) => void;
   handleDeliveryTypeChange: (type: DeliveryType) => void;
-  proceedToPaymentStep: () => void;
+  proceedToPaymentStep: () => Promise<void>;
   isFormValid: boolean;
   isEmailReadOnly: boolean;
 };
 
 function StepOne({
-  formData,
-  setFormData,
-  isValidEmail,
+  form,
   deliveryType,
   selectedCourierCity,
-  selectedCourierCityId,
   courierCities,
   onCourierCitySelect,
-  pickupDateTime,
-  setPickupDateTime,
   handleDeliveryTypeChange,
   proceedToPaymentStep,
   isFormValid,
   isEmailReadOnly,
 }: StepOneProps) {
-  const emailHasError =
-    formData.customerEmail.trim() !== "" &&
-    !isValidEmail(formData.customerEmail);
-  const _courierDescription = selectedCourierCity
-    ? `+${formatCurrency(selectedCourierCity.price)} · ${
-        selectedCourierCity.etaDays.min
-      }-${selectedCourierCity.etaDays.max} days`
-    : "Select a courier city to see price & ETA";
-
   return (
-    <div className="space-y-6">
-      <div className="rounded-3xl bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">Contact details</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          We send receipts and order updates to this information.
-        </p>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <label className="flex flex-col gap-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <User className="h-4 w-4" /> Full name
-            </span>
-            <input
-              type="text"
-              value={formData.customerName}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  customerName: event.target.value,
-                }))
-              }
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
-              placeholder="e.g., Anna Mayer"
-              autoComplete="name"
-            />
-          </label>
-          <label className="flex flex-col gap-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <Mail className="h-4 w-4" /> Email for receipts
-            </span>
-            <input
-              type="email"
-              value={formData.customerEmail}
-              readOnly={isEmailReadOnly}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  customerEmail: event.target.value,
-                }))
-              }
-              className={`rounded-xl border px-4 py-3 transition outline-none ${
-                emailHasError
-                  ? "border-red-500"
-                  : "focus:border-secondary border-gray-200"
-              } ${isEmailReadOnly ? "bg-gray-50 text-gray-500" : ""}`}
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-            {isEmailReadOnly && (
-              <span className="text-xs text-gray-500">
-                Email comes from your profile. Update it from the Profile page.
-              </span>
-            )}
-          </label>
-          <label className="flex flex-col gap-2 md:col-span-2">
-            <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <Phone className="h-4 w-4" /> Phone number (optional)
-            </span>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(event) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  phone: event.target.value,
-                }))
-              }
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
-              placeholder="Include country code"
-              autoComplete="tel"
-            />
-          </label>
-        </div>
-      </div>
-
-      <div className="rounded-3xl bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">
-          How would you like to receive your balloons?
-        </h2>
-        <div className="mt-4 space-y-3">
-          <OptionCard
-            icon={<Store className="text-secondary h-5 w-5" />}
-            title="Self pickup"
-            description={`${STORE_INFO.address.street}, ${STORE_INFO.address.city}`}
-            selected={deliveryType === "pickup"}
-            onSelect={() => handleDeliveryTypeChange("pickup")}
-            badge="Popular"
-          />
-          <OptionCard
-            icon={<Truck className="text-secondary h-5 w-5" />}
-            title={`Courier delivery (${STORE_INFO.delivery.hours})`}
-            description="Choose your city"
-            selected={deliveryType === "delivery"}
-            onSelect={() => handleDeliveryTypeChange("delivery")}
-          />
-        </div>
-        {deliveryType === "pickup" && (
-          <label className="mt-4 flex flex-col gap-2">
-            <span className="text-sm font-medium text-gray-700">
-              Preferred pickup date & time (
-              {STORE_INFO.orderPolicy.minPickupDays} days ahead minimum)
-            </span>
-            <input
-              type="datetime-local"
-              value={pickupDateTime}
-              onChange={(event) => setPickupDateTime(event.target.value)}
-              min={getMinPickupDateTime()}
-              className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
-            />
-          </label>
-        )}
-      </div>
-
-      {deliveryType === "delivery" && (
+    <Form {...form}>
+      <div className="space-y-6">
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">
-            Delivery details
+            Contact details
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Address fields are prefilled from your profile so checkout stays
-            fast.
+            We send receipts and order updates to this information.
           </p>
           <div className="mt-5 grid gap-4 md:grid-cols-2">
-            {deliveryType === "delivery" && (
-              <div className="space-y-3 md:col-span-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">
-                    Courier service areas
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    Tap a city to select
-                  </span>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {courierCities.map((city) => (
-                    <CourierCityCard
-                      key={city.id}
-                      city={city}
-                      selected={selectedCourierCityId === city.id}
-                      onSelect={() => onCourierCitySelect(city.id)}
+            <FormField
+              control={form.control}
+              name="customerName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <User className="h-4 w-4" /> Full name
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g., Anna Mayer"
+                      autoComplete="name"
+                      className="rounded-xl border-gray-200 px-4 py-3 text-base"
+                      maxLength={100}
                     />
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500">
-                  Need another city? Message us on WhatsApp and we’ll help
-                  arrange a custom route.
-                </p>
-              </div>
-            )}
-            <label className="flex flex-col gap-2 md:col-span-2">
-              <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                <MapPin className="h-4 w-4" /> Street and house number
-              </span>
-              <input
-                type="text"
-                value={formData.streetAddress}
-                onChange={(event) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    streetAddress: event.target.value,
-                  }))
-                }
-                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
-                placeholder="Mariahilfer Str. 10"
-                autoComplete="address-line1"
-              />
-            </label>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="customerEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <Mail className="h-4 w-4" /> Email for receipts
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      readOnly={isEmailReadOnly}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      className={`px-4 py-3 text-base ${
+                        isEmailReadOnly ? "bg-gray-50 text-gray-500" : ""
+                      }`}
+                      maxLength={100}
+                    />
+                  </FormControl>
 
-            <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-gray-700">
-                Postal code
-              </span>
-              <input
-                type="text"
-                value={formData.postalCode}
-                onChange={(event) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    postalCode: event.target.value,
-                  }))
-                }
-                className="focus:border-secondary rounded-xl border border-gray-200 px-4 py-3 transition outline-none"
-                placeholder="1070"
-                autoComplete="postal-code"
-              />
-            </label>
-            <label className="flex flex-col gap-2 md:col-span-2">
-              <span className="text-sm font-medium text-gray-700">
-                Notes for courier or pickup
-              </span>
-              <textarea
-                rows={3}
-                value={formData.deliveryNotes}
-                onChange={(event) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    deliveryNotes: event.target.value,
-                  }))
-                }
-                className="focus:border-secondary rounded-2xl border border-gray-200 px-4 py-3 text-sm transition outline-none"
-                placeholder="Door code, floor, or pickup preferences"
-                autoComplete="address-line2"
-              />
-            </label>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem className="md:col-span-2">
+                  <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <Phone className="h-4 w-4" /> Phone number (optional)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="tel"
+                      placeholder="Include country code"
+                      autoComplete="tel"
+                      className="rounded-xl border-gray-200 px-4 py-3 text-base"
+                      maxLength={30}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
-      )}
 
-      <div className="border-secondary/40 bg-secondary/5 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-dashed px-6 py-4">
-        <div>
-          <p className="text-sm font-semibold text-gray-900">Step 1 of 2</p>
-          <p className="text-xs text-gray-600">
-            Continue to payments once the form is complete.
-          </p>
+        <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900">
+            How would you like to receive your balloons?
+          </h2>
+          <div className="mt-4 space-y-3">
+            <OptionCard
+              icon={<Store className="text-secondary h-5 w-5" />}
+              title="Self pickup"
+              description={`${STORE_INFO.address.street}, ${STORE_INFO.address.city}`}
+              selected={deliveryType === "pickup"}
+              onSelect={() => handleDeliveryTypeChange("pickup")}
+              badge="Popular"
+            />
+            <OptionCard
+              icon={<Truck className="text-secondary h-5 w-5" />}
+              title={`Courier delivery (${STORE_INFO.delivery.hours})`}
+              description={
+                selectedCourierCity
+                  ? `+${formatCurrency(selectedCourierCity.price)} · ${selectedCourierCity.etaDays.min}-${selectedCourierCity.etaDays.max} days`
+                  : "Choose your city"
+              }
+              selected={deliveryType === "delivery"}
+              onSelect={() => handleDeliveryTypeChange("delivery")}
+            />
+          </div>
+          {deliveryType === "pickup" && (
+            <FormField
+              control={form.control}
+              name="pickupDateTime"
+              render={({ field }) => (
+                <FormItem className="mt-4 flex flex-col gap-2">
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Preferred pickup date & time (
+                    {STORE_INFO.orderPolicy.minPickupDays} days ahead minimum)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="datetime-local"
+                      min={getMinPickupDateTime()}
+                      className="rounded-xl border-gray-200 px-4 py-3 text-base"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
-        <button
-          type="button"
-          onClick={proceedToPaymentStep}
-          disabled={!isFormValid}
-          className="btn-accent rounded-full px-6 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Go to payment
-        </button>
+
+        {deliveryType === "delivery" && (
+          <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Delivery details
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Address fields are prefilled from your profile so checkout stays
+              fast.
+            </p>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="courierCityId"
+                render={({ field }) => (
+                  <FormItem className="space-y-3 md:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Courier service areas
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        Tap a city to select
+                      </span>
+                    </div>
+                    <FormControl>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {courierCities.map((city) => (
+                          <CourierCityCard
+                            key={city.id}
+                            city={city}
+                            selected={(field.value ?? null) === city.id}
+                            onSelect={() => {
+                              field.onChange(city.id);
+                              onCourierCitySelect(city.id);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </FormControl>
+                    <p className="text-xs text-gray-500">
+                      Need another city? Message us on WhatsApp and we’ll help
+                      arrange a custom route.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address.streetAddress"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <MapPin className="h-4 w-4" /> Street and house number
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Mariahilfer Str. 10"
+                        autoComplete="address-line1"
+                        className="rounded-xl border-gray-200 px-4 py-3 text-base"
+                        maxLength={200}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address.postalCode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Postal code
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="1070"
+                        autoComplete="postal-code"
+                        className="rounded-xl border-gray-200 px-4 py-3 text-base"
+                        maxLength={10}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address.deliveryNotes"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Notes for courier or pickup
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        rows={3}
+                        placeholder="Door code, floor, or pickup preferences"
+                        autoComplete="address-line2"
+                        className="rounded-2xl border-gray-200 px-4 py-3 text-sm"
+                        maxLength={500}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="border-secondary/40 bg-secondary/5 flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-dashed px-6 py-4">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">Step 1 of 2</p>
+            <p className="text-xs text-gray-600">
+              Continue to payments once the form is complete.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              void proceedToPaymentStep();
+            }}
+            className="btn-accent rounded-full px-6 py-3 text-sm font-semibold"
+          >
+            Go to payment
+          </button>
+        </div>
       </div>
-    </div>
+    </Form>
   );
 }
 

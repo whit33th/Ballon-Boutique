@@ -13,7 +13,7 @@ const buttonVariants = cva(
         default:
           "bg-accent text-on-accent pointer-fine:hover:brightness-95 pointer-coarse:active:brightness-95",
         destructive:
-          "bg-red-600 text-white pointer-fine:hover:bg-red-600/90 pointer-coarse:active:bg-red-600/90 focus-visible:ring-red-600/20 dark:focus-visible:ring-red-600/40 dark:bg-red-600/60",
+          "bg-red-500 text-white pointer-fine:hover:bg-red-600/90 pointer-coarse:active:bg-red-600/90 focus-visible:ring-red-600/20 dark:focus-visible:ring-red-600/40 dark:bg-red-600/60",
         outline:
           "border bg-background shadow-xs pointer-fine:hover:bg-accent pointer-fine:hover:text-accent-foreground pointer-coarse:active:bg-accent pointer-coarse:active:text-accent-foreground dark:bg-input/30 dark:border-input dark:pointer-fine:hover:bg-input/50 dark:pointer-coarse:active:bg-input/50",
         secondary:

@@ -18,6 +18,7 @@ import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { getFormattedAddress, STORE_INFO } from "@/constants/config";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
+import { composeAddress } from "@/lib/address";
 
 const formatCurrency = (value: number, currency = "EUR") =>
   new Intl.NumberFormat("en-US", {
@@ -246,7 +247,11 @@ export default function CheckoutConfirmantPage() {
                 {order.customerName}
               </p>
               <p className="text-sm whitespace-pre-line text-gray-600">
-                {order.shippingAddress}
+                {typeof order.shippingAddress === "string" 
+                  ? order.shippingAddress 
+                  : order.shippingAddress 
+                    ? composeAddress(order.shippingAddress)
+                    : "—"}
               </p>
             </div>
           </div>
@@ -282,6 +287,11 @@ export default function CheckoutConfirmantPage() {
                     : String(order.paymentMethod)
               : "";
             const deliveryFeeForPrint = order.deliveryFee ?? 0;
+            const shippingAddressForPrint = typeof order.shippingAddress === "string"
+              ? order.shippingAddress
+              : order.shippingAddress
+                ? composeAddress(order.shippingAddress)
+                : "—";
 
             const lines = order.items
               .map((it) => {
@@ -302,8 +312,7 @@ export default function CheckoutConfirmantPage() {
                   <h1>${title}</h1>
                   <div>Customer: ${order.customerName} (${order.customerEmail})</div>
                   ${customerPhone ? `<div>Phone: ${customerPhone}</div>` : ""}
-                  <div>Shipping: ${order.shippingAddress}</div>
-                  ${customerPhone ? `<div>Phone: ${customerPhone}</div>` : ""}
+                  <div>Shipping: ${shippingAddressForPrint}</div>
                   ${paymentLabel ? `<div>Payment method: ${paymentLabel}</div>` : ""}
                   <hr/>
                   

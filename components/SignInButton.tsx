@@ -9,7 +9,8 @@ export function SignInButton() {
     <button
       type="submit"
       onClick={() => {
-        void signIn("password");
+        // New Convex API expects a `flow` first (e.g. "signIn")
+        void signIn("signIn");
       }}
     >
       Sign in

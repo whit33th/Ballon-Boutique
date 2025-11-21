@@ -187,6 +187,7 @@ export function ProductForm({
                     <Input
                       {...field}
                       placeholder="Aurora Glow Balloon"
+                      className="px-2.5"
                       aria-invalid={fieldState.invalid}
                     />
                   </FormControl>
@@ -204,6 +205,7 @@ export function ProductForm({
                   <FormControl>
                     <Input
                       {...field}
+                      className="px-2.5"
                       type="number"
                       inputMode="decimal"
                       step="0.1"

@@ -1,11 +1,12 @@
-
+import Google from "@auth/core/providers/google";
 import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth, getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { query } from "./_generated/server";
+import { optionalAddressValidator } from "./validators/address";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Password],
+  providers: [Password, Google],
 });
 
 export const loggedInUser = query({
@@ -16,9 +17,10 @@ export const loggedInUser = query({
       name: v.optional(v.string()),
       email: v.optional(v.string()),
       phone: v.optional(v.string()),
-      address: v.optional(v.string()),
+      address: optionalAddressValidator,
       isAdmin: v.optional(v.boolean()),
       imageFileId: v.optional(v.union(v.id("_storage"), v.string())),
+      image: v.optional(v.string()),
     }),
     v.null(),
   ),
@@ -40,6 +42,7 @@ export const loggedInUser = query({
       address: user.address ?? undefined,
       isAdmin: user.isAdmin ?? undefined,
       imageFileId: user.imageFileId ?? undefined,
+      image: user.image ?? undefined,
     };
   },
 });

@@ -3,6 +3,7 @@ import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { ensureAdmin } from "./helpers/admin";
 import { requireUser } from "./helpers/auth";
+import { addressValidator } from "./validators/address";
 import { orderItemValidator, orderStatusValidator } from "./validators/order";
 
 const orderValidator = v.object({
@@ -14,7 +15,7 @@ const orderValidator = v.object({
   status: orderStatusValidator,
   customerEmail: v.string(),
   customerName: v.string(),
-  shippingAddress: v.string(),
+  shippingAddress: addressValidator,
   deliveryType: v.optional(v.union(v.literal("pickup"), v.literal("delivery"))),
   paymentMethod: v.optional(
     v.union(
@@ -35,7 +36,7 @@ export const createGuest = mutation({
   args: {
     customerName: v.string(),
     customerEmail: v.string(),
-    shippingAddress: v.string(),
+    shippingAddress: addressValidator,
     deliveryType: v.union(v.literal("pickup"), v.literal("delivery")),
     paymentMethod: v.union(
       v.literal("full_online"),
@@ -140,7 +141,7 @@ export const create = mutation({
   args: {
     customerName: v.string(),
     customerEmail: v.string(),
-    shippingAddress: v.string(),
+    shippingAddress: addressValidator,
     deliveryType: v.union(v.literal("pickup"), v.literal("delivery")),
     paymentMethod: v.union(
       v.literal("full_online"),

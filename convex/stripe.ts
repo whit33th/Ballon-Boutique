@@ -174,7 +174,20 @@ export const submitPayment = action({
       receiptEmail: args.customer.email,
       customerName: args.customer.name,
       customerPhone: args.customer.phone,
-      shippingAddress: args.shipping.address,
+      shippingAddress: (() => {
+        const addr = args.shipping.address;
+        if (typeof addr === "string") {
+          return addr;
+        }
+        // Format address for Stripe: street, postalCode city, notes
+        const streetLine = addr.streetAddress.trim();
+        const cityLine = [addr.postalCode.trim(), addr.city.trim()]
+          .filter(Boolean)
+          .join(" ")
+          .trim();
+        const notesLine = addr.deliveryNotes.trim();
+        return [streetLine, cityLine, notesLine].filter(Boolean).join("\n").trim();
+      })(),
       metadata,
       paymentMethodId: args.paymentMethodId,
       description: `${args.customer.name} order`,

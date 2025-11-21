@@ -1,20 +1,28 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { STORE_INFO } from "@/constants/config";
 import { COURIER_DELIVERY_CITIES } from "@/constants/delivery";
 import { api } from "@/convex/_generated/api";
 import { useConvexAvatarStorage } from "@/hooks/useConvexAvatarStorage";
-import {
-  type AddressFields,
-  composeAddress,
-  createEmptyAddressFields,
-  parseAddress,
-} from "@/lib/address";
+import { createEmptyAddressFields } from "@/lib/address";
 import { AvatarPanel } from "./_components/AvatarPanel";
 import { InfoTile } from "./_components/InfoTile";
 import { OrdersPanel } from "./_components/OrdersPanel";
@@ -39,11 +47,93 @@ const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 const tabButtonId = (tabId: TabId) => `profile-tab-${tabId}`;
 const tabPanelId = (tabId: TabId) => `profile-panel-${tabId}`;
 
-type ProfileFormData = {
-  name: string;
-  email: string;
-  phone: string;
-} & AddressFields;
+const phoneRegex = /^[+]?[\d\s()-]{6,}$/;
+
+const profileDetailsSchema = z.object({
+  name: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || val.trim().length === 0 || val.trim().length >= 2,
+      {
+        message: "Full name must be at least 2 characters.",
+      },
+    ),
+  email: z
+    .string()
+    .optional()
+    .refine(
+      (val) =>
+        !val ||
+        val.trim().length === 0 ||
+        z.string().email().safeParse(val).success,
+      {
+        message: "Enter a valid email address or leave the field empty.",
+      },
+    ),
+  phone: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || val.trim().length === 0) return true;
+        const trimmed = val.trim();
+        return trimmed.length <= 30 && phoneRegex.test(trimmed);
+      },
+      {
+        message: "Phone number must be 6-30 characters and valid format.",
+      },
+    ),
+  address: z
+    .object({
+      streetAddress: z
+        .string()
+        .refine(
+          (val) =>
+            !val ||
+            val.trim().length === 0 ||
+            (val.trim().length >= 3 && val.trim().length <= 200),
+          {
+            message: "Street and house number must be 3-200 characters.",
+          },
+        )
+        .default(""),
+      city: z
+        .string()
+        .refine(
+          (val) =>
+            !val ||
+            val.trim().length === 0 ||
+            (val.trim().length >= 2 && val.trim().length <= 100),
+          {
+            message: "City must be 2-100 characters.",
+          },
+        )
+        .default(""),
+      postalCode: z
+        .string()
+        .refine(
+          (val) =>
+            !val || val.trim().length === 0 || /^\d{3,10}$/.test(val.trim()),
+          {
+            message: "Postal code must be 3-10 digits.",
+          },
+        )
+        .default(""),
+      deliveryNotes: z
+        .string()
+        .refine(
+          (val) => !val || val.trim().length === 0 || val.trim().length <= 500,
+          {
+            message: "Delivery notes must be under 500 characters.",
+          },
+        )
+        .default(""),
+    })
+    .optional(),
+});
+
+type ProfileFormData = z.input<typeof profileDetailsSchema>;
 
 interface IProfilePage {
   preloadedUser: Preloaded<typeof api.auth.loggedInUser>;
@@ -55,48 +145,56 @@ export default function ProfilePageClient({
   preloadedOrders,
 }: IProfilePage) {
   const user = usePreloadedQuery(preloadedUser);
+
   const orders = usePreloadedQuery(preloadedOrders);
   const updateProfile = useMutation(api.users.updateProfile);
   const updateAvatar = useMutation(api.users.updateAvatar);
+  const deleteAccount = useMutation(api.users.deleteAccount);
 
   const [activeTab, setActiveTab] = useState<TabId>("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [formData, setFormData] = useState<ProfileFormData>(() => ({
-    name: "",
-    email: "",
-    phone: "",
-    ...createEmptyAddressFields(),
-  }));
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const form = useForm<ProfileFormData>({
+    resolver: zodResolver(profileDetailsSchema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      address: createEmptyAddressFields(),
+    },
+  });
 
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const _hasRedirected = useRef(false);
-  const { avatarUrl, uploadAvatar } = useConvexAvatarStorage(
-    user?.imageFileId ?? null,
-  );
+  const { uploadAvatar } = useConvexAvatarStorage(user?.imageFileId ?? null);
 
   const resetFormFromUser = useCallback(() => {
     if (!user) {
-      setFormData({
+      form.reset({
         name: "",
         email: "",
         phone: "",
-        ...createEmptyAddressFields(),
+        address: createEmptyAddressFields(),
       });
       return;
     }
 
-    const parsedAddress = parseAddress(user.address);
+    const addressFields = user.address ?? createEmptyAddressFields();
 
-    setFormData({
+    form.reset({
       name: user.name ?? "",
       email: user.email ?? "",
       phone: user.phone ?? "",
-      ...parsedAddress,
+      address: addressFields,
     });
-  }, [user]);
+  }, [user, form]);
 
   useEffect(() => {
     if (!isEditing) {
@@ -138,37 +236,48 @@ export default function ProfilePageClient({
     [updateAvatar, uploadAvatar],
   );
 
-  const handleUpdateProfile = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
-    event.preventDefault();
+  const handleUpdateProfile = form.handleSubmit(async (_data) => {
     try {
-      const normalizedAddress = composeAddress({
-        streetAddress: formData.streetAddress,
-        city: formData.city,
-        postalCode: formData.postalCode,
-        deliveryNotes: formData.deliveryNotes,
-      });
+      // Get all form values to ensure we capture empty strings
+      const formValues = form.getValues();
 
+      const addressFields = formValues.address
+        ? {
+            streetAddress: formValues.address.streetAddress ?? "",
+            city: formValues.address.city ?? "",
+            postalCode: formValues.address.postalCode ?? "",
+            deliveryNotes: formValues.address.deliveryNotes ?? "",
+          }
+        : createEmptyAddressFields();
+
+      // Always send fields if they are present in the form (even if empty)
+      // This allows clearing fields by sending empty strings
+      // If field exists in form (even if empty), send it to allow clearing
+      const phoneValue =
+        formValues.phone !== undefined ? formValues.phone.trim() : undefined;
+      const nameValue =
+        formValues.name !== undefined ? formValues.name.trim() : undefined;
+
+      // Email is read-only, don't send it in the update
       const updated = await updateProfile({
-        name: formData.name || undefined,
-        email: formData.email || undefined,
-        phone: formData.phone || undefined,
-        address: normalizedAddress || undefined,
+        name: nameValue !== undefined ? nameValue || "" : undefined,
+        phone: phoneValue !== undefined ? phoneValue || "" : undefined,
+        address: addressFields,
       });
-      const parsed = parseAddress(updated?.address);
-      setFormData({
+      const addressFieldsFromUpdate =
+        updated?.address ?? createEmptyAddressFields();
+      form.reset({
         name: updated?.name ?? "",
         email: updated?.email ?? "",
         phone: updated?.phone ?? "",
-        ...parsed,
+        address: addressFieldsFromUpdate,
       });
       toast.success("Profile updated successfully!");
       setIsEditing(false);
     } catch (_error) {
       toast.error("Failed to update profile");
     }
-  };
+  });
 
   // useEffect(() => {
   //   if (user === null && !hasRedirected.current) {
@@ -239,7 +348,7 @@ export default function ProfilePageClient({
             isUploadingAvatar={isUploadingAvatar}
             avatarInputRef={avatarInputRef}
             onAvatarFileChange={handleAvatarFileChange}
-            avatarUrl={avatarUrl}
+            avatarUrl={user?.image ?? null}
           />
         </motion.section>
 
@@ -363,62 +472,73 @@ export default function ProfilePageClient({
                   <label className={fieldLabelClass}>
                     Full name
                     <input
-                      value={formData.name}
-                      onChange={(event) =>
-                        setFormData({ ...formData, name: event.target.value })
-                      }
+                      {...form.register("name")}
                       className={fieldInputClass}
                       placeholder="Jane Balloon"
+                      maxLength={100}
                     />
+                    {form.formState.errors.name && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.name.message}
+                      </p>
+                    )}
                   </label>
                   <label className={fieldLabelClass}>
                     Email address
                     <input
                       type="email"
-                      value={formData.email}
-                      onChange={(event) =>
-                        setFormData({ ...formData, email: event.target.value })
-                      }
-                      className={fieldInputClass}
+                      {...form.register("email")}
+                      readOnly
+                      className={`${fieldInputClass} cursor-not-allowed opacity-60`}
                       placeholder="you@example.com"
+                      maxLength={100}
                     />
+                    {form.formState.errors.email && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.email.message}
+                      </p>
+                    )}
                   </label>
                   <label className={fieldLabelClass}>
                     Phone number
                     <input
-                      value={formData.phone}
-                      onChange={(event) =>
-                        setFormData({ ...formData, phone: event.target.value })
-                      }
+                      {...form.register("phone")}
                       className={fieldInputClass}
                       placeholder="Include country code"
+                      maxLength={30}
                     />
+                    {form.formState.errors.phone && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.phone.message}
+                      </p>
+                    )}
                   </label>
                   <label className={`${fieldLabelClass} md:col-span-2`}>
                     Street & house number
                     <input
-                      value={formData.streetAddress}
-                      onChange={(event) =>
-                        setFormData({
-                          ...formData,
-                          streetAddress: event.target.value,
-                        })
-                      }
+                      {...form.register("address.streetAddress")}
                       className={fieldInputClass}
                       placeholder="Mariahilfer Str. 10"
+                      maxLength={200}
                     />
+                    {form.formState.errors.address?.streetAddress && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.streetAddress.message}
+                      </p>
+                    )}
                   </label>
                   <label className={fieldLabelClass}>
                     City
                     <div className="mt-2 flex flex-wrap gap-2.5">
                       {COURIER_DELIVERY_CITIES.map((city) => {
-                        const selected = formData.city === city.name;
+                        const selected =
+                          form.watch("address.city") === city.name;
                         return (
                           <button
                             key={city.id}
                             type="button"
                             onClick={() =>
-                              setFormData({ ...formData, city: city.name })
+                              form.setValue("address.city", city.name)
                             }
                             className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${
                               selected
@@ -432,41 +552,44 @@ export default function ProfilePageClient({
                       })}
                     </div>
                     <input
+                      maxLength={100}
                       className="sr-only"
-                      value={formData.city}
-                      onChange={(event) =>
-                        setFormData({ ...formData, city: event.target.value })
-                      }
+                      {...form.register("address.city")}
                     />
+                    {form.formState.errors.address?.city && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.city.message}
+                      </p>
+                    )}
                   </label>
                   <label className={fieldLabelClass}>
                     Postal code
                     <input
-                      value={formData.postalCode}
-                      onChange={(event) =>
-                        setFormData({
-                          ...formData,
-                          postalCode: event.target.value,
-                        })
-                      }
+                      {...form.register("address.postalCode")}
                       className={fieldInputClass}
                       placeholder={STORE_INFO.address.postalCode}
+                      maxLength={10}
                     />
+                    {form.formState.errors.address?.postalCode && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.postalCode.message}
+                      </p>
+                    )}
                   </label>
                   <label className={`${fieldLabelClass} md:col-span-2`}>
                     Delivery notes (door code, floor…)
                     <textarea
-                      value={formData.deliveryNotes}
-                      onChange={(event) =>
-                        setFormData({
-                          ...formData,
-                          deliveryNotes: event.target.value,
-                        })
-                      }
+                      {...form.register("address.deliveryNotes")}
                       rows={3}
                       className={fieldTextareaClass}
                       placeholder="Ring the bell twice, leave at reception, etc."
+                      maxLength={500}
                     />
+                    {form.formState.errors.address?.deliveryNotes && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {form.formState.errors.address.deliveryNotes.message}
+                      </p>
+                    )}
                   </label>
                   <div className="flex flex-wrap items-center gap-3 md:col-span-2">
                     <motion.button
@@ -490,24 +613,39 @@ export default function ProfilePageClient({
                 </form>
               ) : (
                 <div className="grid gap-6 md:grid-cols-2">
-                  <InfoTile label="Full name" value={user.name ?? "Not set"} />
-                  <InfoTile label="Email" value={user.email ?? "Not set"} />
+                  <InfoTile
+                    label="Full name"
+                    value={user.name?.trim() || "Not set"}
+                  />
+                  <InfoTile
+                    label="Email"
+                    value={user.email?.trim() || "Not set"}
+                  />
                   <InfoTile
                     label="Phone"
-                    value={user.phone ?? (formData.phone || "Not set")}
+                    value={user.phone?.trim() || "Not set"}
                   />
                   <InfoTile
                     label="Street & house number"
-                    value={formData.streetAddress || "Not set"}
+                    value={
+                      form.watch("address.streetAddress")?.trim() || "Not set"
+                    }
                   />
-                  <InfoTile label="City" value={formData.city || "Not set"} />
+                  <InfoTile
+                    label="City"
+                    value={form.watch("address.city")?.trim() || "Not set"}
+                  />
                   <InfoTile
                     label="Postal code"
-                    value={formData.postalCode || "Not set"}
+                    value={
+                      form.watch("address.postalCode")?.trim() || "Not set"
+                    }
                   />
                   <InfoTile
                     label="Delivery notes"
-                    value={formData.deliveryNotes || "Not set"}
+                    value={
+                      form.watch("address.deliveryNotes")?.trim() || "Not set"
+                    }
                     fullWidth
                   />
                 </div>
@@ -561,6 +699,71 @@ export default function ProfilePageClient({
               </div>
 
               <PreferencesPanel />
+
+              <div className="mt-8 border-t pt-6">
+                <h3 className="text-deep mb-4 text-lg font-semibold">
+                  Danger Zone
+                </h3>
+                <p className={`mb-4 text-sm ${palette.mutedText}`}>
+                  Once you delete your account, there is no going back. Please
+                  be certain.
+                </p>
+                <Dialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete Account
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader className="space-y-2">
+                      <DialogTitle>Delete Account</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to delete your account? This
+                        action cannot be undone. All your data will be
+                        permanently removed.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsDeleteDialogOpen(false)}
+                        disabled={isDeletingAccount}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={async () => {
+                          setIsDeletingAccount(true);
+                          try {
+                            await deleteAccount({});
+                            window.location.replace("/auth");
+                          } catch (error) {
+                            console.error("Failed to delete account:", error);
+                            toast.error(
+                              "Failed to delete account. Please try again.",
+                            );
+                            setIsDeletingAccount(false);
+                          } finally {
+                            // Refresh in case of any issues
+                            window.location.reload();
+                          }
+                        }}
+                        disabled={isDeletingAccount}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        {isDeletingAccount ? "Deleting..." : "Delete Account"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </motion.div>
           ) : null}
         </section>

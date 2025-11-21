@@ -1,8 +1,8 @@
+import { httpRouter } from "convex/server";
 import { auth } from "./auth";
-import router from "./router";
 import { stripeWebhook } from "./stripeWebhook";
 
-const http = router;
+const http = httpRouter();
 
 http.route({
   path: "/stripe-webhook",

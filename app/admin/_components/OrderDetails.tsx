@@ -221,7 +221,11 @@ export function OrderDetails({ order }: Props) {
                   Адрес:{" "}
                 </span>
                 <div className="text-sm whitespace-pre-line text-slate-700">
-                  {order.shippingAddress}
+                  {typeof order.shippingAddress === "string" 
+                    ? order.shippingAddress 
+                    : order.shippingAddress 
+                      ? `${order.shippingAddress.streetAddress}\n${order.shippingAddress.postalCode} ${order.shippingAddress.city}${order.shippingAddress.deliveryNotes ? `\n${order.shippingAddress.deliveryNotes}` : ""}`
+                      : "—"}
                 </div>
               </div>
             </div>

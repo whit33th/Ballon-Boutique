@@ -5,6 +5,7 @@ import {
   internalQuery,
   type MutationCtx,
 } from "./_generated/server";
+import { addressValidator } from "./validators/address";
 import { orderItemValidator } from "./validators/order";
 
 export const orderItemInputValidator = v.object({
@@ -49,7 +50,7 @@ export const customerValidator = v.object({
 });
 
 export const shippingValidator = v.object({
-  address: v.string(),
+  address: addressValidator,
   deliveryType: v.union(v.literal("pickup"), v.literal("delivery")),
   pickupDateTime: v.optional(v.string()),
   deliveryFee: v.optional(v.number()),
@@ -318,7 +319,7 @@ export const getPaymentAndOrder = internalQuery({
         _creationTime: v.number(),
         customerName: v.string(),
         customerEmail: v.string(),
-        shippingAddress: v.string(),
+        shippingAddress: addressValidator,
         deliveryType: v.optional(
           v.union(v.literal("pickup"), v.literal("delivery")),
         ),

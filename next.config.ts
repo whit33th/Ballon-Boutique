@@ -20,6 +20,16 @@ const nextConfig: NextConfig = {
         hostname: "*.convex.cloud",
         pathname: "/api/storage/**",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lottie.host",
+        pathname: "/**",
+      },
     ],
   },
 };

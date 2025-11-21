@@ -173,7 +173,11 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                   className="text-[rgba(var(--deep-rgb),0.6)]"
                 />
                 <span className="max-w-[48ch] truncate">
-                  {order.shippingAddress}
+                  {typeof order.shippingAddress === "string" 
+                    ? order.shippingAddress 
+                    : order.shippingAddress 
+                      ? `${order.shippingAddress.streetAddress}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
+                      : "—"}
                 </span>
               </div>
 

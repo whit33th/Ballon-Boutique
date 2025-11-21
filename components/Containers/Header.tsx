@@ -73,12 +73,12 @@ export function Header() {
     <header className="bg-primary/95 group sticky top-0 z-50 flex w-full grid-cols-3 justify-between border-b py-2 backdrop-blur-sm">
       <Image
         unoptimized
-        src="/imgs/gif/header-hover.webp"
+        src="/imgs/gif/header-hover-compressed.webp"
         alt="Premium Balloons Collection"
         width={1000}
         height={56}
         sizes="56px"
-        className="absolute inset-0 -z-10 hidden h-full w-full object-cover opacity-0 blur contrast-150 transition-opacity duration-400 group-hover:opacity-8 sm:block"
+        className="absolute inset-0 -z-10 hidden h-full w-full object-cover opacity-0 blur-md contrast-150 transition-opacity duration-400 group-hover:opacity-10 sm:block"
       />
 
       <nav className="flex items-center gap-2 justify-self-start px-4 sm:px-8">
@@ -92,6 +92,8 @@ export function Header() {
             alt="Logo"
             width={30}
             height={30}
+            priority
+            loading="eager"
           />
           Ballon Boutique
         </Link>

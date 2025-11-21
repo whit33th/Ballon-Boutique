@@ -22,12 +22,12 @@ import type * as payments from "../payments.js";
 import type * as paymentsAdmin from "../paymentsAdmin.js";
 import type * as paymentsLookup from "../paymentsLookup.js";
 import type * as products from "../products.js";
-import type * as router from "../router.js";
 import type * as storage from "../storage.js";
 import type * as stripe from "../stripe.js";
 import type * as stripeWebhook from "../stripeWebhook.js";
 import type * as stripeWebhookHandler from "../stripeWebhookHandler.js";
 import type * as users from "../users.js";
+import type * as validators_address from "../validators/address.js";
 import type * as validators_order from "../validators/order.js";
 import type * as validators_product from "../validators/product.js";
 
@@ -52,12 +52,12 @@ declare const fullApi: ApiFromModules<{
   paymentsAdmin: typeof paymentsAdmin;
   paymentsLookup: typeof paymentsLookup;
   products: typeof products;
-  router: typeof router;
   storage: typeof storage;
   stripe: typeof stripe;
   stripeWebhook: typeof stripeWebhook;
   stripeWebhookHandler: typeof stripeWebhookHandler;
   users: typeof users;
+  "validators/address": typeof validators_address;
   "validators/order": typeof validators_order;
   "validators/product": typeof validators_product;
 }>;

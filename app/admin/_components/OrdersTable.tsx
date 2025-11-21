@@ -270,7 +270,11 @@ export function OrdersTable({
                     </div>
                     <div className="mt-3 text-xs text-slate-500">Адрес:</div>
                     <div className="text-sm text-slate-700">
-                      {order.shippingAddress ?? "—"}
+                      {typeof order.shippingAddress === "string" 
+                        ? order.shippingAddress 
+                        : order.shippingAddress 
+                          ? `${order.shippingAddress.streetAddress}\n${order.shippingAddress.postalCode} ${order.shippingAddress.city}${order.shippingAddress.deliveryNotes ? `\n${order.shippingAddress.deliveryNotes}` : ""}`
+                          : "—"}
                     </div>
                   </div>
                 )}

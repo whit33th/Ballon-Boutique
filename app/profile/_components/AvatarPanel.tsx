@@ -12,8 +12,17 @@ type AvatarPanelProps = {
     name?: string;
     email?: string;
     phone?: string;
-    address?: string;
+    address?:
+      | string
+      | {
+          streetAddress: string;
+          city: string;
+          postalCode: string;
+          deliveryNotes: string;
+        };
     isAdmin?: boolean;
+    image?: string;
+    imageFileId?: string;
   };
   formattedOrdersCount: number;
   isUploadingAvatar: boolean;
@@ -61,10 +70,10 @@ export function AvatarPanel({
           )}
           <label
             aria-label="Change avatar"
-            className={`absolute inset-0 z-20 flex cursor-pointer items-center justify-center rounded-full bg-[rgba(var(--deep-rgb),0.14)] ${
+            className={`absolute inset-0 z-40 flex cursor-pointer items-center justify-center rounded-full bg-[rgba(var(--deep-rgb),0.14)] ${
               isUploadingAvatar
                 ? "pointer-events-none opacity-100"
-                : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100"
+                : "pointer-events-auto opacity-0 group-hover:opacity-100"
             }`}
           >
             <input
