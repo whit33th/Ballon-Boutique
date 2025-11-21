@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import ImageKitPicture from "@/components/ui/ImageKitPicture";
-import { BALLOON_COLORS, getColorStyle, } from "@/constants/colors";
+import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { palette } from "./palette";
@@ -51,7 +51,7 @@ export function OrdersPanel({ orders }: OrdersPanelProps) {
         </p>
         <Link
           href="/catalog"
-          className="bg-secondary text-on-secondary inline-flex h-11 items-center justify-center rounded-full px-6 text-xs font-semibold tracking-widest uppercase transition hover:brightness-95"
+          className="bg-secondary text-on-secondary inline-flex items-center justify-center rounded-full px-6 py-3 text-xs font-semibold tracking-widest uppercase transition hover:brightness-95"
         >
           Shop balloons
         </Link>
@@ -173,9 +173,9 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                   className="text-[rgba(var(--deep-rgb),0.6)]"
                 />
                 <span className="max-w-[48ch] truncate">
-                  {typeof order.shippingAddress === "string" 
-                    ? order.shippingAddress 
-                    : order.shippingAddress 
+                  {typeof order.shippingAddress === "string"
+                    ? order.shippingAddress
+                    : order.shippingAddress
                       ? `${order.shippingAddress.streetAddress}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
                       : "—"}
                 </span>

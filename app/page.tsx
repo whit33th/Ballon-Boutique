@@ -4,7 +4,7 @@ import { Hero } from "@/components/Containers";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import RainbowArcText from "@/components/ui/rainbow-text";
 import { api } from "@/convex/_generated/api";
-import { ProductCarousels } from "./ProductCarousels";
+import { ProductCarousels } from "../components/Containers/ProductCarousels";
 
 export default async function HomePage() {
   // Preload data on the server using preloadQuery
