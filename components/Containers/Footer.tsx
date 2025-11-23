@@ -113,7 +113,7 @@ export const Footer = () => {
             >
               {t("store.name")}
             </Link>
-            <p className="max-w-sm text-sm text-white/75">
+            <p className="max-w-sm text-sm text-white/90">
               {t("footer.description")}
             </p>
             <div className="flex flex-wrap items-center gap-2">
@@ -164,10 +164,10 @@ export const Footer = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6 text-sm text-white/75 lg:flex-row lg:items-start lg:gap-10">
+          <div className="flex flex-col gap-6 text-sm text-white/90 lg:flex-row lg:items-start lg:gap-10">
             {sections.map((section) => (
               <div key={section.titleKey} className="min-w-[140px] space-y-3">
-                <p className="text-xs font-semibold tracking-[0.18em] text-white/60 uppercase">
+                <p className="text-xs font-semibold tracking-[0.18em] text-white/85 uppercase">
                   {t(section.titleKey)}
                 </p>
                 <ul className="space-y-1.5">
@@ -205,7 +205,7 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-4 text-xs text-white/60">
+        <div className="mt-8 border-t border-white/10 pt-4 text-xs text-white/85">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <p>
               &copy; {year} {t("store.name")}. {t("footer.allRightsReserved")}

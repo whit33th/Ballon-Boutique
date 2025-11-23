@@ -61,6 +61,7 @@ export async function CategorySection() {
                     className="object-cover"
                     sizes="(max-width: 768px) 50vw, 33vw"
                     priority
+                    fetchPriority="high"
                   />
                 </div>
 
@@ -69,7 +70,7 @@ export async function CategorySection() {
                   <h3 className="text-xs leading-tight font-semibold sm:text-sm">
                     {tCatalog(`categoryGroups.${group.value}`)}
                   </h3>
-                  <span className="text-[10px] font-medium text-[rgba(var(--deep-rgb),0.55)] sm:text-xs">
+                  <span className="text-[10px] font-medium text-[rgba(var(--deep-rgb),0.70)] sm:text-xs">
                     {group.subcategories.length > 0
                       ? `${group.subcategories.length} ${t("collections")}`
                       : t("viewCollection")}
@@ -96,6 +97,7 @@ export async function CategorySection() {
                 className="object-cover"
                 sizes="(max-width: 768px) 50vw, 33vw"
                 priority
+                fetchPriority="high"
               />
             </div>
 
@@ -103,7 +105,7 @@ export async function CategorySection() {
               <h3 className="text-xs leading-tight font-semibold sm:text-sm">
                 {t("allProducts")}
               </h3>
-              <span className="text-[10px] font-medium text-[rgba(var(--deep-rgb),0.55)] sm:text-xs">
+              <span className="text-[10px] font-medium text-[rgba(var(--deep-rgb),0.70)] sm:text-xs">
                 {t("viewAllItems")}
               </span>
             </div>

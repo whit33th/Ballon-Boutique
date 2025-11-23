@@ -1,4 +1,4 @@
-type Locale = "at" | "en" | "ru" | "ua";
+type Locale = "de" | "en" | "ru" | "uk";
 
 interface KeywordsByPage {
   home: Record<Locale, string[]>;
@@ -16,7 +16,7 @@ interface KeywordsByPage {
 
 export const SEO_KEYWORDS: KeywordsByPage = {
   home: {
-    at: [
+    de: [
       "ballons österreich",
       "ballons steiermark",
       "ballons knittelfeld",
@@ -70,7 +70,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
       "наборы шаров",
       "композиции из шаров",
     ],
-    ua: [
+    uk: [
       "кульки австрія",
       "кульки штирія",
       "кульки кніттельфельд",
@@ -91,7 +91,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
   },
 
   catalog: {
-    at: [
+    de: [
       "ballons katalog",
       "ballons online",
       "ballon shop",
@@ -127,7 +127,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
       "индивидуальные шары",
       "шары австрия",
     ],
-    ua: [
+    uk: [
       "каталог кульок",
       "кульки онлайн",
       "магазин кульок",
@@ -142,7 +142,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
   },
 
   category: {
-    at: (category: string) => [
+    de: (category: string) => [
       category.toLowerCase(),
       "ballons",
       "ballon dekor",
@@ -178,7 +178,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
       "наборы шаров",
       "композиции из шаров",
     ],
-    ua: (category: string) => [
+    uk: (category: string) => [
       category.toLowerCase(),
       "кульки",
       "декор з кульок",
@@ -193,7 +193,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
   },
 
   product: {
-    at: (productName: string, category: string, colors: string[] = []) => [
+    de: (productName: string, category: string, colors: string[] = []) => [
       productName.toLowerCase(),
       "ballon",
       "ballon dekor",
@@ -235,7 +235,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
       "декор для мероприятий",
       "ballon boutique",
     ],
-    ua: (productName: string, category: string, colors: string[] = []) => [
+    uk: (productName: string, category: string, colors: string[] = []) => [
       productName.toLowerCase(),
       "кулька",
       "декор з кульок",
@@ -252,7 +252,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
   },
 
   legal: {
-    at: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
+    de: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
       const base = [
         "agb",
         "datenschutz",
@@ -345,7 +345,7 @@ export const SEO_KEYWORDS: KeywordsByPage = {
 
       return [...base, ...specific[pageType]];
     },
-    ua: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
+    uk: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
       const base = [
         "умови",
         "конфіденційність",

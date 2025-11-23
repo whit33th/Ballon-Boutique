@@ -16,7 +16,7 @@ function getSloganByLocale(locale: string): string {
       return STORE_INFO.sloganEn;
     case "ru":
       return STORE_INFO.sloganRu;
-    case "ua":
+    case "uk":
       return STORE_INFO.sloganUa;
     default:
       return STORE_INFO.slogan;

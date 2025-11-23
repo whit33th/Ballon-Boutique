@@ -47,6 +47,20 @@
     "language": "Язык",
     "accountMenu": "Меню аккаунта"
   },
+  "languages": {
+    "de": {
+      "region": "Австрия"
+    },
+    "en": {
+      "region": "Великобритания"
+    },
+    "uk": {
+      "region": "Украина"
+    },
+    "ru": {
+      "region": "Россия"
+    }
+  },
   "userNav": {
     "account": "Аккаунт",
     "profile": "Профиль",

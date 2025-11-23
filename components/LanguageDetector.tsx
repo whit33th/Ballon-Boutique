@@ -8,13 +8,10 @@ import { persistLocalePreference } from "@/lib/localePreference";
 
 // Map country codes to locale codes
 const countryToLocale: Record<string, string> = {
-  AT: "at", // Austria
-  DE: "at", // Germany
-  UA: "ua", // Ukraine
+  AT: "de", // Austria
+  DE: "de", // Germany
+  UK: "uk", // Ukraine
   RU: "ru", // Russia
-  BY: "ru", // Belarus
-  KZ: "ru", // Kazakhstan
-  // Default to Austria for other countries
 };
 
 export function LanguageDetector() {
@@ -60,7 +57,7 @@ export function LanguageDetector() {
         .then((res) => res.json())
         .then((data) => {
           const countryCode = data.country_code;
-          const detectedLocale = countryToLocale[countryCode] || "at"; // Default to Austria
+          const detectedLocale = countryToLocale[countryCode] || "de"; // Default to Austria (German)
 
           // Only redirect if detected locale is different from current
           if (detectedLocale !== locale) {

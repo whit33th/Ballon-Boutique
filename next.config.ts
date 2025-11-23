@@ -8,8 +8,17 @@ const nextConfig: NextConfig = {
     viewTransition: true,
     globalNotFound: true,
     turbopackFileSystemCacheForDev: true,
+    optimizeCss: true,
   },
   reactCompiler: true,
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? {
+            exclude: ["error", "warn"],
+          }
+        : false,
+  },
   typedRoutes: true,
   images: {
     remotePatterns: [
@@ -35,6 +44,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  poweredByHeader: false,
 };
 
 export default withNextIntl(nextConfig);

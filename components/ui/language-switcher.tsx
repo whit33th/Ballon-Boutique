@@ -1,18 +1,18 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useLocale } from "next-intl";
-import { useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePathname, useRouter } from "@/i18n/routing";
+import { usePathname } from "@/i18n/routing";
 import { removeLocaleFromPathname } from "@/i18n/utils";
 import { persistLocalePreference } from "@/lib/localePreference";
 import { cn } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useTransition } from "react";
 import {
   AustriaFlag,
   GreatBritainFlag,
@@ -20,37 +20,36 @@ import {
   UkraineFlag,
 } from "./icons/flags";
 
-// Language data matching the design pattern
 const languages = [
   {
-    code: "at",
-    name: "Austria",
-    region: "Austria",
+    code: "de",
+    langKey: "de",
+    name: "Deutsch",
     flag: AustriaFlag,
   },
   {
     code: "en",
+    langKey: "en",
     name: "English",
-    region: "United Kingdom",
     flag: GreatBritainFlag,
   },
   {
-    code: "ua",
+    code: "uk",
+    langKey: "uk",
     name: "Українська",
-    region: "Україна",
     flag: UkraineFlag,
   },
   {
     code: "ru",
+    langKey: "ru",
     name: "Русский",
-    region: "Россия",
     flag: RussiaFlag,
   },
 ] as const;
 
 export function LanguageSwitcher() {
   const locale = useLocale();
-  const _router = useRouter();
+  const t = useTranslations("languages");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -61,18 +60,12 @@ export function LanguageSwitcher() {
 
   const switchLocale = (newLocale: string) => {
     startTransition(() => {
-      // Save user preference in both cookie and localStorage
       void persistLocalePreference(newLocale);
-      // Remove any locale prefix that might be present (for safety)
       const pathnameWithoutLocale = removeLocaleFromPathname(pathname);
 
-      // Preserve search params
       const searchParamsString = searchParams.toString();
       const newUrl = `/${newLocale}${pathnameWithoutLocale}${searchParamsString ? `?${searchParamsString}` : ""}`;
-      // Use window.location for full page reload to ensure NextIntlClientProvider context is preserved
-      // This is necessary especially for admin pages with server components
       window.location.href = newUrl;
-      // router.push(newUrl);
     });
   };
 
@@ -100,6 +93,8 @@ export function LanguageSwitcher() {
             {languages.map((lang) => {
               const FlagComponent = lang.flag;
               const isSelected = locale === lang.code;
+
+              const languageRegion = t(`${lang.langKey}.region`);
               return (
                 <DropdownMenuItem
                   key={lang.code}
@@ -142,7 +137,7 @@ export function LanguageSwitcher() {
                             : "text-[#6B6662] group-hover:text-white",
                         )}
                       >
-                        {lang.region}
+                        {languageRegion}
                       </p>
                     </div>
                     {isSelected && (

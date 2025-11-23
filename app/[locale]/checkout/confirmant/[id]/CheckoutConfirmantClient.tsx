@@ -308,7 +308,7 @@ export default function CheckoutConfirmantClient({
             }
 
             // Load Austrian German translations for PDF (always use de-AT for PDF)
-            const deMessages = (await import("@/messages/at.json")).default;
+            const deMessages = (await import("@/messages/de.json")).default;
             const tPdf = (key: string) => {
               const keys = key.split(".");
               let value: unknown = deMessages;

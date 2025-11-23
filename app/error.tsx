@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { STORE_INFO } from "@/constants/config";
+import { routing } from "@/i18n/routing";
 import "./globals.css";
 
 export default function ErrorPage({
@@ -56,7 +57,7 @@ export default function ErrorPage({
             size="lg"
             className="min-w-40 bg-transparent"
           >
-            <Link href="/at/catalog">
+            <Link href={`/${routing.defaultLocale}/catalog`}>
               <ShoppingBag className="mr-2 h-5 w-5" />
               Browse Catalog
             </Link>

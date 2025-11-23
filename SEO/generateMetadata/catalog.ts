@@ -53,7 +53,7 @@ export async function generateCatalogMetadata(
       // Use category keywords with subcategory name
       keywords = getKeywords(
         "category",
-        locale as "at" | "en" | "ru" | "ua",
+        locale as "de" | "en" | "ru" | "uk",
         subcategoryName,
       );
     } else {
@@ -67,7 +67,7 @@ export async function generateCatalogMetadata(
       // Use category keywords
       keywords = getKeywords(
         "category",
-        locale as "at" | "en" | "ru" | "ua",
+        locale as "de" | "en" | "ru" | "uk",
         groupName,
       );
     }
@@ -79,7 +79,7 @@ export async function generateCatalogMetadata(
       defaultDescription,
     });
     // Use catalog keywords
-    keywords = getKeywords("catalog", locale as "at" | "en" | "ru" | "ua");
+    keywords = getKeywords("catalog", locale as "de" | "en" | "ru" | "uk");
   }
 
   const catalogPath = "/catalog";
@@ -125,10 +125,10 @@ export async function generateCatalogMetadata(
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        "de-AT": `${baseUrl}/at${catalogPath}`,
+        "de-AT": `${baseUrl}/de${catalogPath}`,
         "en-US": `${baseUrl}/en${catalogPath}`,
         "ru-RU": `${baseUrl}/ru${catalogPath}`,
-        "uk-UA": `${baseUrl}/ua${catalogPath}`,
+        "uk-UA": `${baseUrl}/uk${catalogPath}`,
         "x-default": `${baseUrl}${catalogPath}`,
       },
     },
@@ -137,9 +137,9 @@ export async function generateCatalogMetadata(
     openGraph: {
       type: "website",
       locale:
-        locale === "at"
+        locale === "de"
           ? "de_AT"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk_UA"
             : locale === "ru"
               ? "ru_RU"
@@ -147,9 +147,9 @@ export async function generateCatalogMetadata(
       alternateLocale: routing.locales
         .filter((l) => l !== locale)
         .map((l) =>
-          l === "at"
+          l === "de"
             ? "de_AT"
-            : l === "ua"
+            : l === "uk"
               ? "uk_UA"
               : l === "ru"
                 ? "ru_RU"
@@ -235,9 +235,9 @@ export async function generateCatalogMetadata(
       "DC.description": description,
       "DC.type": "Catalog",
       "DC.language":
-        locale === "at"
+        locale === "de"
           ? "de"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk"
             : locale === "ru"
               ? "ru"

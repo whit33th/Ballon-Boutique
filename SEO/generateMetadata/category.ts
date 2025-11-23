@@ -30,7 +30,7 @@ export async function generateCategoryMetadata(
   // Get keywords for this category and locale
   const keywords = getKeywords(
     "category",
-    locale as "at" | "en" | "ru" | "ua",
+    locale as "de" | "en" | "ru" | "uk",
     categoryName,
   );
 
@@ -78,10 +78,10 @@ export async function generateCategoryMetadata(
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        "de-AT": `${baseUrl}/at${categoryPath}`,
+        "de-AT": `${baseUrl}/de${categoryPath}`,
         "en-US": `${baseUrl}/en${categoryPath}`,
         "ru-RU": `${baseUrl}/ru${categoryPath}`,
-        "uk-UA": `${baseUrl}/ua${categoryPath}`,
+        "uk-UA": `${baseUrl}/uk${categoryPath}`,
         "x-default": `${baseUrl}${categoryPath}`,
       },
     },
@@ -90,9 +90,9 @@ export async function generateCategoryMetadata(
     openGraph: {
       type: "website",
       locale:
-        locale === "at"
+        locale === "de"
           ? "de_AT"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk_UA"
             : locale === "ru"
               ? "ru_RU"
@@ -100,9 +100,9 @@ export async function generateCategoryMetadata(
       alternateLocale: routing.locales
         .filter((l) => l !== locale)
         .map((l) =>
-          l === "at"
+          l === "de"
             ? "de_AT"
-            : l === "ua"
+            : l === "uk"
               ? "uk_UA"
               : l === "ru"
                 ? "ru_RU"
@@ -188,9 +188,9 @@ export async function generateCategoryMetadata(
       "DC.description": description,
       "DC.type": "Category",
       "DC.language":
-        locale === "at"
+        locale === "de"
           ? "de"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk"
             : locale === "ru"
               ? "ru"

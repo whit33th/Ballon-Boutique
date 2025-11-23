@@ -42,7 +42,7 @@ export function SubcategoryMenu({
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[0.7rem] font-semibold tracking-[0.35em] text-[rgba(var(--deep-rgb),0.55)] uppercase">
+              <span className="text-[0.7rem] font-semibold tracking-[0.35em] text-[rgba(var(--deep-rgb),0.70)] uppercase">
                 {group.label}
               </span>
               <button

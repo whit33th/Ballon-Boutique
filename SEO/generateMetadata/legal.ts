@@ -42,7 +42,7 @@ export async function generateLegalMetadata(
   // Get keywords for this legal page and locale
   const keywords = getKeywords(
     "legal",
-    locale as "at" | "en" | "ru" | "ua",
+    locale as "de" | "en" | "ru" | "uk",
     pageType,
   );
 
@@ -89,10 +89,10 @@ export async function generateLegalMetadata(
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        "de-AT": `${baseUrl}/at${pagePath}`,
+        "de-AT": `${baseUrl}/de${pagePath}`,
         "en-US": `${baseUrl}/en${pagePath}`,
         "ru-RU": `${baseUrl}/ru${pagePath}`,
-        "uk-UA": `${baseUrl}/ua${pagePath}`,
+        "uk-UA": `${baseUrl}/uk${pagePath}`,
         "x-default": `${baseUrl}${pagePath}`,
       },
     },
@@ -101,9 +101,9 @@ export async function generateLegalMetadata(
     openGraph: {
       type: "website",
       locale:
-        locale === "at"
+        locale === "de"
           ? "de_AT"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk_UA"
             : locale === "ru"
               ? "ru_RU"
@@ -111,9 +111,9 @@ export async function generateLegalMetadata(
       alternateLocale: routing.locales
         .filter((l) => l !== locale)
         .map((l) =>
-          l === "at"
+          l === "de"
             ? "de_AT"
-            : l === "ua"
+            : l === "uk"
               ? "uk_UA"
               : l === "ru"
                 ? "ru_RU"
@@ -207,9 +207,9 @@ export async function generateLegalMetadata(
       "DC.type": "Text",
       "DC.format": "text/html",
       "DC.language":
-        locale === "at"
+        locale === "de"
           ? "de"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk"
             : locale === "ru"
               ? "ru"

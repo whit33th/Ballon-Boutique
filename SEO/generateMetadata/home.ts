@@ -22,15 +22,15 @@ export async function generateHomeMetadata(locale: string): Promise<Metadata> {
 
   // Get locale-specific slogan
   const slogans: Record<string, string> = {
-    at: STORE_INFO.slogan,
+    de: STORE_INFO.slogan,
     en: STORE_INFO.sloganEn || STORE_INFO.slogan,
     ru: STORE_INFO.sloganRu,
-    ua: STORE_INFO.sloganUa || STORE_INFO.sloganRu,
+    uk: STORE_INFO.sloganUa || STORE_INFO.sloganRu,
   };
   const slogan = slogans[locale] || STORE_INFO.slogan;
 
   // Get keywords for this page and locale
-  const keywords = getKeywords("home", locale as "at" | "en" | "ru" | "ua");
+  const keywords = getKeywords("home", locale as "de" | "en" | "ru" | "uk");
 
   return {
     // Basic metadata
@@ -101,10 +101,10 @@ export async function generateHomeMetadata(locale: string): Promise<Metadata> {
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        "de-AT": `${baseUrl}/at`,
+        "de-AT": `${baseUrl}/de`,
         "en-US": `${baseUrl}/en`,
         "ru-RU": `${baseUrl}/ru`,
-        "uk-UA": `${baseUrl}/ua`,
+        "uk-UA": `${baseUrl}/uk`,
         "x-default": baseUrl,
       },
     },
@@ -113,9 +113,9 @@ export async function generateHomeMetadata(locale: string): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale:
-        locale === "at"
+        locale === "de"
           ? "de_AT"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk_UA"
             : locale === "ru"
               ? "ru_RU"
@@ -123,9 +123,9 @@ export async function generateHomeMetadata(locale: string): Promise<Metadata> {
       alternateLocale: routing.locales
         .filter((l) => l !== locale)
         .map((l) =>
-          l === "at"
+          l === "de"
             ? "de_AT"
-            : l === "ua"
+            : l === "uk"
               ? "uk_UA"
               : l === "ru"
                 ? "ru_RU"
@@ -245,9 +245,9 @@ export async function generateHomeMetadata(locale: string): Promise<Metadata> {
       "DC.subject": STORE_INFO.industry,
       "DC.description": description,
       "DC.language":
-        locale === "at"
+        locale === "de"
           ? "de"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk"
             : locale === "ru"
               ? "ru"

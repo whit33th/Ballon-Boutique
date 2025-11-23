@@ -54,7 +54,7 @@ export default convexAuthNextjsMiddleware(
       return intlResponse;
     }
 
-    const localeMatch = pathname.match(/^\/(at|en|ua|ru)(\/|$)/);
+    const localeMatch = pathname.match(/^\/(de|en|uk|ru)(\/|$)/);
     const locale = localeMatch
       ? (localeMatch[1] as Locale)
       : routing.defaultLocale;

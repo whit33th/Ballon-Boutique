@@ -15,9 +15,25 @@ import AppImageKitProvider from "@/components/Providers/ImageKitProvider";
 import { routing } from "@/i18n/routing";
 import { getDefaultDescription, getSiteName } from "@/SEO";
 
+/**
+ * Maps routing locale codes to valid BCP 47 language codes
+ * for the HTML lang attribute
+ */
+function getLanguageCode(locale: string): string {
+  const localeToLang: Record<string, string> = {
+    de: "de-AT", // German as used in Austria (RFC 5646)
+    en: "en",
+    uk: "uk",
+    ru: "ru",
+  };
+  return localeToLang[locale] || locale;
+}
+
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
+  preload: true,
+  display: "swap",
 });
 
 export async function generateMetadata({
@@ -29,6 +45,10 @@ export async function generateMetadata({
   const siteName = getSiteName();
   const description = getDefaultDescription(locale);
 
+  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  const convexDomain = convexUrl ? new URL(convexUrl).origin : null;
+  const imageKitDomain = "https://ik.imagekit.io";
+
   return {
     title: {
       default: siteName,
@@ -36,8 +56,14 @@ export async function generateMetadata({
     },
     description,
     metadataBase: new URL(
-      process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+      process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
     ),
+    other: {
+      ...(convexDomain && {
+        "preconnect-convex": convexDomain,
+      }),
+      "preconnect-imagekit": imageKitDomain,
+    },
   };
 }
 
@@ -50,22 +76,33 @@ export default async function LocaleLayout({
 }>) {
   const { locale } = await params;
 
-  // Ensure that the incoming `locale` is valid
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 
-  // Enable static rendering
   setRequestLocale(locale);
 
-  // Providing all messages to the client
-  // side is the easiest way to get started
   const messages = await getMessages();
+  const langCode = getLanguageCode(locale);
 
   return (
-    <html lang={locale}>
+    <html lang={langCode}>
       <head>
         <meta name="apple-mobile-web-app-title" content="Ballon Boutique" />
+        {process.env.NEXT_PUBLIC_CONVEX_URL && (
+          <link
+            rel="preconnect"
+            href={new URL(process.env.NEXT_PUBLIC_CONVEX_URL).origin}
+            crossOrigin="anonymous"
+          />
+        )}
+        <link
+          rel="preconnect"
+          href="https://ik.imagekit.io"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
+        <link rel="dns-prefetch" href="https://lottie.host" />
       </head>
       <body
         className={`${dmSans.variable} relative flex min-h-screen w-full flex-col overflow-x-hidden antialiased`}

@@ -41,7 +41,7 @@ export async function generateProductMetadata(
   // Get keywords for this product and locale
   const keywords = getKeywords(
     "product",
-    locale as "at" | "en" | "ru" | "ua",
+    locale as "de" | "en" | "ru" | "uk",
     product.name,
     product.categoryGroup,
     product.availableColors || [],
@@ -87,10 +87,10 @@ export async function generateProductMetadata(
     alternates: {
       canonical: canonicalUrl,
       languages: {
-        "de-AT": `${baseUrl}/at${productPath}`,
+        "de-AT": `${baseUrl}/de${productPath}`,
         "en-US": `${baseUrl}/en${productPath}`,
         "ru-RU": `${baseUrl}/ru${productPath}`,
-        "uk-UA": `${baseUrl}/ua${productPath}`,
+        "uk-UA": `${baseUrl}/uk${productPath}`,
         "x-default": `${baseUrl}${productPath}`,
       },
     },
@@ -99,9 +99,9 @@ export async function generateProductMetadata(
     openGraph: {
       type: "website",
       locale:
-        locale === "at"
+        locale === "de"
           ? "de_AT"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk_UA"
             : locale === "ru"
               ? "ru_RU"
@@ -109,9 +109,9 @@ export async function generateProductMetadata(
       alternateLocale: routing.locales
         .filter((l) => l !== locale)
         .map((l) =>
-          l === "at"
+          l === "de"
             ? "de_AT"
-            : l === "ua"
+            : l === "uk"
               ? "uk_UA"
               : l === "ru"
                 ? "ru_RU"
@@ -214,9 +214,9 @@ export async function generateProductMetadata(
       "DC.type": "Product",
       "DC.identifier": product._id,
       "DC.language":
-        locale === "at"
+        locale === "de"
           ? "de"
-          : locale === "ua"
+          : locale === "uk"
             ? "uk"
             : locale === "ru"
               ? "ru"

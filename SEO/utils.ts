@@ -29,7 +29,8 @@ export function getBaseUrl(locale?: string): string {
  */
 export function getCanonicalUrl(path: string, locale?: string): string {
   const baseUrl = getBaseUrl();
-  const localePrefix = locale && locale !== routing.defaultLocale ? `/${locale}` : "";
+  const localePrefix =
+    locale && locale !== routing.defaultLocale ? `/${locale}` : "";
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   return `${baseUrl}${localePrefix}${cleanPath}`;
 }
@@ -46,10 +47,10 @@ export function getSiteName(): string {
  */
 export function getDefaultDescription(locale: string): string {
   const descriptions: Record<string, string> = {
-    at: "Ballons für jeden Anlass. Wenn Momente zu Emotionen werden.",
+    de: "Ballons für jeden Anlass. Wenn Momente zu Emotionen werden.",
     en: "Balloons for every occasion. When moments become memories.",
     ru: "Шары на любой случай. Когда мгновения становятся воспоминаниями.",
-    ua: "Кульки на будь-яку нагоду. Коли миті стають спогадами.",
+    uk: "Кульки на будь-яку нагоду. Коли миті стають спогадами.",
   };
   return descriptions[locale] || descriptions.en;
 }
@@ -71,4 +72,3 @@ export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength - 3)}...`;
 }
-
