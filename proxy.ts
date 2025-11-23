@@ -35,6 +35,17 @@ export default convexAuthNextjsMiddleware(
       return NextResponse.next();
     }
 
+    // Handle sitemap and robots.txt - they should not have locale prefix
+    if (
+      pathname === "/sitemap.xml" ||
+      pathname.startsWith("/sitemap/") ||
+      pathname === "/robots.txt" ||
+      pathname === "/manifest.json" ||
+      pathname === "/manifest.webmanifest"
+    ) {
+      return NextResponse.next();
+    }
+
     // Handle locale redirection first
     // Check for saved locale preference in cookie
     const savedLocale = request.cookies.get("NEXT_LOCALE")?.value;
