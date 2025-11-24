@@ -93,7 +93,7 @@ export const config = {
     "/((?!.*\\..*|_next).*)",
     "/",
     "/(api|trpc)(.*)",
-    // Explicitly allow manifest files
     "/(manifest.json|manifest.webmanifest)",
+    "/robots.txt",
   ],
 };
