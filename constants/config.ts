@@ -22,7 +22,7 @@ export const STORE_INFO = {
   logo: "/logo.png",
   favicon: "/favicon.ico",
   appleIcon: "/apple-icon.png",
-  backgroundColor: "#ffffff",
+  backgroundColor: "#ffdfc6",
 
   // Business Information
   foundingDate: "fix", // "2020-01-01" - дата основания бизнеса
