@@ -90,10 +90,8 @@ export default convexAuthNextjsMiddleware(
 
 export const config = {
   matcher: [
-    "/((?!.*\\..*|_next).*)",
+    "/((?!.*\\..*|_next|manifest.json|robots.txt|sitemap.xml).*)",
     "/",
     "/(api|trpc)(.*)",
-    "/(manifest.json|manifest.webmanifest)",
-    "/robots.txt",
   ],
 };
