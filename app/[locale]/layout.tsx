@@ -16,18 +16,9 @@ import AppImageKitProvider from "@/components/Providers/ImageKitProvider";
 import { routing } from "@/i18n/routing";
 import { getBaseUrl, getDefaultDescription, getSiteName } from "@/SEO";
 
-/**
- * Maps routing locale codes to valid BCP 47 language codes
- * for the HTML lang attribute
- */
-
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
-
 function getLanguageCode(locale: string): string {
   const localeToLang: Record<string, string> = {
-    de: "de-AT", // German as used in Austria 
+    de: "de-AT", // German as used in Austria
     en: "en",
     uk: "uk",
     ru: "ru",
