@@ -78,9 +78,6 @@ export async function generateHomeMetadata(locale: string): Promise<Metadata> {
       shortcut: STORE_INFO.favicon,
     },
 
-    // Manifest
-    manifest: STORE_INFO.manifest,
-
     // Apple Web App
     appleWebApp: {
       capable: true,
