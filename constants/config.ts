@@ -22,7 +22,7 @@ export const STORE_INFO = {
   logo: "/logo.png",
   favicon: "/favicon.ico",
   appleIcon: "/apple-icon.png",
-  manifest: "/manifest.json",
+  manifest: "../manifest.json",
   backgroundColor: "#ffffff",
 
   // Business Information
