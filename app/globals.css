@@ -118,17 +118,17 @@ input {
 
 :root {
   --radius: 0.625rem;
-  --color-blue: #348998;
+  --color-blue: #348e9e;
   --color-warm: #f3a766;
   --color-light: #fcf8ef;
   --color-terracotta: #e75534;
   --color-deep: #4a2620;
 
-  --color-blue-rgb: 47, 109, 122;
-  --color-warm-rgb: 232, 154, 90;
-  --color-light-rgb: 244, 230, 218;
-  --color-terracotta-rgb: 196, 74, 47;
-  --color-deep-rgb: 90, 47, 40;
+  --color-blue-rgb: 52, 142, 158;
+  --color-warm-rgb: 243, 167, 102;
+  --color-light-rgb: 252, 248, 239;
+  --color-terracotta-rgb: 231, 85, 52;
+  --color-deep-rgb: 74, 38, 32;
 
   --primary: var(--color-light);
   --primary-rgb: var(--color-light-rgb);
