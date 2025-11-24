@@ -122,13 +122,15 @@ export async function generateProductMetadata(
       siteName,
       title,
       description,
-      images: productImages.map((url) => ({
-        url,
-        width: 1200,
-        height: 1200,
-        alt: product.name,
-        type: "image/jpeg",
-      })),
+      images: [
+        {
+          url: `${baseUrl}/${locale}/catalog/${slug}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: product.name,
+          type: "image/png",
+        },
+      ],
     },
 
     // Twitter Card
@@ -144,12 +146,14 @@ export async function generateProductMetadata(
         STORE_INFO.social.twitter !== "fix"
           ? `@${STORE_INFO.social.twitter.split("/").pop()}`
           : undefined,
-      images: productImages.slice(0, 1).map((url) => ({
-        url,
-        width: 1200,
-        height: 1200,
-        alt: product.name,
-      })),
+      images: [
+        {
+          url: `${baseUrl}/${locale}/catalog/${slug}/twitter-image`,
+          width: 1200,
+          height: 630,
+          alt: product.name,
+        },
+      ],
     },
 
     // Robots
