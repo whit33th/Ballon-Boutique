@@ -26,7 +26,7 @@ const orderValidator = v.object({
   ),
   paymentIntentId: v.optional(v.string()),
   whatsappConfirmed: v.optional(v.boolean()),
-  scheduledDateTime: v.optional(v.string()),
+  pickupDateTime: v.optional(v.string()),
   currency: v.optional(v.string()),
   deliveryFee: v.optional(v.number()),
   grandTotal: v.optional(v.number()),
@@ -44,7 +44,7 @@ export const createGuest = mutation({
       v.literal("cash"),
     ),
     whatsappConfirmed: v.optional(v.boolean()),
-    scheduledDateTime: v.optional(v.string()),
+    pickupDateTime: v.optional(v.string()),
     items: v.array(
       v.object({
         productId: v.id("products"),
@@ -130,7 +130,7 @@ export const createGuest = mutation({
       deliveryType: args.deliveryType,
       paymentMethod: args.paymentMethod,
       whatsappConfirmed: args.whatsappConfirmed,
-      scheduledDateTime: args.scheduledDateTime,
+      pickupDateTime: args.pickupDateTime,
     });
 
     return orderId;
@@ -149,7 +149,7 @@ export const create = mutation({
       v.literal("cash"),
     ),
     whatsappConfirmed: v.optional(v.boolean()),
-    scheduledDateTime: v.optional(v.string()),
+    pickupDateTime: v.optional(v.string()),
   },
   returns: v.id("orders"),
   handler: async (ctx, args) => {
@@ -217,7 +217,7 @@ export const create = mutation({
       deliveryType: args.deliveryType,
       paymentMethod: args.paymentMethod,
       whatsappConfirmed: args.whatsappConfirmed,
-      scheduledDateTime: args.scheduledDateTime,
+      pickupDateTime: args.pickupDateTime,
     });
 
     // Clear the user's cart after a successful checkout regardless of payment method

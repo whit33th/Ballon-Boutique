@@ -52,7 +52,7 @@ export const customerValidator = v.object({
 export const shippingValidator = v.object({
   address: addressValidator,
   deliveryType: v.union(v.literal("pickup"), v.literal("delivery")),
-  scheduledDateTime: v.optional(v.string()),
+  pickupDateTime: v.optional(v.string()),
   deliveryFee: v.optional(v.number()),
 });
 
@@ -270,7 +270,7 @@ export const finalizePaymentFromIntent = internalMutation({
       deliveryType: payment.shipping.deliveryType,
       paymentMethod: "full_online",
       whatsappConfirmed: false,
-      scheduledDateTime: payment.shipping.scheduledDateTime,
+      pickupDateTime: payment.shipping.pickupDateTime,
       currency: payment.displayAmount?.currency ?? payment.currency,
       deliveryFee: payment.shipping.deliveryFee,
       grandTotal: payment.displayAmount?.value ?? payment.amountBase,

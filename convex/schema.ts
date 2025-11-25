@@ -1,10 +1,7 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import {
-  addressValidator,
-  optionalAddressValidator,
-} from "./validators/address";
+import { addressValidator, optionalAddressValidator } from "./validators/address";
 
 const usersTable = defineTable({
   name: v.optional(v.string()),
@@ -120,7 +117,7 @@ const applicationTables = {
     ),
     paymentIntentId: v.optional(v.string()),
     whatsappConfirmed: v.optional(v.boolean()),
-    scheduledDateTime: v.optional(v.string()),
+    pickupDateTime: v.optional(v.string()),
   })
     .index("by_user", ["userId"])
     .index("by_status", ["status"]),
@@ -158,7 +155,7 @@ const applicationTables = {
     shipping: v.object({
       address: addressValidator,
       deliveryType: v.union(v.literal("pickup"), v.literal("delivery")),
-      scheduledDateTime: v.optional(v.string()),
+      pickupDateTime: v.optional(v.string()),
       deliveryFee: v.optional(v.number()),
     }),
     items: v.array(

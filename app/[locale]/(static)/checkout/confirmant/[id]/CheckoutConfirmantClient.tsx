@@ -108,17 +108,12 @@ export default function CheckoutConfirmantClient({
         />
       }
       highlight={
-        order.scheduledDateTime ? (
+        order.pickupDateTime ? (
           <p className="text-secondary ring-secondary/10 mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/70 px-4 py-2 text-sm font-semibold ring-1">
             <CalendarCheck2 className="h-4 w-4" />
             <span>
-              {order.deliveryType === "pickup"
-                ? t("pickupWindow")
-                : t("deliveryDate")}
-              :{" "}
-              {order.deliveryType === "pickup"
-                ? new Date(order.scheduledDateTime).toLocaleString()
-                : new Date(order.scheduledDateTime).toLocaleDateString()}
+              {t("pickupWindow")}:{" "}
+              {new Date(order.pickupDateTime).toLocaleString()}
             </span>
           </p>
         ) : null
@@ -340,24 +335,16 @@ export default function CheckoutConfirmantClient({
                 : order.shippingAddress
                   ? composeAddress(order.shippingAddress)
                   : "—";
-            const scheduledDateTimeForPrint = order.scheduledDateTime
-              ? order.deliveryType === "pickup"
-                ? new Date(order.scheduledDateTime).toLocaleString("de-AT", {
+            const pickupWindowForPrint =
+              order.paymentMethod === "cash" && order.pickupDateTime
+                ? new Date(order.pickupDateTime).toLocaleString("de-AT", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                     hour: "2-digit",
                     minute: "2-digit",
                   })
-                : new Date(order.scheduledDateTime).toLocaleDateString(
-                    "de-AT",
-                    {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    },
-                  )
-              : "";
+                : "";
 
             const lines = order.items
               .map((it) => {
@@ -381,8 +368,8 @@ export default function CheckoutConfirmantClient({
                   <div>${tPdf("checkoutConfirmant.delivery")}: ${shippingAddressForPrint}</div>
                   ${paymentLabel ? `<div>${tPdf("checkoutConfirmant.payment")}: ${paymentLabel}</div>` : ""}
                   ${
-                    scheduledDateTimeForPrint
-                      ? `<div>${order.deliveryType === "pickup" ? tPdf("checkoutConfirmant.pickupWindow") : tPdf("checkoutConfirmant.deliveryDate")}: ${scheduledDateTimeForPrint}</div>`
+                    pickupWindowForPrint
+                      ? `<div>${tPdf("checkoutConfirmant.pickupWindow")}: ${pickupWindowForPrint}</div>`
                       : ""
                   }
                   <hr/>

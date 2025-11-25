@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,6 @@ export function OrdersTable({
   onSelect,
   selectedOrderId,
 }: OrdersTableProps) {
-  const locale = useLocale();
   const t = useTranslations("admin.payments");
   const tOrders = useTranslations("admin.ordersTable");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -44,7 +43,6 @@ export function OrdersTable({
               <th className="px-6 py-3 text-left">{tOrders("order")}</th>
               <th className="px-6 py-3 text-left">{tOrders("client")}</th>
               <th className="px-6 py-3 text-left">{tOrders("items")}</th>
-              <th className="px-6 py-3 text-left">{tOrders("deliveryDate")}</th>
               <th className="px-6 py-3 text-left">{tOrders("status")}</th>
               <th className="px-6 py-3 text-right">{tOrders("amount")}</th>
             </tr>
@@ -52,7 +50,7 @@ export function OrdersTable({
           <tbody className="divide-y divide-slate-100 bg-white text-slate-700">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center">
+                <td colSpan={5} className="px-6 py-12 text-center">
                   <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
                   <p className="mt-3 text-sm text-slate-500">
                     {tOrders("loading")}
@@ -62,7 +60,7 @@ export function OrdersTable({
             ) : orders.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className="px-6 py-12 text-center text-slate-500"
                 >
                   {tOrders("noOrders")}
@@ -79,7 +77,7 @@ export function OrdersTable({
                   <td className="px-6 py-4 font-semibold wrap-break-word text-slate-900">
                     #{order._id.slice(-8)}
                     <div className="text-xs font-normal text-slate-400">
-                      {formatDateTime(order._creationTime, locale)}
+                      {formatDateTime(order._creationTime)}
                     </div>
                   </td>
                   <td className="max-w-[220px] px-6 py-4">
@@ -101,55 +99,6 @@ export function OrdersTable({
                         {t("moreItems", { count: order.items.length - 2 })}
                       </span>
                     ) : null}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {order.scheduledDateTime ? (
-                      <div>
-                        <div className="text-xs text-slate-500">
-                          {order.deliveryType === "pickup"
-                            ? tOrders("pickup")
-                            : tOrders("delivery")}
-                        </div>
-                        <div>
-                          {new Date(order.scheduledDateTime).toLocaleDateString(
-                            locale === "de"
-                              ? "de-AT"
-                              : locale === "ru"
-                                ? "ru-RU"
-                                : locale === "uk"
-                                  ? "uk-UA"
-                                  : "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            },
-                          )}
-                        </div>
-                        {(order.deliveryType === "pickup" ||
-                          order.deliveryType === "delivery") && (
-                          <div className="text-xs text-slate-400">
-                            {new Date(
-                              order.scheduledDateTime,
-                            ).toLocaleTimeString(
-                              locale === "de"
-                                ? "de-AT"
-                                : locale === "ru"
-                                  ? "ru-RU"
-                                  : locale === "uk"
-                                    ? "uk-UA"
-                                    : "en-US",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              },
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-slate-400">—</span>
-                    )}
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -189,7 +138,7 @@ export function OrdersTable({
                         #{selected._id.slice(-8)}
                       </div>
                       <div className="text-xs text-slate-400">
-                        {formatDateTime(selected._creationTime, locale)}
+                        {formatDateTime(selected._creationTime)}
                       </div>
                       <div className="mt-2 text-sm font-medium text-slate-800">
                         {selected.customerName}
@@ -197,65 +146,6 @@ export function OrdersTable({
                       <div className="text-xs text-slate-500">
                         {selected.customerEmail}
                       </div>
-                      {selected.scheduledDateTime && (
-                        <div className="mt-2 text-xs text-slate-500">
-                          {selected.deliveryType === "pickup"
-                            ? `${tOrders("pickup")}: ${new Date(
-                                selected.scheduledDateTime,
-                              ).toLocaleDateString(
-                                locale === "de"
-                                  ? "de-AT"
-                                  : locale === "ru"
-                                    ? "ru-RU"
-                                    : locale === "uk"
-                                      ? "uk-UA"
-                                      : "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                },
-                              )} ${new Date(
-                                selected.scheduledDateTime,
-                              ).toLocaleTimeString(
-                                locale === "de"
-                                  ? "de-AT"
-                                  : locale === "ru"
-                                    ? "ru-RU"
-                                    : locale === "uk"
-                                      ? "uk-UA"
-                                      : "en-US",
-                                { hour: "2-digit", minute: "2-digit" },
-                              )}`
-                            : `${tOrders("delivery")}: ${new Date(
-                                selected.scheduledDateTime,
-                              ).toLocaleDateString(
-                                locale === "de"
-                                  ? "de-AT"
-                                  : locale === "ru"
-                                    ? "ru-RU"
-                                    : locale === "uk"
-                                      ? "uk-UA"
-                                      : "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                },
-                              )} ${new Date(
-                                selected.scheduledDateTime,
-                              ).toLocaleTimeString(
-                                locale === "de"
-                                  ? "de-AT"
-                                  : locale === "ru"
-                                    ? "ru-RU"
-                                    : locale === "uk"
-                                      ? "uk-UA"
-                                      : "en-US",
-                                { hour: "2-digit", minute: "2-digit" },
-                              )}`}
-                        </div>
-                      )}
                     </div>
                     <div className="flex shrink-0 flex-col items-end">
                       <div className="text-sm font-semibold text-slate-900">
@@ -332,7 +222,7 @@ export function OrdersTable({
                       #{order._id}
                     </div>
                     <div className="text-xs text-slate-400">
-                      {formatDateTime(order._creationTime, locale)}
+                      {formatDateTime(order._creationTime)}
                     </div>
                     <div className="mt-2 text-sm font-medium text-slate-800">
                       {order.customerName}
@@ -340,65 +230,6 @@ export function OrdersTable({
                     <div className="text-xs text-slate-500">
                       {order.customerEmail}
                     </div>
-                    {order.scheduledDateTime && (
-                      <div className="mt-1 text-xs text-slate-500">
-                        {order.deliveryType === "pickup"
-                          ? `${tOrders("pickup")}: ${new Date(
-                              order.scheduledDateTime,
-                            ).toLocaleDateString(
-                              locale === "de"
-                                ? "de-AT"
-                                : locale === "ru"
-                                  ? "ru-RU"
-                                  : locale === "uk"
-                                    ? "uk-UA"
-                                    : "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              },
-                            )} ${new Date(
-                              order.scheduledDateTime,
-                            ).toLocaleTimeString(
-                              locale === "de"
-                                ? "de-AT"
-                                : locale === "ru"
-                                  ? "ru-RU"
-                                  : locale === "uk"
-                                    ? "uk-UA"
-                                    : "en-US",
-                              { hour: "2-digit", minute: "2-digit" },
-                            )}`
-                          : `${tOrders("delivery")}: ${new Date(
-                              order.scheduledDateTime,
-                            ).toLocaleDateString(
-                              locale === "de"
-                                ? "de-AT"
-                                : locale === "ru"
-                                  ? "ru-RU"
-                                  : locale === "uk"
-                                    ? "uk-UA"
-                                    : "en-US",
-                              {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              },
-                            )} ${new Date(
-                              order.scheduledDateTime,
-                            ).toLocaleTimeString(
-                              locale === "de"
-                                ? "de-AT"
-                                : locale === "ru"
-                                  ? "ru-RU"
-                                  : locale === "uk"
-                                    ? "uk-UA"
-                                    : "en-US",
-                              { hour: "2-digit", minute: "2-digit" },
-                            )}`}
-                      </div>
-                    )}
                   </div>
                   <div className="flex shrink-0 flex-col items-end">
                     <div className="text-sm font-semibold text-slate-900">
