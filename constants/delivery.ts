@@ -12,32 +12,56 @@ export const COURIER_DELIVERY_CITIES: CourierDeliveryCity[] = [
   {
     id: "knittelfeld",
     name: "Knittelfeld",
-    price: 16,
+    price: 10,
     etaDays: { min: 1, max: 2 },
+  },
+  {
+    id: "spielberg",
+    name: "Spielberg",
+    price: 13,
+    etaDays: { min: 1, max: 2 },
+  },
+  {
+    id: "fohnsdorf",
+    name: "Fohnsdorf",
+    price: 20,
+    etaDays: { min: 1, max: 3 },
   },
   {
     id: "judenburg",
     name: "Judenburg",
-    price: 22,
+    price: 23,
     etaDays: { min: 1, max: 3 },
   },
   {
-    id: "zeltweg",
-    name: "Zeltweg",
+    id: "st-margarethen-bei-knittelfeld",
+    name: "St. Margarethen bei Knittelfeld",
+    price: 11,
+    etaDays: { min: 1, max: 2 },
+  },
+  {
+    id: "kobenz",
+    name: "Kobenz",
+    price: 12,
+    etaDays: { min: 1, max: 2 },
+  },
+  {
+    id: "kraubath-an-der-mur",
+    name: "Kraubath an der Mur",
+    price: 20,
+    etaDays: { min: 1, max: 3 },
+  },
+  {
+    id: "sankt-michael-in-obersteiermark",
+    name: "Sankt Michael in Obersteiermark",
     price: 20,
     etaDays: { min: 1, max: 3 },
   },
   {
     id: "leoben",
     name: "Leoben",
-    price: 28,
+    price: 36,
     etaDays: { min: 2, max: 4 },
-  },
-  {
-    id: "graz",
-    name: "Graz",
-    price: 35,
-    etaDays: { min: 2, max: 5 },
   },
 ];
 
