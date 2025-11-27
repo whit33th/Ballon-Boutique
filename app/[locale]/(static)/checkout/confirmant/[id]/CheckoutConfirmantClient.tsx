@@ -112,8 +112,17 @@ export default function CheckoutConfirmantClient({
           <p className="text-secondary ring-secondary/10 mt-4 flex items-center justify-center gap-2 rounded-2xl bg-white/70 px-4 py-2 text-sm font-semibold ring-1">
             <CalendarCheck2 className="h-4 w-4" />
             <span>
-              {t("pickupWindow")}:{" "}
-              {new Date(order.pickupDateTime).toLocaleString()}
+              {order.deliveryType === "delivery"
+                ? t("deliveryWindow")
+                : t("pickupWindow")}
+              :{" "}
+              {new Date(order.pickupDateTime).toLocaleString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </span>
           </p>
         ) : null
@@ -335,16 +344,15 @@ export default function CheckoutConfirmantClient({
                 : order.shippingAddress
                   ? composeAddress(order.shippingAddress)
                   : "—";
-            const pickupWindowForPrint =
-              order.paymentMethod === "cash" && order.pickupDateTime
-                ? new Date(order.pickupDateTime).toLocaleString("de-AT", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : "";
+            const pickupWindowForPrint = order.pickupDateTime
+              ? new Date(order.pickupDateTime).toLocaleString("de-AT", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "";
 
             const lines = order.items
               .map((it) => {
@@ -369,7 +377,7 @@ export default function CheckoutConfirmantClient({
                   ${paymentLabel ? `<div>${tPdf("checkoutConfirmant.payment")}: ${paymentLabel}</div>` : ""}
                   ${
                     pickupWindowForPrint
-                      ? `<div>${tPdf("checkoutConfirmant.pickupWindow")}: ${pickupWindowForPrint}</div>`
+                      ? `<div>${order.deliveryType === "delivery" ? tPdf("checkoutConfirmant.deliveryWindow") : tPdf("checkoutConfirmant.pickupWindow")}: ${pickupWindowForPrint}</div>`
                       : ""
                   }
                   <hr/>

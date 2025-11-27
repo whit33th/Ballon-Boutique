@@ -244,6 +244,22 @@ export function OrderDetails({ order }: Props) {
                 </span>
                 <span>{tOrderDetails("deliveryType")}</span>
               </div>
+              {order.pickupDateTime && (
+                <div>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {tOrderDetails("deliveryTime")}:{" "}
+                  </span>
+                  <span className="text-sm text-slate-700">
+                    {new Date(order.pickupDateTime).toLocaleString(undefined, {
+                      year: "numeric",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              )}
               <div>
                 <span className="text-xs font-semibold text-slate-500">
                   {tOrderDetails("address")}:{" "}
@@ -271,7 +287,13 @@ export function OrderDetails({ order }: Props) {
                     {tOrderDetails("pickupTime")}:{" "}
                   </span>
                   <span className="text-sm text-slate-700">
-                    {new Date(order.pickupDateTime).toLocaleString()}
+                    {new Date(order.pickupDateTime).toLocaleString(undefined, {
+                      year: "numeric",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </div>
               )}

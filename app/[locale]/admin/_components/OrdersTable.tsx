@@ -270,6 +270,27 @@ export function OrdersTable({
                         </div>
                       ))}
                     </div>
+                    {order.pickupDateTime && (
+                      <div className="mt-3">
+                        <div className="text-xs text-slate-500">
+                          {order.deliveryType === "delivery"
+                            ? tOrders("deliveryTime")
+                            : tOrders("pickupTime")}
+                        </div>
+                        <div className="text-sm text-slate-700">
+                          {new Date(order.pickupDateTime).toLocaleString(
+                            undefined,
+                            {
+                              year: "numeric",
+                              month: "numeric",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <div className="mt-3 text-xs text-slate-500">
                       {tOrders("address")}
                     </div>
