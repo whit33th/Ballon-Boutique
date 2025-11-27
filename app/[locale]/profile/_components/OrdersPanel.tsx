@@ -2,7 +2,7 @@
 
 import { Image as ImageKitImage } from "@imagekit/next";
 import { useQuery } from "convex-helpers/react/cache";
-import { Mail, MapPin, Phone, User } from "lucide-react";
+import { CalendarCheck2, Mail, MapPin, Phone, User } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -194,6 +194,30 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                     className="text-[rgba(var(--deep-rgb),0.6)]"
                   />
                   <span className="truncate">{loggedInUser.phone}</span>
+                </div>
+              )}
+
+              {order.pickupDateTime && (
+                <div
+                  className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
+                >
+                  <CalendarCheck2
+                    size={14}
+                    className="text-[rgba(var(--deep-rgb),0.6)]"
+                  />
+                  <span className="truncate">
+                    {order.deliveryType === "delivery"
+                      ? t("deliveryTime")
+                      : t("pickupTime")}
+                    :{" "}
+                    {new Date(order.pickupDateTime).toLocaleString(undefined, {
+                      year: "numeric",
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
                 </div>
               )}
             </div>

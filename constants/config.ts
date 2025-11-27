@@ -132,10 +132,10 @@ export const STORE_INFO = {
   },
 
   delivery: {
-    hours: "16:00-21:00",
+    // Delivery hours when couriers work (source of truth)
+    minDeliveryHour: 16, // minimum hour for delivery selection (24-hour format)
+    maxDeliveryHour: 21, // maximum hour for delivery selection (24-hour format)
     cost: 16, // in EUR
-    hoursRu: "с 16:00 до 21:00",
-    hoursDe: "von 16:00 bis 21:00 Uhr",
   },
 
   orderPolicy: {
