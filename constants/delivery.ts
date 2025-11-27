@@ -50,9 +50,4 @@ export const COURIER_DELIVERY_CITIES: CourierDeliveryCity[] = [
     name: "Leoben",
     price: 36,
   },
-  {
-    id: "graz",
-    name: "Graz",
-    price: 35,
-  },
 ];
