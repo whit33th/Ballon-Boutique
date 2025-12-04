@@ -4,7 +4,6 @@ export const BALLOON_COLORS = [
   { name: "Silver", hex: "#C0C0C0", label: "Silver" },
   { name: "Pink", hex: "#FFC0CB", label: "Pink" },
   { name: "Hot Pink", hex: "#FF69B4", label: "Hot Pink" },
-  { name: "Blush", hex: "#FFB6C1", label: "Blush" },
   { name: "Blue", hex: "#4169E1", label: "Blue" },
   { name: "Light Blue", hex: "#87CEEB", label: "Light Blue" },
   { name: "Navy", hex: "#000080", label: "Navy" },

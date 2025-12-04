@@ -67,9 +67,8 @@ export function ProductCarousel({
   // Check state
   return (
     <section className="flex flex-col overflow-hidden">
-      {/* Header */}
       <div className="flex items-center justify-between p-4 px-4">
-        <h2 className="flex max-w-2xl gap-1.5 truncate text-xl leading-tight md:text-2xl">
+        <h2 className="flex max-w-2xl gap-1.5 truncate text-lg sm:text-xl leading-tight md:text-2xl">
           <span>{label}</span>
           {secondaryLabel ? (
             <>
@@ -94,7 +93,6 @@ export function ProductCarousel({
           className="group"
           opts={{
             dragFree: isMobile,
-            // skipSnaps: true,
             align: "start",
           }}
         >

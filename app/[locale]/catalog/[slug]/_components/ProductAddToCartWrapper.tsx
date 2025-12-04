@@ -165,7 +165,8 @@ export function ProductAddToCartWrapper({
         </div>
       )}
 
-      {(isPersonalizable?.name || isPersonalizable?.number) && (
+      {/* Show personalization section if there are colors to choose from OR if personalization is enabled */}
+      {(availableColors.length > 0 || isPersonalizable?.name || isPersonalizable?.number) && (
         <ProductPersonalization
           ref={numberInputRef}
           availableColors={availableColors}

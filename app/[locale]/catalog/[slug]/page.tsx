@@ -81,8 +81,10 @@ export default async function ProductDetailPage({
       ? product.imageUrls
       : [];
 
-  const requiresColorSelection = (product.availableColors?.length ?? 0) > 1;
+  // Only require color selection if there are multiple colors to choose from
+  const requiresColorSelection = (product.availableColors?.length ?? 0) > 0;
 
+  console.log(product.availableColors);
   return (
     <>
       <ProductJsonLd product={product} locale={locale} slug={slug} />

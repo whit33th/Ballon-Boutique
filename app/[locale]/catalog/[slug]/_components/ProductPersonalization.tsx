@@ -79,8 +79,8 @@ export const ProductPersonalization = forwardRef<
         {t("personalize")}
       </h3>
 
-      {/* Color Selector */}
-      {availableColors.length > 1 && (
+      {/* Color Selector - show when there are colors available */}
+      {availableColors.length > 0 && (
         <div ref={colorSectionRef}>
           <div className="mb-3 flex items-center gap-2">
             <span className="text-deep/70 text-xs font-semibold tracking-wider uppercase">
@@ -94,11 +94,10 @@ export const ProductPersonalization = forwardRef<
                 key={color.name}
                 type="button"
                 onClick={() => handleColorChange(color.name)}
-                className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all ${
-                  selectedColor === color.name
-                    ? "border-accent/60 bg-accent/10 shadow-md"
-                    : "hover:border-accent/50 border-black/10"
-                }`}
+                className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all ${selectedColor === color.name
+                  ? "border-accent/60 bg-accent/10 shadow-md"
+                  : "hover:border-accent/50 border-black/10"
+                  }`}
               >
                 <div
                   className="h-12 w-12 shrink-0 rounded-full shadow-md"
@@ -141,11 +140,10 @@ export const ProductPersonalization = forwardRef<
             min="0"
             max="99"
             required
-            className={`text-deep h-11 w-full rounded-xl border-2 bg-white px-4 font-semibold transition-all outline-none focus:ring-2 ${
-              !number.trim()
-                ? "bg-accent/5 focus:border-accent/85 focus:ring-accent/10 border-black/20"
-                : "focus:border-accent focus:ring-accent/30 border-black/20"
-            }`}
+            className={`text-deep h-11 w-full rounded-xl border-2 bg-white px-4 font-semibold transition-all outline-none focus:ring-2 ${!number.trim()
+              ? "bg-accent/5 focus:border-accent/85 focus:ring-accent/10 border-black/20"
+              : "focus:border-accent focus:ring-accent/30 border-black/20"
+              }`}
           />
         </div>
       )}

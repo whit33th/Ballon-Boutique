@@ -86,7 +86,7 @@ export function Header() {
       <nav className="flex items-center gap-2 justify-self-start px-4 sm:px-8">
         <Link
           href="/"
-          className="text-deep text-md flex items-center gap-3 text-center font-semibold tracking-tight sm:text-xl"
+          className="text-deep text-md flex items-center gap-3 font-semibold tracking-tight sm:text-xl"
         >
           <Image
             className="rounded"
