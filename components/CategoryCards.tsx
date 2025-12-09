@@ -14,21 +14,22 @@ interface CategoryCardsProps {
 }
 
 // No longer rendering ProductCard directly so these types are unused.
+const SUBCATEGORY_IMAGES: Record<string, string> = {
+  "for kids boys": "/imgs/subcategories/balloons/kids-for-him.webp",
+  "for kids girls": "/imgs/subcategories/balloons/kids-for-her.webp",
+  "for her": "/imgs/subcategories/balloons/for-her.webp",
+  "for him": "/imgs/subcategories/balloons/for-him.webp",
+  love: "/imgs/subcategories/balloons/love.webp",
+  mom: "/imgs/subcategories/balloons/mom.webp",
+  anniversary: "/imgs/subcategories/balloons/anniversary.webp",
+  "baby birth": "/imgs/subcategories/balloons/baby-birth.webp",
+  "surprise box": "/imgs/subcategories/balloons/surprise-box.webp",
+};
 
 export default function CategoryCards({ group }: CategoryCardsProps) {
   const tHome = useTranslations("home");
   const tCatalog = useTranslations("catalog");
-  const SUBCATEGORY_IMAGES: Record<string, string> = {
-    "for kids boys": "/imgs/subcategories/balloons/kids-for-him.webp",
-    "for kids girls": "/imgs/subcategories/balloons/kids-for-her.webp",
-    "for her": "/imgs/subcategories/balloons/for-her.webp",
-    "for him": "/imgs/subcategories/balloons/for-him.webp",
-    love: "/imgs/subcategories/balloons/love.webp",
-    mom: "/imgs/subcategories/balloons/mom.webp",
-    anniversary: "/imgs/subcategories/balloons/anniversary.webp",
-    "baby birth": "/imgs/subcategories/balloons/baby-birth.webp",
-    "surprise box": "/imgs/subcategories/balloons/surprise-box.webp",
-  };
+
 
   return (
     <motion.section
