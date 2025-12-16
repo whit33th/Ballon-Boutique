@@ -38,7 +38,8 @@ export function ProductAddToCartWrapper({
   const user = useQuery(api.auth.loggedInUser);
   const { addItem: addGuestItem } = useGuestCart();
   const [quantity, setQuantity] = useState(1);
-  const [personalization, setPersonalization] = useState<PersonalizationOptions>({});
+  const [personalization, setPersonalization] =
+    useState<PersonalizationOptions>({});
   const numberInputRef = useRef<HTMLInputElement>(null);
   const colorSectionRef = useRef<HTMLDivElement>(
     null,
@@ -90,15 +91,11 @@ export function ProductAddToCartWrapper({
         return;
       }
 
-      // Only include personalization if product supports it and at least one field is filled
+      // Include personalization if at least one field is filled
+      // Color should always be saved if selected, regardless of other personalization fields
       const hasPersonalization =
         personalization.text || personalization.color || personalization.number;
-      const isPersonalizableProduct =
-        isPersonalizable?.name || isPersonalizable?.number;
-      const personalizedData =
-        isPersonalizableProduct && hasPersonalization
-          ? personalization
-          : undefined;
+      const personalizedData = hasPersonalization ? personalization : undefined;
 
       if (!user) {
         addGuestItem(
@@ -166,7 +163,9 @@ export function ProductAddToCartWrapper({
       )}
 
       {/* Show personalization section if there are colors to choose from OR if personalization is enabled */}
-      {(availableColors.length > 0 || isPersonalizable?.name || isPersonalizable?.number) && (
+      {(availableColors.length > 0 ||
+        isPersonalizable?.name ||
+        isPersonalizable?.number) && (
         <ProductPersonalization
           ref={numberInputRef}
           availableColors={availableColors}

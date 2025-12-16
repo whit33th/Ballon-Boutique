@@ -111,7 +111,7 @@ export function FiltersDrawer() {
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
           <div className="space-y-8">
             {/* Available Toggle */}
             <div>
@@ -138,7 +138,7 @@ export function FiltersDrawer() {
               <h3 className="text-deep mb-3 text-lg font-semibold tracking-wide uppercase">
                 {t("balloonColor")}
               </h3>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {BALLOON_COLORS.map((color) => (
                   <button
                     type="button"
@@ -149,7 +149,7 @@ export function FiltersDrawer() {
                         getParam("color") === color.name ? "" : color.name,
                       )
                     }
-                    className={`flex items-center gap-2 rounded-full border-2 px-3 py-2 transition-all ${
+                    className={`flex items-center gap-2 rounded-full border-2 pl-2 py-2 transition-all ${
                       getParam("color") === color.name
                         ? "border-secondary bg-secondary/10"
                         : "border-border/30 hover:border-secondary/50 bg-white/50"

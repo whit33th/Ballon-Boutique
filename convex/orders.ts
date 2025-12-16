@@ -66,6 +66,29 @@ export const createGuest = mutation({
       throw new Error("Cash payment requires WhatsApp confirmation");
     }
 
+    // Validate pickupDateTime if provided
+    if (args.pickupDateTime) {
+      const selectedDate = new Date(args.pickupDateTime);
+      const now = new Date();
+
+      // Minimum: 3 days from now
+      const minDate = new Date();
+      minDate.setDate(now.getDate() + 3); // minPickupDays = 3
+      minDate.setHours(0, 0, 0, 0);
+
+      // Maximum: 1 year from now
+      const maxDate = new Date();
+      maxDate.setFullYear(now.getFullYear() + 1);
+
+      if (selectedDate < minDate) {
+        throw new Error("Pickup date must be at least 3 days in advance");
+      }
+
+      if (selectedDate > maxDate) {
+        throw new Error("Pickup date cannot be more than 1 year in advance");
+      }
+    }
+
     if (args.items.length === 0) {
       throw new Error("Cart is empty");
     }
@@ -158,6 +181,29 @@ export const create = mutation({
     // Validate cash payment requires WhatsApp confirmation
     if (args.paymentMethod === "cash" && !args.whatsappConfirmed) {
       throw new Error("Cash payment requires WhatsApp confirmation");
+    }
+
+    // Validate pickupDateTime if provided
+    if (args.pickupDateTime) {
+      const selectedDate = new Date(args.pickupDateTime);
+      const now = new Date();
+
+      // Minimum: 3 days from now
+      const minDate = new Date();
+      minDate.setDate(now.getDate() + 3); // minPickupDays = 3
+      minDate.setHours(0, 0, 0, 0);
+
+      // Maximum: 1 year from now
+      const maxDate = new Date();
+      maxDate.setFullYear(now.getFullYear() + 1);
+
+      if (selectedDate < minDate) {
+        throw new Error("Pickup date must be at least 3 days in advance");
+      }
+
+      if (selectedDate > maxDate) {
+        throw new Error("Pickup date cannot be more than 1 year in advance");
+      }
     }
 
     const cartItems = [];

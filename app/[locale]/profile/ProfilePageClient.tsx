@@ -256,11 +256,11 @@ export default function ProfilePageClient({
 
       const addressFields = formValues.address
         ? {
-          streetAddress: formValues.address.streetAddress ?? "",
-          city: formValues.address.city ?? "",
-          postalCode: formValues.address.postalCode ?? "",
-          deliveryNotes: formValues.address.deliveryNotes ?? "",
-        }
+            streetAddress: formValues.address.streetAddress ?? "",
+            city: formValues.address.city ?? "",
+            postalCode: formValues.address.postalCode ?? "",
+            deliveryNotes: formValues.address.deliveryNotes ?? "",
+          }
         : createEmptyAddressFields();
 
       // Always send fields if they are present in the form (even if empty)
@@ -421,10 +421,11 @@ export default function ProfilePageClient({
                   (currentIndex + offset + tabs.length) % tabs.length;
                 setActiveTab(tabs[nextIndex].id);
               }}
-              className={`focus-visible:outline-accent flex flex-col rounded-3xl border bg-white px-6 py-5 text-left focus-visible:outline focus-visible:outline-offset-2 ${isActive
-                ? "border-secondary/90"
-                : `${palette.softBorder} hover:border-secondary/40`
-                }`}
+              className={`focus-visible:outline-accent flex flex-col rounded-3xl border bg-white px-6 py-5 text-left focus-visible:outline focus-visible:outline-offset-2 ${
+                isActive
+                  ? "border-secondary/90"
+                  : `${palette.softBorder} hover:border-secondary/40`
+              }`}
             >
               <span
                 className={`text-xs tracking-[0.3rem] uppercase ${palette.subtleText}`}
@@ -472,10 +473,11 @@ export default function ProfilePageClient({
                     setIsEditing(true);
                   }
                 }}
-                className={`rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase transition ${isEditing
-                  ? `border ${palette.softBorder} text-deep hover:bg-[rgba(var(--primary-rgb),0.7)]`
-                  : "btn-secondary border-none shadow-md hover:brightness-95"
-                  }`}
+                className={`rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase transition ${
+                  isEditing
+                    ? `border ${palette.softBorder} text-deep hover:bg-[rgba(var(--primary-rgb),0.7)]`
+                    : "btn-secondary border-none shadow-md hover:brightness-95"
+                }`}
               >
                 {isEditing
                   ? t("personalDetails.cancel")
@@ -558,10 +560,11 @@ export default function ProfilePageClient({
                           onClick={() =>
                             form.setValue("address.city", city.name)
                           }
-                          className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${selected
-                            ? "border-accent bg-[rgba(var(--accent-rgb),0.08)]"
-                            : `${palette.softBorder} hover:border-accent/40`
-                            }`}
+                          className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                            selected
+                              ? "border-accent bg-[rgba(var(--accent-rgb),0.08)]"
+                              : `${palette.softBorder} hover:border-accent/40`
+                          }`}
                         >
                           {city.name}
                         </button>

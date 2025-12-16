@@ -52,7 +52,7 @@ export function SortByButton() {
       <DrawerTrigger asChild>
         <button
           type="button"
-          className="border-border/50 text-deep flex h-10 items-center justify-center gap-2 text-sm font-medium tracking-wide underline-offset-1 transition-colors hover:underline"
+          className="border-border/50 text-deep flex h-10 items-center justify-center gap-2 text-sm text-left font-medium tracking-wide underline-offset-1 transition-colors hover:underline"
         >
           <ArrowUpDown className="h-4 w-4" />
           {t("sortBy")}: {currentSortLabel}
@@ -75,11 +75,10 @@ export function SortByButton() {
                 key={option.value}
                 variant={currentSort === option.value ? "secondary" : "outline"}
                 onClick={() => handleSortChange(option.value)}
-                className={`w-full justify-start rounded-sm border text-white transition-[opacity,background-color,box-shadow] duration-200 hover:opacity-80 ${
-                  currentSort === option.value
+                className={`w-full justify-start rounded-sm border text-white transition-[opacity,background-color,box-shadow] duration-200 hover:opacity-80 ${currentSort === option.value
                     ? "btn-secondary text-on-secondary text-background"
                     : "border-secondary text-deep hover:bg-secondary/10 bg-transparent hover:shadow-sm"
-                }`}
+                  }`}
               >
                 <span>{option.label}</span>
               </Button>

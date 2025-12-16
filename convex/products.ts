@@ -2,7 +2,7 @@ import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
-import { requireUser } from "./helpers/auth";
+import { ensureAdmin } from "./helpers/admin";
 import {
   attachImageToProduct,
   getProductCategories,
@@ -743,7 +743,7 @@ export const create = mutation({
   },
   returns: v.id("products"),
   handler: async (ctx, args) => {
-    await requireUser(ctx);
+    await ensureAdmin(ctx);
 
     if (args.price < 0) {
       throw new Error("Price must be non-negative");
@@ -789,7 +789,7 @@ export const update = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await requireUser(ctx);
+    await ensureAdmin(ctx);
 
     const existing = await ctx.db.get(args.productId);
     if (!existing) {
@@ -830,7 +830,7 @@ export const remove = mutation({
     deletedImageUrls: v.array(v.string()),
   }),
   handler: async (ctx, args) => {
-    await requireUser(ctx);
+    await ensureAdmin(ctx);
 
     const existing = await ctx.db.get(args.productId);
     if (!existing) {

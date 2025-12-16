@@ -188,7 +188,7 @@ export function PaymentsTab({
                     {convexPayments.map((item) => (
                       <tr key={item.payment._id}>
                         <td className="px-4 py-3 font-mono text-xs text-slate-600">
-                          #{item.payment._id.slice(-8)}
+                          #{item.payment._id}
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-semibold text-slate-900">
@@ -244,7 +244,7 @@ export function PaymentsTab({
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="font-semibold text-slate-900">
-                          #{item.payment._id.slice(-8)}
+                          #{item.payment._id}
                         </div>
                         <div className="text-xs text-slate-500">
                           {item.payment.customer.email}

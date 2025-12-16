@@ -14,22 +14,29 @@ interface CategoryCardsProps {
 }
 
 // No longer rendering ProductCard directly so these types are unused.
-const SUBCATEGORY_IMAGES: Record<string, string> = {
-  "for kids boys": "/imgs/subcategories/balloons/kids-for-him.webp",
-  "for kids girls": "/imgs/subcategories/balloons/kids-for-her.webp",
-  "for her": "/imgs/subcategories/balloons/for-her.webp",
-  "for him": "/imgs/subcategories/balloons/for-him.webp",
-  love: "/imgs/subcategories/balloons/love.webp",
-  mom: "/imgs/subcategories/balloons/mom.webp",
-  anniversary: "/imgs/subcategories/balloons/anniversary.webp",
-  "baby birth": "/imgs/subcategories/balloons/baby-birth.webp",
-  "surprise box": "/imgs/subcategories/balloons/surprise-box.webp",
+const SUBCATEGORY_IMAGES: Record<string, Record<string, string>> = {
+  balloons: {
+    "for kids boys": "/imgs/subcategories/balloons/kids-for-him.webp",
+    "for kids girls": "/imgs/subcategories/balloons/kids-for-her.webp",
+    "for her": "/imgs/subcategories/balloons/for-her.webp",
+    "for him": "/imgs/subcategories/balloons/for-him.webp",
+    love: "/imgs/subcategories/balloons/love.webp",
+    mom: "/imgs/subcategories/balloons/mom.webp",
+    anniversary: "/imgs/subcategories/balloons/anniversary.webp",
+    "baby birth": "/imgs/subcategories/balloons/baby-birth.webp",
+    "surprise box": "/imgs/subcategories/balloons/surprise-box.webp",
+  },
+  "balloon-bouquets": {
+    "for kids boys": "/imgs/subcategories/balloons/kids-for-him.webp", // TODO: Add unique image
+    "for kids girls": "/imgs/subcategories/balloons/kids-for-her.webp", // TODO: Add unique image
+    "for her": "/imgs/subcategories/bouquets/for-her.webp",
+    "for him": "/imgs/subcategories/bouquets/for-him.webp",
+  },
 };
 
 export default function CategoryCards({ group }: CategoryCardsProps) {
   const tHome = useTranslations("home");
   const tCatalog = useTranslations("catalog");
-
 
   return (
     <motion.section
@@ -40,7 +47,7 @@ export default function CategoryCards({ group }: CategoryCardsProps) {
     >
       {group.subcategories.map((subcategory) => {
         const normalized = subcategory.value.toLowerCase();
-        const imgFromMap = SUBCATEGORY_IMAGES[normalized];
+        const imgFromMap = SUBCATEGORY_IMAGES[group.value][normalized];
 
         const href = {
           pathname: "/catalog",

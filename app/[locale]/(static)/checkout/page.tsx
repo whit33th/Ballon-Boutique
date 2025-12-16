@@ -136,16 +136,23 @@ const getMinDeliveryDateTime = (): string => {
 };
 
 /**
- * Calculate maximum delivery datetime with time constraints
+ * Calculate maximum pickup datetime (1 year from now)
  */
+const getMaxPickupDateTime = (): string => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + 1);
+  // Format to datetime-local format: YYYY-MM-DDTHH:mm
+  return date.toISOString().slice(0, 16);
+};
+
 /**
- * Calculate maximum delivery datetime with time constraints
+ * Calculate maximum delivery datetime (1 year from now)
  * Note: max attribute in datetime-local only works for the specific date,
  * so we need to validate time in the validation function as well
  */
 const getMaxDeliveryDateTime = (): string => {
   const date = new Date();
-  date.setDate(date.getDate() + STORE_INFO.orderPolicy.minPickupDays);
+  date.setFullYear(date.getFullYear() + 1);
   date.setHours(STORE_INFO.delivery.maxDeliveryHour, 0, 0, 0);
   // Format to datetime-local format: YYYY-MM-DDTHH:mm
   return date.toISOString().slice(0, 16);
@@ -458,6 +465,10 @@ const createCheckoutDetailsSchema = (
       minDate.setDate(minDate.getDate() + STORE_INFO.orderPolicy.minPickupDays);
       minDate.setHours(0, 0, 0, 0);
 
+      // Validate maximum date (1 year from now)
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() + 1);
+
       // Validate that date is not earlier than minimum days
       if (selectedDate < minDate) {
         ctx.addIssue({
@@ -466,6 +477,15 @@ const createCheckoutDetailsSchema = (
           message: t("validation.pickupDateMinDays", {
             days: STORE_INFO.orderPolicy.minPickupDays,
           }),
+        });
+      }
+
+      // Validate that date is not later than 1 year
+      if (selectedDate > maxDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["pickupDateTime"],
+          message: t("validation.pickupDateMaxOneYear"),
         });
       }
 
@@ -1995,7 +2015,7 @@ function StepOne({
                 : getMinPickupDateTime();
               const maxDateTime = isDelivery
                 ? getMaxDeliveryDateTime()
-                : undefined;
+                : getMaxPickupDateTime();
               const minDate = new Date(minDateTime);
 
               const validateAndSetValue = (value: string) => {

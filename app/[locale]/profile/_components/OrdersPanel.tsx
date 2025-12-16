@@ -2,11 +2,20 @@
 
 import { Image as ImageKitImage } from "@imagekit/next";
 import { useQuery } from "convex-helpers/react/cache";
-import { CalendarCheck2, Mail, MapPin, Phone, User } from "lucide-react";
+import {
+  CalendarCheck2,
+  Check,
+  ChevronDown,
+  Copy,
+  MapPin,
+  MessageSquare,
+  User,
+} from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
+import { STORE_INFO } from "@/constants/config";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { Link } from "@/i18n/routing";
@@ -88,155 +97,228 @@ type OrderCardProps = {
 
 function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
   const t = useTranslations("profile.orders");
-  const loggedInUser = useQuery(api.auth.loggedInUser);
+  const tCheckout = useTranslations("checkout.orderSummary");
+  const [copiedId, setCopiedId] = useState(false);
+
+  const handleCopyId = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(order._id);
+    setCopiedId(true);
+    setTimeout(() => setCopiedId(false), 2000);
+  };
+
+  const subtotal = order.items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
+  const deliveryFee = order.deliveryFee ?? order.totalAmount - subtotal;
 
   return (
     <div
-      className={`grid gap-3 rounded-3xl border px-6 py-5 transition ${palette.softBorder} bg-primary hover:border-[rgba(var(--accent-rgb),0.6)]`}
+      className={`group overflow-hidden rounded-3xl border transition-all duration-300 ${palette.softBorder} bg-primary hover:shadow-sm`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p
-            className={`text-xs tracking-[0.3rem] uppercase ${palette.subtleText}`}
-          >
-            {t("order")}
-          </p>
-          <p className="text-deep text-lg font-medium">
-            #{order._id.slice(-8)}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs tracking-[0.2rem] uppercase">
-          <div className="bg-accent text-on-accent rounded-full px-4 py-1 font-semibold">
-            €{order.totalAmount.toFixed(2)}
-          </div>
-          <button
-            type="button"
-            aria-expanded={isExpanded}
-            aria-controls={`order-items-${order._id}`}
-            className="flex items-center gap-1 rounded-full border px-3 py-1 text-[0.6rem] font-semibold transition hover:border-[rgba(var(--accent-rgb),0.6)]"
-            onClick={onToggle}
-          >
-            {isExpanded ? t("hide") : t("details")}
-            <span className="text-xs">↕</span>
-          </button>
-        </div>
-      </div>
-
-      <div
-        className={`flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between ${palette.mutedText}`}
+      {/* Header Section - Always Visible */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full cursor-pointer px-4 py-4 transition-colors hover:bg-[rgba(var(--surface-rgb),0.02)] sm:px-6 sm:py-5"
       >
-        <div className="flex items-center gap-3">
-          <span>{new Date(order._creationTime).toLocaleDateString()}</span>
-          <span>{t("items", { count: order.items.length })}</span>
-        </div>
+        <div className="flex w-full items-center flex-col sm:flex-row justify-between gap-3 sm:gap-4">
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-1 text-left">
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <span className="text-secondary inline-block rounded-full bg-[rgba(var(--secondary-rgb),0.15)] px-2.5 py-0.5 text-[10px] font-bold tracking-widest uppercase">
+                {t(`status.${order.status}`)}
+              </span>
+              <span className={`text-xs ${palette.mutedText}`}>
+                {order.pickupDateTime
+                  ? new Date(order.pickupDateTime).toLocaleDateString()
+                  : new Date(order._creationTime).toLocaleDateString()}
+              </span>
+            </div>
 
-        <div className="shrink-0">
-          <span className="text-secondary rounded-full bg-[rgba(var(--secondary-rgb),0.18)] px-3 py-1 text-xs font-semibold tracking-[0.2rem] uppercase">
-            {t(`status.${order.status}`)}
-          </span>
-        </div>
-      </div>
+            <p className="text-deep w-full wrap-break-word text-base font-bold leading-tight sm:text-lg">
+              {order.customerName}
+            </p>
 
+            <div
+              className={`mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${palette.mutedText}`}
+            >
+              <span>{t("items", { count: order.items.length })}</span>
+              <span className="opacity-30">•</span>
+              <button
+                type="button"
+                onClick={handleCopyId}
+                className="group/copy text-deep hover:bg-[rgba(var(--deep-rgb),0.05)] flex max-w-30 items-center gap-1 rounded px-2 py-1 font-mono text-[11px] font-semibold transition-colors sm:max-w-none"
+                title="Click to copy order ID"
+              >
+                <span className="truncate">#{order._id}</span>
+                <span className="opacity-0 transition-opacity group-hover/copy:opacity-100">
+                  {copiedId ? (
+                    <Check size={12} className="text-emerald-600" />
+                  ) : (
+                    <Copy size={12} />
+                  )}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3 sm:gap-6">
+            <p className="text-accent text-lg font-bold tracking-tight sm:text-xl">
+              €{order.totalAmount.toFixed(2)}
+            </p>
+            <div
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-transform duration-300 ${palette.softBorder} ${
+                isExpanded
+                  ? "-rotate-180 bg-[rgba(var(--surface-rgb),0.05)]"
+                  : "rotate-0"
+              }`}
+            >
+              <ChevronDown
+                size={16}
+                className={`text-deep transition-colors ${isExpanded ? "text-accent" : ""}`}
+              />
+            </div>
+          </div>
+        </div>
+      </button>
+
+      {/* Expanded Content */}
       <div
         id={`order-items-${order._id}`}
-        className="overflow-hidden transition-[max-height] duration-300 ease-out"
-        style={{ maxHeight: isExpanded ? "100%" : 0 }}
+        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
       >
-        <div
-          className={`mt-3 space-y-3 transition-opacity duration-200 ${isExpanded ? "opacity-100" : "opacity-0"}`}
-        >
-          {/* Contact card — visually separated and left-aligned */}
-          <div
-            className={`w-full rounded-lg border bg-[rgba(var(--surface-rgb),0.02)] px-4 py-3 ${palette.softBorder}`}
-          >
-            <div className="mb-2 text-xs tracking-wide text-[rgba(var(--deep-rgb),0.45)] uppercase">
-              {t("recipient")}
+        <div className="overflow-hidden">
+          <div className="border-t border-[rgba(var(--deep-rgb),0.06)] px-6 pb-6">
+            {/* Delivery & Contact Info Grid */}
+            <div className="mb-8 grid gap-6 rounded-2xl bg-[rgba(var(--surface-rgb),0.03)] py-5 sm:grid-cols-2">
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold tracking-widest text-[rgba(var(--deep-rgb),0.5)] uppercase">
+                  {t("recipient")}
+                </h4>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white shadow-sm">
+                    <User
+                      size={14}
+                      className="text-[rgba(var(--deep-rgb),0.7)]"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-deep text-sm font-medium">
+                      {order.customerName}
+                    </p>
+                    <p className={`text-xs ${palette.mutedText}`}>
+                      {order.customerEmail}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold tracking-widest text-[rgba(var(--deep-rgb),0.5)] uppercase">
+                  {order.deliveryType === "delivery"
+                    ? t("deliveryTime")
+                    : t("pickupTime")}
+                </h4>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white shadow-sm">
+                    {order.deliveryType === "delivery" ? (
+                      <MapPin
+                        size={14}
+                        className="text-[rgba(var(--deep-rgb),0.7)]"
+                      />
+                    ) : (
+                      <CalendarCheck2
+                        size={14}
+                        className="text-[rgba(var(--deep-rgb),0.7)]"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-deep text-sm font-medium">
+                      {order.pickupDateTime
+                        ? new Date(order.pickupDateTime).toLocaleString(
+                            "de-DE",
+                            {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            },
+                          )
+                        : "—"}
+                    </p>
+                    <p className={`text-xs ${palette.mutedText} line-clamp-1`}>
+                      {order.deliveryType === "delivery"
+                        ? order.shippingAddress
+                          ? `${order.shippingAddress.streetAddress}, ${order.shippingAddress.city}`
+                          : "—"
+                        : STORE_INFO.address.formatted}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {typeof order.shippingAddress !== "string" &&
+                order.shippingAddress?.deliveryNotes && (
+                  <div className="space-y-3 sm:col-span-2">
+                    <h4 className="text-xs font-bold tracking-widest text-[rgba(var(--deep-rgb),0.5)] uppercase">
+                      {t("notes")}
+                    </h4>
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white shadow-sm">
+                        <MessageSquare
+                          size={14}
+                          className="text-[rgba(var(--deep-rgb),0.7)]"
+                        />
+                      </div>
+                      <p className="text-deep pt-1.5 text-sm leading-relaxed font-medium">
+                        {order.shippingAddress.deliveryNotes}
+                      </p>
+                    </div>
+                  </div>
+                )}
             </div>
 
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <User size={16} className="text-[rgba(var(--deep-rgb),0.85)]" />
-                <span className="text-deep">{order.customerName}</span>
-              </div>
-
-              <div
-                className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
-              >
-                <Mail size={14} className="text-[rgba(var(--deep-rgb),0.6)]" />
-                <span className="max-w-[48ch] truncate">
-                  {order.customerEmail}
-                </span>
-              </div>
-
-              <div
-                className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
-              >
-                <MapPin
-                  size={14}
-                  className="text-[rgba(var(--deep-rgb),0.6)]"
-                />
-                <span className="max-w-[48ch] truncate">
-                  {typeof order.shippingAddress === "string"
-                    ? order.shippingAddress
-                    : order.shippingAddress
-                      ? `${order.shippingAddress.streetAddress}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`
-                      : "—"}
-                </span>
-              </div>
-
-              {loggedInUser?.phone && (
-                <div
-                  className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
-                >
-                  <Phone
-                    size={14}
-                    className="text-[rgba(var(--deep-rgb),0.6)]"
+            {/* Order Items */}
+            <div className="space-y-6">
+              <h4 className="text-xs font-bold tracking-widest text-[rgba(var(--deep-rgb),0.5)] uppercase">
+                {t("items", { count: order.items.length })}
+              </h4>
+              <div className="divide-y divide-[rgba(var(--deep-rgb),0.06)]">
+                {order.items.map((item, index) => (
+                  <OrderItemRow
+                    key={`${item.productId}-${index}`}
+                    item={item}
                   />
-                  <span className="truncate">{loggedInUser.phone}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary Footer */}
+            <div className="mt-8 flex justify-end border-t border-[rgba(var(--deep-rgb),0.06)] pt-6">
+              <div className="w-full space-y-3 sm:w-72">
+                <div className="flex justify-between text-sm text-[rgba(var(--deep-rgb),0.7)]">
+                  <span>{tCheckout("itemsSubtotal")}</span>
+                  <span>€{subtotal.toFixed(2)}</span>
                 </div>
-              )}
-
-              {order.pickupDateTime && (
-                <div
-                  className={`flex items-center gap-2 text-xs ${palette.mutedText}`}
-                >
-                  <CalendarCheck2
-                    size={14}
-                    className="text-[rgba(var(--deep-rgb),0.6)]"
-                  />
-                  <span className="truncate">
-                    {order.deliveryType === "delivery"
-                      ? t("deliveryTime")
-                      : t("pickupTime")}
-                    :{" "}
-                    {new Date(order.pickupDateTime).toLocaleString(undefined, {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                <div className="flex justify-between text-sm text-[rgba(var(--deep-rgb),0.7)]">
+                  <span>{tCheckout("delivery")}</span>
+                  <span>
+                    {deliveryFee > 0 ? `€${deliveryFee.toFixed(2)}` : "—"}
                   </span>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Items — each item gets its own subtle card for separation */}
-          <div className="space-y-2">
-            {order.items.map((item, index) => (
-              <div
-                key={`${item.productId}-${index}`}
-                className={`rounded-md bg-[rgba(var(--surface-rgb),0.02)] px-3 py-2 ${
-                  index !== order.items.length - 1
-                    ? "border-b border-[rgba(var(--deep-rgb),0.06)]"
-                    : ""
-                }`}
-              >
-                <OrderItemRow item={item} />
+                <div className="my-2 border-t border-dashed border-[rgba(var(--deep-rgb),0.15)]" />
+                <div className="flex items-baseline justify-between">
+                  <span className="text-deep text-base font-medium">
+                    {tCheckout("total")}
+                  </span>
+                  <span className="text-accent text-2xl font-bold tracking-tight">
+                    €{order.totalAmount.toFixed(2)}
+                  </span>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
@@ -259,123 +341,112 @@ function OrderItemRow({ item }: { item: OrderItem }) {
   })();
 
   const total = item.price * item.quantity;
-  const totalStr = total.toFixed(2);
-  const [intPart, cents] = totalStr.split(".");
 
   return (
-    <div>
-      <div className="py-3 sm:py-4">
-        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:gap-4">
-          <div className="flex w-full gap-3">
-            <div className="bg-secondary/10 relative aspect-square h-10 w-10 shrink-0 overflow-hidden rounded-md sm:h-12 sm:w-12">
-              {product?.primaryImageUrl ? (
-                <ImageKitImage
-                  src={product.primaryImageUrl}
-                  alt={item.productName}
-                  width={48}
-                  height={48}
-                  className="aspect-square object-cover"
-                  sizes="48px"
-                  transformation={[{ progressive: true }]}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center">
-                  🎈
-                </div>
-              )}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="text-deep text-sm font-semibold">
-                {item.productName}
-              </p>
-
-              {item.personalization && (
-                <div className="mt-1 flex flex-col items-start gap-1 sm:mt-2 sm:gap-2">
-                  {item.personalization.color && (
-                    <div className="flex flex-col items-start gap-1">
-                      <span
-                        className={`${palette.mutedText} text-[10px] font-semibold`}
-                      >
-                        {t("color")}:
-                      </span>
-                      <span className="text-deep inline-flex items-center gap-1 rounded-full bg-white/50 px-0 py-0.5 text-xs font-medium sm:gap-2">
-                        <span
-                          className="h-4 w-4 shrink-0 rounded-full shadow-sm"
-                          style={{
-                            ...getColorStyle(
-                              item.personalization.color,
-                              colorHex,
-                            ),
-                            border:
-                              item.personalization.color === "White"
-                                ? "1px solid #ddd"
-                                : undefined,
-                          }}
-                        />
-                        <span className="whitespace-nowrap">
-                          {item.personalization.color}
-                        </span>
-                      </span>
-                    </div>
-                  )}
-
-                  {item.personalization.text && (
-                    <div className="flex flex-col items-start gap-1">
-                      <span
-                        className={`${palette.mutedText} text-[10px] font-semibold`}
-                      >
-                        {t("text")}:
-                      </span>
-                      <span className="text-deep inline-flex items-center rounded-full bg-white/50 px-0 py-0.5 text-xs font-medium italic">
-                        <span className="whitespace-nowrap">
-                          "{item.personalization.text}"
-                        </span>
-                      </span>
-                    </div>
-                  )}
-
-                  {item.personalization.number && (
-                    <div className="flex flex-col items-start gap-1">
-                      <span
-                        className={`${palette.mutedText} text-[10px] font-semibold`}
-                      >
-                        {t("number")}:
-                      </span>
-                      <span className="text-deep inline-flex items-center rounded-full bg-white/50 px-0 py-0.5 text-xs font-medium">
-                        <span className="whitespace-nowrap">
-                          {item.personalization.number}
-                        </span>
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+    <div className="py-4 first:pt-0 last:pb-0">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex gap-4">
+          <div className="bg-secondary/5 relative aspect-square h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-[rgba(var(--deep-rgb),0.05)]">
+            {product?.primaryImageUrl ? (
+              <ImageKitImage
+                src={product.primaryImageUrl}
+                alt={item.productName}
+                width={64}
+                height={64}
+                className="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
+                sizes="64px"
+                transformation={[{ progressive: true }]}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-2xl">
+                🎈
+              </div>
+            )}
           </div>
 
-          <div className="mt-3 flex w-full items-center justify-between gap-3 sm:mt-0 sm:w-auto sm:justify-start">
-            <span className="flex items-baseline gap-1">
-              <span className="text-accent text-lg font-semibold sm:text-xl">
-                €{intPart}
-              </span>
-              {cents !== "00" && (
-                <span className={`${palette.mutedText} text-xs sm:text-sm`}>
-                  .{cents}
-                </span>
-              )}
-            </span>
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="text-deep leading-tight font-medium">
+              {item.productName}
+            </p>
 
-            <span
-              className={`bg-secondary/10 text-deep inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-semibold ${palette.softBorder} min-w-[3ch] text-center shadow-sm sm:w-[3ch]`}
-            >
-              ×{item.quantity}
-            </span>
+            {item.personalization && (
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+                {item.personalization.color && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold tracking-wider text-[rgba(var(--deep-rgb),0.5)] uppercase">
+                      {t("color")}
+                    </span>
+                    <span className="text-deep flex items-center gap-1.5 font-medium">
+                      <span
+                        className="h-3 w-3 rounded-full shadow-[0_0_0_1px_rgba(0,0,0,0.05)]"
+                        style={{
+                          ...getColorStyle(
+                            item.personalization.color,
+                            colorHex,
+                          ),
+                          border:
+                            item.personalization.color === "White"
+                              ? "1px solid #e5e5e5"
+                              : undefined,
+                        }}
+                      />
+                      {item.personalization.color}
+                    </span>
+                  </div>
+                )}
+
+                {item.personalization.color &&
+                  (item.personalization.text ||
+                    item.personalization.number) && (
+                    <div className="h-3 w-px bg-[rgba(var(--deep-rgb),0.15)]" />
+                  )}
+
+                {item.personalization.text && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold tracking-wider text-[rgba(var(--deep-rgb),0.5)] uppercase">
+                      {t("text")}
+                    </span>
+                    <span className="text-deep italic">
+                      "{item.personalization.text}"
+                    </span>
+                  </div>
+                )}
+
+                {(item.personalization.color || item.personalization.text) &&
+                  item.personalization.number && (
+                    <div className="h-3 w-px bg-[rgba(var(--deep-rgb),0.15)]" />
+                  )}
+
+                {item.personalization.number && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold tracking-wider text-[rgba(var(--deep-rgb),0.5)] uppercase">
+                      {t("number")}
+                    </span>
+                    <span className="text-deep font-medium">
+                      {item.personalization.number}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* divider removed — items are separated by their own subtle cards */}
+        <div className="flex flex-col items-end gap-0.5 pl-4">
+          <span className="text-deep text-lg font-bold tracking-tight">
+            €{total.toFixed(2)}
+          </span>
+          {item.quantity > 1 && (
+            <div
+              className={`flex items-center gap-1.5 text-xs ${palette.mutedText}`}
+            >
+              <span className="font-medium">{item.quantity}</span>
+              <span className="text-[10px]">×</span>
+              <span>€{item.price.toFixed(2)}</span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -113,7 +113,7 @@ export function OrderDetails({ order }: Props) {
               {tOrdersTable("order")}
             </div>
             <div className="font-mono font-semibold text-slate-900">
-              #{order._id.slice(-8)}
+              #{order._id}
             </div>
             <div className="text-xs text-slate-400">
               {formatDateTime(order._creationTime)}

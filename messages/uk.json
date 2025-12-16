@@ -258,6 +258,7 @@
       "pickupDateTimeRequired": "Дата та час обов'язкові.",
       "deliveryTimeRange": "Час доставки має бути між {min}:00 та {max}:00.",
       "pickupDateMinDays": "Дата самовивозу повинна бути принаймні за {days} днів.",
+      "pickupDateMaxOneYear": "Дата самовивозу не може бути більше ніж на 1 рік вперед.",
       "selectCourierCity": "Виберіть місто кур'єра, щоб продовжити.",
       "addressRequiredForDelivery": "Адреса обов'язкова для доставки.",
       "addContactDetailsFirst": "Будь ласка, спочатку додайте контактні дані та вашу адресу.",
@@ -533,6 +534,30 @@
       "upTo20": "До €20",
       "upTo30": "До €30",
       "upTo50": "До €50"
+    }
+  },
+  "orders": {
+    "title": "Історія замовлень",
+    "deliveryTime": "Час доставки",
+    "pickupTime": "Час самовивозу",
+    "placedOrders": "{count, plural, =0 {немає замовлень} one {# замовлення} few {# замовлення} many {# замовлень} other {# замовлень}}",
+    "noOrdersYet": "Замовлень поки немає",
+    "everyCelebrationStarts": "Кожен святок починається з кошика, повного барв.",
+    "shopBalloons": "Купити кульки",
+    "order": "Замовлення",
+    "hide": "Приховати",
+    "details": "Деталі",
+    "items": "{count, plural, =0 {немає товарів} one {# товар} few {# товари} many {# товарів} other {# товарів}}",
+    "recipient": "Одержувач",
+    "notes": "Примітки",
+    "color": "Колір",
+    "text": "Текст",
+    "number": "Номер",
+    "status": {
+      "pending": "В обробці",
+      "confirmed": "Підтверджено",
+      "shipped": "Відправлено",
+      "delivered": "Доставлено"
     }
   },
   "product": {

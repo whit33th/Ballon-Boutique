@@ -786,7 +786,7 @@ export default function AdminPageClient({
                     setStatusFilter(value as OrderStatus | "all")
                   }
                 >
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-50">
                     <SelectValue
                       placeholder={tAdmin("statusFilter.placeholder")}
                     />
@@ -816,7 +816,7 @@ export default function AdminPageClient({
                     setSortOrder(value as "newest" | "oldest")
                   }
                 >
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-50">
                     <SelectValue placeholder={tAdmin("sortPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>

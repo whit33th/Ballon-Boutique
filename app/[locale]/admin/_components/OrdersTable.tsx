@@ -75,7 +75,7 @@ export function OrdersTable({
                   style={{ cursor: onSelect ? "pointer" : undefined }}
                 >
                   <td className="px-6 py-4 font-semibold wrap-break-word text-slate-900">
-                    #{order._id.slice(-8)}
+                    #{order._id}
                     <div className="text-xs font-normal text-slate-400">
                       {formatDateTime(order._creationTime)}
                     </div>
@@ -135,7 +135,7 @@ export function OrdersTable({
                         {tOrders("order")}
                       </div>
                       <div className="font-mono font-semibold wrap-break-word text-slate-900">
-                        #{selected._id.slice(-8)}
+                        #{selected._id}
                       </div>
                       <div className="text-xs text-slate-400">
                         {formatDateTime(selected._creationTime)}
