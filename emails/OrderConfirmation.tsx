@@ -6,7 +6,6 @@ import {
   Heading,
   Hr,
   Html,
-  Img,
   Link,
   Preview,
   Row,
@@ -14,12 +13,40 @@ import {
   Text,
 } from "@react-email/components";
 
-// Email-safe SVG icons as Base64 data URIs
-const GIFT_ICON_BASE64 =
-  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwb2x5bGluZSBwb2ludHM9IjIwIDEyIDIwIDIyIDQgMjIgNCAxMiIvPjxyZWN0IHg9IjIiIHk9IjciIHdpZHRoPSIyMCIgaGVpZ2h0PSI1Ii8+PHBhdGggZD0iTTEyIDJ2NSIvPjwvc3ZnPg==";
+// SVG Icons inline
+const GiftIcon = () => (
+  <svg
+    width="40"
+    height="40"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#ffffff"
+    strokeWidth="2"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="2" y="7" width="20" height="5" />
+    <path d="M12 2v5" />
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
+);
 
-const CALENDAR_ICON_BASE64 =
-  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWI0ZjVmIiBzdHJva2Utd2lkdGg9IjIuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHg9IjMiIHk9IjQiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjIiIHJ5PSIyIi8+PGxpbmUgeDE9IjE2IiB5MT0iMiIgeDI9IjE2IiB5Mj0iNiIvPjxsaW5lIHgxPSI4IiB5MT0iMiIgeDI9IjgiIHkyPSI2Ii8+PGxpbmUgeDE9IjMiIHkxPSIxMCIgeDI9IjIxIiB5Mj0iMTAiLz48L3N2Zz4=";
+const CalendarIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#1b4f5f"
+    strokeWidth="2"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
 
 // Order types matching the Convex schema
 interface OrderItem {
@@ -353,26 +380,14 @@ export function OrderConfirmationEmail({
                 margin: "18px auto 12px",
               }}
             >
-              <Img
-                src={GIFT_ICON_BASE64}
-                alt="Gift"
-                width="40"
-                height="40"
-                style={{ display: "block" }}
-              />
+              <GiftIcon />
             </div>
             <Heading style={styles.heading}>{getTitle()}</Heading>
             <Text style={styles.subheading}>{t.description}</Text>
             {pickupDateTime && (
               <div style={{ marginTop: "18px" }}>
                 <div style={styles.pill}>
-                  <Img
-                    src={CALENDAR_ICON_BASE64}
-                    alt="Calendar"
-                    width="18"
-                    height="18"
-                    style={{ display: "block" }}
-                  />
+                  <CalendarIcon />
                   <span>
                     {t.pickupPill}: {formatDateTime(pickupDateTime)}
                   </span>
