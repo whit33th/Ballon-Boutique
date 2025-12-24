@@ -10,7 +10,7 @@ import {
   PackageCheck,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { getFormattedAddress, STORE_INFO } from "@/constants/config";
 import type { api } from "@/convex/_generated/api";
@@ -52,6 +52,37 @@ export default function CheckoutConfirmantClient({
   const router = useRouter();
 
   const order = usePreloadedQuery(preloadedOrder);
+  const emailSentRef = useRef<string | null>(null);
+
+  // Send confirmation email once when order loads
+  useEffect(() => {
+    if (!order || emailSentRef.current === order._id) return;
+
+    // Mark as sent immediately to prevent duplicate sends
+    emailSentRef.current = order._id;
+
+    // Fire-and-forget email sending
+    fetch("/api/send-order-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: order._id,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        items: order.items,
+        totalAmount: order.totalAmount,
+        grandTotal: order.grandTotal,
+        deliveryFee: order.deliveryFee,
+        deliveryType: order.deliveryType,
+        paymentMethod: order.paymentMethod,
+        pickupDateTime: order.pickupDateTime,
+        shippingAddress: order.shippingAddress,
+        currency: order.currency,
+      }),
+    }).catch((err) => {
+      console.error("[CheckoutConfirmant] Failed to send confirmation email:", err);
+    });
+  }, [order]);
 
   const handlePrimaryAction = () => router.push("/");
   const _handleSecondaryAction = () => router.push("/profile");
@@ -194,8 +225,8 @@ export default function CheckoutConfirmantClient({
             const colorName = item.personalization?.color;
             const colorHex = colorName
               ? BALLOON_COLORS.find(
-                  (c) => c.name.toLowerCase() === colorName.toLowerCase(),
-                )?.hex
+                (c) => c.name.toLowerCase() === colorName.toLowerCase(),
+              )?.hex
               : undefined;
 
             return (
@@ -346,12 +377,12 @@ export default function CheckoutConfirmantClient({
                   : "—";
             const pickupWindowForPrint = order.pickupDateTime
               ? new Date(order.pickupDateTime).toLocaleString("de-AT", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : "";
 
             const lines = order.items
@@ -375,11 +406,10 @@ export default function CheckoutConfirmantClient({
                   ${customerPhone ? `<div>${tPdf("common.phone")}: ${customerPhone}</div>` : ""}
                   <div>${tPdf("checkoutConfirmant.delivery")}: ${shippingAddressForPrint}</div>
                   ${paymentLabel ? `<div>${tPdf("checkoutConfirmant.payment")}: ${paymentLabel}</div>` : ""}
-                  ${
-                    pickupWindowForPrint
-                      ? `<div>${order.deliveryType === "delivery" ? tPdf("checkoutConfirmant.deliveryWindow") : tPdf("checkoutConfirmant.pickupWindow")}: ${pickupWindowForPrint}</div>`
-                      : ""
-                  }
+                  ${pickupWindowForPrint
+                ? `<div>${order.deliveryType === "delivery" ? tPdf("checkoutConfirmant.deliveryWindow") : tPdf("checkoutConfirmant.pickupWindow")}: ${pickupWindowForPrint}</div>`
+                : ""
+              }
                   <hr/>
                   
                   ${lines}
