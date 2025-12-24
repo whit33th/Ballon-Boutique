@@ -13,7 +13,11 @@ import {
   Section,
   Text,
 } from "@react-email/components";
-import { CalendarDaysIcon, GiftIcon } from "lucide-react";
+
+// Email-safe SVG icons as Base64 data URIs
+const GIFT_ICON_BASE64 = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmZmZmIiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwb2x5bGluZSBwb2ludHM9IjIwIDEyIDIwIDIyIDQgMjIgNCAxMiIvPjxyZWN0IHg9IjIiIHk9IjciIHdpZHRoPSIyMCIgaGVpZ2h0PSI1Ii8+PHBhdGggZD0iTTEyIDJ2NSIvPjwvc3ZnPg==";
+
+const CALENDAR_ICON_BASE64 = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMWI0ZjVmIiBzdHJva2Utd2lkdGg9IjIuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHg9IjMiIHk9IjQiIHdpZHRoPSIxOCIgaGVpZ2h0PSIxOCIgcng9IjIiIHJ5PSIyIi8+PGxpbmUgeDE9IjE2IiB5MT0iMiIgeDI9IjE2IiB5Mj0iNiIvPjxsaW5lIHgxPSI4IiB5MT0iMiIgeDI9IjgiIHkyPSI2Ii8+PGxpbmUgeDE9IjMiIHkxPSIxMCIgeDI9IjIxIiB5Mj0iMTAiLz48L3N2Zz4=";
 
 // Order types matching the Convex schema
 interface OrderItem {
@@ -347,12 +351,12 @@ export function OrderConfirmationEmail({
                 margin: "18px auto 12px",
               }}
             >
-              <GiftIcon
-                width={40}
-                height={40}
-                color="#ffffff"
-                strokeWidth={2.6}
-                aria-hidden
+              <Img
+                src={GIFT_ICON_BASE64}
+                alt="Gift"
+                width="40"
+                height="40"
+                style={{ display: "block" }}
               />
             </div>
             <Heading style={styles.heading}>{getTitle()}</Heading>
@@ -360,12 +364,12 @@ export function OrderConfirmationEmail({
             {pickupDateTime && (
               <div style={{ marginTop: "18px" }}>
                 <div style={styles.pill}>
-                  <CalendarDaysIcon
-                    width={18}
-                    height={18}
-                    color="#1b4f5f"
-                    strokeWidth={2.4}
-                    aria-hidden
+                  <Img
+                    src={CALENDAR_ICON_BASE64}
+                    alt="Calendar"
+                    width="18"
+                    height="18"
+                    style={{ display: "block" }}
                   />
                   <span>
                     {t.pickupPill}: {formatDateTime(pickupDateTime)}
