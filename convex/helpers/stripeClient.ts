@@ -3,7 +3,7 @@
 import Stripe from "stripe";
 
 export const STRIPE_API_VERSION =
-  "2025-11-17.clover" satisfies Stripe.LatestApiVersion;
+  "2025-12-15.clover" satisfies Stripe.LatestApiVersion;
 
 let cachedClient: Stripe | null = null;
 
