@@ -6,47 +6,13 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
   Row,
   Section,
   Text,
 } from "@react-email/components";
-
-// SVG Icons inline
-const GiftIcon = () => (
-  <svg
-    width="40"
-    height="40"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#ffffff"
-    strokeWidth="2"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect x="2" y="7" width="20" height="5" />
-    <path d="M12 2v5" />
-    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#1b4f5f"
-    strokeWidth="2"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-    <line x1="16" y1="2" x2="16" y2="6" />
-    <line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
-);
 
 // Order types matching the Convex schema
 interface OrderItem {
@@ -368,26 +334,22 @@ export function OrderConfirmationEmail({
           {/* Header */}
           <Section style={styles.header}>
             <Text style={styles.smallKicker}>{t.checkoutDone}</Text>
-            <div
+            <Img
+              src={STORE.logoUrl}
+              alt={STORE.name}
+              width="80"
+              height="80"
               style={{
-                width: "80px",
-                height: "80px",
-                borderRadius: "20px",
-                backgroundColor: "#f15b79",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "18px auto 12px",
+                margin: "12px auto",
+                display: "block",
+                borderRadius: "16px",
               }}
-            >
-              <GiftIcon />
-            </div>
+            />
             <Heading style={styles.heading}>{getTitle()}</Heading>
             <Text style={styles.subheading}>{t.description}</Text>
             {pickupDateTime && (
               <div style={{ marginTop: "18px" }}>
                 <div style={styles.pill}>
-                  <CalendarIcon />
                   <span>
                     {t.pickupPill}: {formatDateTime(pickupDateTime)}
                   </span>
