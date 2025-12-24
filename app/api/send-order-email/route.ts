@@ -1,64 +1,68 @@
 import { render } from "@react-email/components";
 import { NextResponse } from "next/server";
 import OrderConfirmationEmail, {
-    type OrderConfirmationEmailProps,
-} from "@/emails/OrderConfirmation";
+  type OrderConfirmationEmailProps,
+} from "@/components/emails/OrderConfirmation";
 import { sendEmail } from "@/lib/mailer";
 
 export const runtime = "nodejs";
 
 interface SendOrderEmailRequest {
-    orderId: string;
-    customerName: string;
-    customerEmail: string;
-    items: OrderConfirmationEmailProps["items"];
-    totalAmount: number;
-    grandTotal?: number;
-    deliveryFee?: number;
-    deliveryType: "pickup" | "delivery";
-    paymentMethod?: "full_online" | "partial_online" | "cash";
-    pickupDateTime?: string;
-    shippingAddress?: OrderConfirmationEmailProps["shippingAddress"];
-    currency?: string;
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  items: OrderConfirmationEmailProps["items"];
+  totalAmount: number;
+  grandTotal?: number;
+  deliveryFee?: number;
+  deliveryType: "pickup" | "delivery";
+  paymentMethod?: "full_online" | "partial_online" | "cash";
+  pickupDateTime?: string;
+  shippingAddress?: OrderConfirmationEmailProps["shippingAddress"];
+  currency?: string;
 }
 
 export async function POST(request: Request) {
-    try {
-        const body: SendOrderEmailRequest = await request.json();
+  try {
+    const body: SendOrderEmailRequest = await request.json();
 
-        // Validate required fields
-        if (!body.orderId || !body.customerEmail || !body.customerName) {
-            return NextResponse.json(
-                { error: "Missing required fields: orderId, customerEmail, customerName" },
-                { status: 400 }
-            );
-        }
+    // Validate required fields
+    if (!body.orderId || !body.customerEmail || !body.customerName) {
+      return NextResponse.json(
+        {
+          error:
+            "Missing required fields: orderId, customerEmail, customerName",
+        },
+        { status: 400 },
+      );
+    }
 
-        // Build confirmation URL
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://ballon-boutique.vercel.app";
-        const confirmationUrl = `${baseUrl}/checkout/confirmant/${body.orderId}`;
+    // Build confirmation URL
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || "https://ballon-boutique.vercel.app";
+    const confirmationUrl = `${baseUrl}/checkout/confirmant/${body.orderId}`;
 
-        // Render email HTML
-        const emailHtml = await render(
-            OrderConfirmationEmail({
-                orderId: body.orderId,
-                customerName: body.customerName,
-                customerEmail: body.customerEmail,
-                items: body.items,
-                totalAmount: body.totalAmount,
-                grandTotal: body.grandTotal,
-                deliveryFee: body.deliveryFee,
-                deliveryType: body.deliveryType,
-                paymentMethod: body.paymentMethod,
-                pickupDateTime: body.pickupDateTime,
-                shippingAddress: body.shippingAddress,
-                currency: body.currency || "EUR",
-                confirmationUrl,
-            })
-        );
+    // Render email HTML
+    const emailHtml = await render(
+      OrderConfirmationEmail({
+        orderId: body.orderId,
+        customerName: body.customerName,
+        customerEmail: body.customerEmail,
+        items: body.items,
+        totalAmount: body.totalAmount,
+        grandTotal: body.grandTotal,
+        deliveryFee: body.deliveryFee,
+        deliveryType: body.deliveryType,
+        paymentMethod: body.paymentMethod,
+        pickupDateTime: body.pickupDateTime,
+        shippingAddress: body.shippingAddress,
+        currency: body.currency || "EUR",
+        confirmationUrl,
+      }),
+    );
 
-        // Create plain text version for email clients that don't support HTML
-        const textContent = `
+    // Create plain text version for email clients that don't support HTML
+    const textContent = `
 Ballon Boutique - Bestellbestätigung
 
 Hallo ${body.customerName},
@@ -85,27 +89,27 @@ Vielen Dank für Ihren Einkauf!
 Ballon Boutique
     `.trim();
 
-        // Send email
-        const success = await sendEmail({
-            to: body.customerEmail,
-            subject: `Bestellbestätigung #${body.orderId.slice(-8)} - Ballon Boutique`,
-            html: emailHtml,
-            text: textContent,
-        });
+    // Send email
+    const success = await sendEmail({
+      to: body.customerEmail,
+      subject: `Bestellbestätigung #${body.orderId.slice(-8)} - Ballon Boutique`,
+      html: emailHtml,
+      text: textContent,
+    });
 
-        if (!success) {
-            return NextResponse.json(
-                { error: "Failed to send email" },
-                { status: 500 }
-            );
-        }
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("[send-order-email] Error:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+    if (!success) {
+      return NextResponse.json(
+        { error: "Failed to send email" },
+        { status: 500 },
+      );
     }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[send-order-email] Error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 }
