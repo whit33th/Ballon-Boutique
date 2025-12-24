@@ -13,6 +13,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { CalendarDaysIcon, GiftIcon } from "lucide-react";
 
 // Order types matching the Convex schema
 interface OrderItem {
@@ -70,8 +71,10 @@ const t = {
   titleCash: "Bestellung reserviert — Zahlung bei Abholung",
   description:
     "Wir haben Ihre Artikel reserviert. Die Details finden Sie unten.",
+  checkoutDone: "Checkout abgeschlossen",
+  pickupPill: "Abholdatum",
   orderReference: "Bestellreferenz",
-  totalPaid: "Gesamt",
+  totalPaid: "Gesamt bezahlt",
   status: "Status",
   delivery: "Lieferung",
   payment: "Zahlung",
@@ -122,98 +125,123 @@ const formatDateTime = (dateString: string) =>
 // Inline styles for email compatibility
 const styles = {
   main: {
-    backgroundColor: "#faf9f7",
+    backgroundColor: "#f7f1e6",
     fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+      '"DM Sans", "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
   },
   container: {
     backgroundColor: "#ffffff",
-    margin: "0 auto",
-    padding: "32px 24px",
-    maxWidth: "600px",
-    borderRadius: "16px",
+    margin: "32px auto",
+    padding: "0 0 28px",
+    maxWidth: "680px",
+    borderRadius: "24px",
+    boxShadow: "0 20px 50px rgba(0,0,0,0.05)",
   },
   header: {
     textAlign: "center" as const,
-    marginBottom: "32px",
+    padding: "36px 32px 28px",
+    backgroundColor: "#dbeef6",
+    borderRadius: "24px 24px 0 0",
   },
   logo: {
-    width: "80px",
-    height: "auto",
+    width: "72px",
+    height: "72px",
     margin: "0 auto 16px",
   },
   heading: {
-    fontSize: "24px",
+    fontSize: "26px",
     fontWeight: "700",
-    color: "#1a1a1a",
-    margin: "0 0 8px",
+    color: "#0f1624",
+    margin: "6px 0 10px",
   },
   subheading: {
-    fontSize: "14px",
-    color: "#666666",
+    fontSize: "15px",
+    color: "#4b5563",
     margin: "0",
   },
+  smallKicker: {
+    fontSize: "12px",
+    fontWeight: "700",
+    color: "#3b5565",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase" as const,
+    margin: "0",
+  },
+  pill: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    backgroundColor: "#f2f8fb",
+    borderRadius: "999px",
+    padding: "10px 16px",
+    color: "#1b4f5f",
+    fontWeight: "600",
+    fontSize: "14px",
+    border: "1px solid #d5e6ed",
+  },
   section: {
-    backgroundColor: "#f8f7f5",
-    borderRadius: "12px",
-    padding: "20px",
+    backgroundColor: "#f9fafb",
+    borderRadius: "14px",
+    padding: "18px 20px",
     marginBottom: "16px",
+    border: "1px solid #e6ecf2",
   },
   sectionTitle: {
     fontSize: "12px",
     fontWeight: "700",
-    color: "#888888",
+    color: "#6b7280",
     textTransform: "uppercase" as const,
     letterSpacing: "0.1em",
     margin: "0 0 12px",
   },
   badge: {
     display: "inline-block",
-    backgroundColor: "#e8f5e9",
-    color: "#2e7d32",
+    backgroundColor: "#e3f3e8",
+    color: "#24783d",
     fontSize: "11px",
     fontWeight: "600",
-    padding: "4px 10px",
+    padding: "6px 12px",
     borderRadius: "12px",
     textTransform: "uppercase" as const,
+    border: "1px solid #cae8d3",
   },
   infoRow: {
     marginBottom: "8px",
   },
   infoLabel: {
     fontSize: "11px",
-    fontWeight: "600",
-    color: "#888888",
+    fontWeight: "700",
+    color: "#7b8696",
     textTransform: "uppercase" as const,
     marginBottom: "2px",
   },
   infoValue: {
     fontSize: "14px",
-    color: "#1a1a1a",
-    fontWeight: "500",
+    color: "#111827",
+    fontWeight: "600",
   },
   itemCard: {
     backgroundColor: "#ffffff",
-    border: "1px solid #eee",
-    borderRadius: "10px",
+    border: "1px solid #e6ecf2",
+    borderRadius: "12px",
     padding: "14px",
     marginBottom: "10px",
   },
   itemName: {
     fontSize: "14px",
-    fontWeight: "600",
-    color: "#1a1a1a",
+    fontWeight: "700",
+    color: "#0f172a",
     margin: "0 0 6px",
   },
   itemDetail: {
     fontSize: "12px",
-    color: "#666666",
+    color: "#6b7280",
     margin: "2px 0",
   },
   itemPrice: {
     fontSize: "14px",
-    fontWeight: "600",
-    color: "#1a1a1a",
+    fontWeight: "700",
+    color: "#0f172a",
     textAlign: "right" as const,
   },
   totalRow: {
@@ -232,16 +260,16 @@ const styles = {
   totalValue: {
     fontSize: "20px",
     fontWeight: "700",
-    color: "#d4145a",
+    color: "#0f172a",
   },
   button: {
-    display: "inline-block",
-    backgroundColor: "#d4145a",
+    display: "block",
+    backgroundColor: "#e4522f",
     color: "#ffffff",
-    fontSize: "14px",
-    fontWeight: "600",
-    padding: "14px 28px",
-    borderRadius: "24px",
+    fontSize: "15px",
+    fontWeight: "700",
+    padding: "16px 28px",
+    borderRadius: "14px",
     textDecoration: "none",
     textAlign: "center" as const,
   },
@@ -257,15 +285,18 @@ const styles = {
     margin: "4px 0",
   },
   footerLink: {
-    color: "#d4145a",
+    color: "#0f172a",
     textDecoration: "none",
+  },
+  divider: {
+    borderColor: "#e6ecf2",
+    margin: "16px 0",
   },
 };
 
 export function OrderConfirmationEmail({
   orderId,
   customerName,
-  // customerEmail,
   items,
   totalAmount,
   grandTotal,
@@ -303,183 +334,209 @@ export function OrderConfirmationEmail({
         <Container style={styles.container}>
           {/* Header */}
           <Section style={styles.header}>
-            <Img
-              src={STORE.logoUrl}
-              alt={STORE.name}
-              width="80"
-              height="80"
-              style={styles.logo}
-            />
+            <Text style={styles.smallKicker}>{t.checkoutDone}</Text>
+            <div
+              style={{
+                width: "80px",
+                height: "80px",
+                borderRadius: "20px",
+                backgroundColor: "#f15b79",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "18px auto 12px",
+              }}
+            >
+              <GiftIcon
+                width={40}
+                height={40}
+                color="#ffffff"
+                strokeWidth={2.6}
+                aria-hidden
+              />
+            </div>
             <Heading style={styles.heading}>{getTitle()}</Heading>
             <Text style={styles.subheading}>{t.description}</Text>
+            {pickupDateTime && (
+              <div style={{ marginTop: "18px" }}>
+                <div style={styles.pill}>
+                  <CalendarDaysIcon
+                    width={18}
+                    height={18}
+                    color="#1b4f5f"
+                    strokeWidth={2.4}
+                    aria-hidden
+                  />
+                  <span>
+                    {t.pickupPill}: {formatDateTime(pickupDateTime)}
+                  </span>
+                </div>
+              </div>
+            )}
           </Section>
 
           {/* Order Info */}
-          <Section style={styles.section}>
-            <Row>
-              <Column>
-                <Text style={styles.infoLabel}>{t.orderReference}</Text>
-                <Text
-                  style={{
-                    ...styles.infoValue,
-                    fontFamily: "monospace",
-                    fontSize: "12px",
-                  }}
-                >
-                  {orderId}
-                </Text>
-              </Column>
-              <Column style={{ textAlign: "right" }}>
-                <Text style={styles.infoLabel}>{t.totalPaid}</Text>
-                <Text
-                  style={{
-                    ...styles.infoValue,
-                    fontSize: "18px",
-                    fontWeight: "700",
-                    color: "#d4145a",
-                  }}
-                >
-                  {formatCurrency(finalTotal, currency)}
-                </Text>
-              </Column>
-            </Row>
-
-            <Hr style={{ borderColor: "#eee", margin: "16px 0" }} />
-
-            <Row>
-              <Column style={{ width: "33%" }}>
-                <Text style={styles.infoLabel}>{t.status}</Text>
-                <Text style={styles.badge}>
-                  {paymentMethod === "cash"
-                    ? t.orderStatus.pending
-                    : t.orderStatus.confirmed}
-                </Text>
-              </Column>
-              <Column style={{ width: "33%" }}>
-                <Text style={styles.infoLabel}>{t.delivery}</Text>
-                <Text style={styles.infoValue}>
-                  {t.deliveryType[deliveryType]}
-                </Text>
-              </Column>
-              {paymentMethod && (
-                <Column style={{ width: "33%" }}>
-                  <Text style={styles.infoLabel}>{t.payment}</Text>
-                  <Text style={styles.infoValue}>
-                    {t.paymentMethod[paymentMethod]}
-                  </Text>
-                </Column>
-              )}
-            </Row>
-
-            {pickupDateTime && (
-              <>
-                <Hr style={{ borderColor: "#eee", margin: "16px 0" }} />
-                <Text style={styles.infoLabel}>
-                  {deliveryType === "delivery"
-                    ? t.deliveryWindow
-                    : t.pickupWindow}
-                </Text>
-                <Text style={styles.infoValue}>
-                  {formatDateTime(pickupDateTime)}
-                </Text>
-              </>
-            )}
-          </Section>
-
-          {/* Order Items */}
-          <Section style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.itemsReserved}</Text>
-            {items.map((item, index) => (
-              <Section
-                key={`${item.productId}-${index}`}
-                style={styles.itemCard}
-              >
-                <Row>
-                  <Column style={{ width: "70%" }}>
-                    <Text style={styles.itemName}>{item.productName}</Text>
-                    <Text style={styles.itemDetail}>
-                      {t.quantity}: {item.quantity}
-                    </Text>
-                    {item.personalization?.color && (
-                      <Text style={styles.itemDetail}>
-                        {t.color}: {item.personalization.color}
-                      </Text>
-                    )}
-                    {item.personalization?.text && (
-                      <Text style={styles.itemDetail}>
-                        {t.text}: "{item.personalization.text}"
-                      </Text>
-                    )}
-                    {item.personalization?.number && (
-                      <Text style={styles.itemDetail}>
-                        {t.number}: {item.personalization.number}
-                      </Text>
-                    )}
-                  </Column>
-                  <Column
+          <Section style={{ padding: "22px 24px" }}>
+            <Section style={{ ...styles.section, marginBottom: "18px" }}>
+              <Row>
+                <Column style={{ width: "70%" }}>
+                  <Text style={styles.infoLabel}>{t.orderReference}</Text>
+                  <Text
                     style={{
-                      width: "30%",
-                      textAlign: "right",
-                      verticalAlign: "top",
+                      ...styles.infoValue,
+                      fontFamily: "monospace",
+                      fontSize: "13px",
                     }}
                   >
-                    <Text style={styles.itemPrice}>
-                      {formatCurrency(item.price * item.quantity, currency)}
-                    </Text>
-                  </Column>
-                </Row>
-              </Section>
-            ))}
-
-            {/* Totals */}
-            <Row style={{ marginTop: "12px" }}>
-              <Column>
-                <Text style={styles.itemDetail}>{t.subtotal}</Text>
-              </Column>
-              <Column style={{ textAlign: "right" }}>
-                <Text style={styles.itemDetail}>
-                  {formatCurrency(subtotal, currency)}
-                </Text>
-              </Column>
-            </Row>
-            {deliveryFee > 0 && (
-              <Row>
-                <Column>
-                  <Text style={styles.itemDetail}>{t.deliveryFee}</Text>
+                    {orderId}
+                  </Text>
                 </Column>
-                <Column style={{ textAlign: "right" }}>
-                  <Text style={styles.itemDetail}>
-                    {formatCurrency(deliveryFee, currency)}
+                <Column style={{ textAlign: "right", width: "30%" }}>
+                  <Text style={styles.infoLabel}>{t.totalPaid}</Text>
+                  <Text
+                    style={{
+                      ...styles.infoValue,
+                      fontSize: "18px",
+                      fontWeight: "800",
+                      color: "#0f172a",
+                    }}
+                  >
+                    {formatCurrency(finalTotal, currency)}
                   </Text>
                 </Column>
               </Row>
-            )}
-            <Section style={styles.totalRow}>
-              <Text style={styles.totalLabel}>{t.totalPaid}</Text>
-              <Text style={styles.totalValue}>
-                {formatCurrency(finalTotal, currency)}
+
+              <Hr style={styles.divider} />
+
+              <Row>
+                <Column style={{ width: "33%" }}>
+                  <Text style={styles.infoLabel}>{t.status}</Text>
+                  <Text style={styles.badge}>
+                    {paymentMethod === "cash"
+                      ? t.orderStatus.pending
+                      : t.orderStatus.confirmed}
+                  </Text>
+                </Column>
+                <Column style={{ width: "33%" }}>
+                  <Text style={styles.infoLabel}>{t.delivery}</Text>
+                  <Text style={styles.infoValue}>
+                    {t.deliveryType[deliveryType]}
+                  </Text>
+                </Column>
+                {paymentMethod && (
+                  <Column style={{ width: "33%" }}>
+                    <Text style={styles.infoLabel}>{t.payment}</Text>
+                    <Text style={styles.infoValue}>
+                      {t.paymentMethod[paymentMethod]}
+                    </Text>
+                  </Column>
+                )}
+              </Row>
+            </Section>
+
+            {/* Order Items */}
+            <Section style={styles.section}>
+              <Text style={styles.sectionTitle}>{t.itemsReserved}</Text>
+              {items.map((item, index) => (
+                <Section
+                  key={`${item.productId}-${index}`}
+                  style={styles.itemCard}
+                >
+                  <Row>
+                    <Column style={{ width: "70%" }}>
+                      <Text style={styles.itemName}>{item.productName}</Text>
+                      <Text style={styles.itemDetail}>
+                        {t.quantity}: {item.quantity}
+                      </Text>
+                      {item.personalization?.color && (
+                        <Text style={styles.itemDetail}>
+                          {t.color}: {item.personalization.color}
+                        </Text>
+                      )}
+                      {item.personalization?.text && (
+                        <Text style={styles.itemDetail}>
+                          {t.text}: "{item.personalization.text}"
+                        </Text>
+                      )}
+                      {item.personalization?.number && (
+                        <Text style={styles.itemDetail}>
+                          {t.number}: {item.personalization.number}
+                        </Text>
+                      )}
+                    </Column>
+                    <Column
+                      style={{
+                        width: "30%",
+                        textAlign: "right",
+                        verticalAlign: "top",
+                      }}
+                    >
+                      <Text style={styles.itemPrice}>
+                        {formatCurrency(item.price * item.quantity, currency)}
+                      </Text>
+                    </Column>
+                  </Row>
+                </Section>
+              ))}
+
+              <Row style={{ marginTop: "12px" }}>
+                <Column>
+                  <Text style={styles.itemDetail}>{t.subtotal}</Text>
+                </Column>
+                <Column style={{ textAlign: "right" }}>
+                  <Text style={styles.itemDetail}>
+                    {formatCurrency(subtotal, currency)}
+                  </Text>
+                </Column>
+              </Row>
+              {deliveryFee > 0 && (
+                <Row>
+                  <Column>
+                    <Text style={styles.itemDetail}>{t.deliveryFee}</Text>
+                  </Column>
+                  <Column style={{ textAlign: "right" }}>
+                    <Text style={styles.itemDetail}>
+                      {formatCurrency(deliveryFee, currency)}
+                    </Text>
+                  </Column>
+                </Row>
+              )}
+              <Section style={styles.totalRow}>
+                <Text style={styles.totalLabel}>{t.totalPaid}</Text>
+                <Text style={styles.totalValue}>
+                  {formatCurrency(finalTotal, currency)}
+                </Text>
+              </Section>
+            </Section>
+
+            {/* Delivery Address */}
+            <Section style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                {deliveryType === "delivery"
+                  ? t.whereWeDeliver
+                  : t.pickupAddress}
+              </Text>
+              <Text style={styles.infoValue}>{customerName}</Text>
+              <Text style={{ ...styles.itemDetail, whiteSpace: "pre-line" }}>
+                {deliveryType === "delivery"
+                  ? formatAddress(shippingAddress)
+                  : STORE.address}
               </Text>
             </Section>
-          </Section>
 
-          {/* Delivery Address */}
-          <Section style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {deliveryType === "delivery" ? t.whereWeDeliver : t.pickupAddress}
-            </Text>
-            <Text style={styles.infoValue}>{customerName}</Text>
-            <Text style={{ ...styles.itemDetail, whiteSpace: "pre-line" }}>
-              {deliveryType === "delivery"
-                ? formatAddress(shippingAddress)
-                : STORE.address}
-            </Text>
-          </Section>
-
-          {/* CTA Button */}
-          <Section style={{ textAlign: "center", marginTop: "24px" }}>
-            <Link href={confirmationUrl} style={styles.button}>
-              {t.viewOnline}
-            </Link>
+            {/* CTA Button */}
+            <Section
+              style={{
+                textAlign: "center",
+                marginTop: "20px",
+                paddingLeft: "20px",
+                paddingRight: "20px",
+              }}
+            >
+              <Link href={confirmationUrl} style={styles.button}>
+                {t.viewOnline}
+              </Link>
+            </Section>
           </Section>
 
           {/* Footer */}

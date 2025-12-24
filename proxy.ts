@@ -87,7 +87,7 @@ export default convexAuthNextjsMiddleware(
 
     return intlResponse;
   },
-  { cookieConfig: { maxAge: 60 * 60 * 24 * 7 }, verbose: true },
+  { cookieConfig: { maxAge: 60 * 60 * 24 * 7 }, verbose: false },
 );
 
 export const config = {
