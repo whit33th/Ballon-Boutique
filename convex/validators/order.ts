@@ -11,6 +11,11 @@ export const orderItemValidator = v.object({
   productName: v.string(),
   quantity: v.number(),
   price: v.number(),
+  variant: v.optional(
+    v.object({
+      size: v.string(),
+    }),
+  ),
   productImageUrl: v.optional(v.union(v.string(), v.null())),
   personalization: v.optional(personalizationValidator),
 });

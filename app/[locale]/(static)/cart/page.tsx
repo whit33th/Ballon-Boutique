@@ -31,6 +31,10 @@ export default function CartPage() {
   } = useGuestCart();
 
   type ServerCartItem = NonNullable<typeof cartItems>[number];
+  type Variant = {
+    size: string;
+    unitPrice: number;
+  };
   type GuestCartDisplayItem = {
     _id: string;
     quantity: number;
@@ -40,6 +44,7 @@ export default function CartPage() {
       number?: string;
     };
     product: GuestCartItem["product"];
+    variant?: Variant;
   };
 
   type DisplayCartItem = ServerCartItem | GuestCartDisplayItem;
@@ -71,6 +76,11 @@ export default function CartPage() {
   const totals = isAuthenticated
     ? (cartTotal ?? { total: 0, itemCount: 0 })
     : { total: guestTotal, itemCount: guestItemCount };
+
+  const getUnitPrice = (item: DisplayCartItem): number => {
+    const variant = (item as { variant?: Variant }).variant;
+    return variant?.unitPrice ?? item.product.price;
+  };
 
   const handleQuantityChange = async (
     item: DisplayCartItem & { guestIndex?: number },
@@ -219,8 +229,14 @@ export default function CartPage() {
                     {item.product.name}
                   </h3>
                   <p className="text-deep/70 text-xs sm:text-sm">
-                    €{item.product.price.toFixed(2)}
+                    €{getUnitPrice(item).toFixed(2)}
                   </p>
+                  {(item as { variant?: Variant }).variant?.size ? (
+                    <p className="text-deep/70 text-xs sm:text-sm">
+                      {t("size")}:{" "}
+                      {(item as { variant?: Variant }).variant?.size}
+                    </p>
+                  ) : null}
                   {"personalization" in item && item.personalization && (
                     <div className="mt-2 space-y-1 text-xs text-gray-600">
                       {item.personalization.color && (
@@ -280,7 +296,7 @@ export default function CartPage() {
 
                   <div className="text-right">
                     <p className="text-deep text-base font-bold tabular-nums sm:text-lg">
-                      €{(item.product.price * item.quantity).toFixed(2)}
+                      €{(getUnitPrice(item) * item.quantity).toFixed(2)}
                     </p>
                     <button
                       type="button"

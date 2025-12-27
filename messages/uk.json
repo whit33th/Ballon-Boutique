@@ -162,6 +162,7 @@
       "payment": "Оплата"
     },
     "emptyCart": {
+      "size": "Розмір",
       "title": "Ваш кошик порожній",
       "description": "Додайте набір до кошика перед оформленням замовлення.",
       "browseCatalog": "Переглянути каталог"
@@ -192,6 +193,9 @@
       "doorCodeFloor": "Код дверей, поверх або уподобання для самовивозу",
       "preferredPickupDateTime": "Бажана дата та час самовивозу",
       "preferredDeliveryDateTime": "Бажана дата та час доставки",
+      "preferredPickupDate": "Бажана дата самовивозу",
+      "preferredDeliveryDate": "Бажана дата доставки",
+      "preorderMinimumNotice": "* мінімум за {hours} год",
       "daysAheadMinimum": "{count, plural, =1 {день заздалегідь мінімум} one {# день заздалегідь мінімум} few {# дні заздалегідь мінімум} many {# днів заздалегідь мінімум} other {# днів заздалегідь мінімум}}",
       "days": "{count, plural, =1 {день} one {# день} few {# дні} many {# днів} other {# днів}}",
       "daysRange": "{min, plural, =1 {# день} one {# день} few {# дні} many {# днів} other {# днів}}–{max, plural, =1 {# день} one {# день} few {# дні} many {# днів} other {# днів}}",
@@ -240,6 +244,7 @@
     },
     "common": {
       "quantity": "Кількість",
+      "size": "Розмір",
       "color": "Колір",
       "number": "Номер"
     },
@@ -255,6 +260,8 @@
       "emailRequired": "Електронна пошта обов'язкова.",
       "validEmail": "Введіть дійсну адресу електронної пошти.",
       "validPhoneOrEmpty": "Введіть дійсний номер телефону або залиште поле порожнім.",
+      "pickupDateRequired": "Дата обов'язкова.",
+      "pickupDateInvalid": "Введіть коректну дату.",
       "pickupDateTimeRequired": "Дата та час обов'язкові.",
       "deliveryTimeRange": "Час доставки має бути між {min}:00 та {max}:00.",
       "pickupDateMinDays": "Дата самовивозу повинна бути принаймні за {days} днів.",
@@ -487,6 +494,9 @@
       "For Kids Girls": "Діти · Дівчатка",
       "For Her": "Для неї",
       "For Him": "Для нього",
+      "Mini Sets · For Kids": "Для дітей",
+      "Mini Sets · For Him": "Для нього",
+      "Mini Sets · For Her": "Для неї",
       "Love": "Кохання",
       "Mom": "Мама",
       "Anniversary": "Річниця",
@@ -572,6 +582,8 @@
     "addToCart": "Додати в кошик",
     "addedToCart": "{count, plural, =0 {Нічого не додано} one {Додано # товар в кошик!} few {Додано # товари в кошик!} many {Додано # товарів в кошик!} other {Додано # товарів в кошик!}}",
     "failedToAdd": "Не вдалося додати в кошик",
+    "size": "Розмір",
+    "pleaseSelectSize": "Будь ласка, оберіть розмір",
     "pleaseSelectColor": "Будь ласка, виберіть колір",
     "pleaseEnterNumber": "Будь ласка, введіть номер",
     "forSpecialOccasions": "Для особливих випадків",
@@ -986,6 +998,13 @@
       "numberLabel": "Цифра",
       "numberDescription": "Дозволити введення цифри (обов'язково)",
       "colors": "Кольори",
+      "sizeVariantsTitle": "Розміри",
+      "sizeVariantsDescription": "Увімкніть розміри для міні-сетів та задайте ціну для кожного розміру. Базова ціна автоматично стане мінімальною.",
+      "enableSizeVariants": "Увімкнути розміри (лише для міні-сетів)",
+      "sizeLabel": "Розмір",
+      "sizePrice": "Ціна (€)",
+      "addSize": "Додати розмір",
+      "removeSize": "Видалити",
       "deleteProduct": "Видалити товар",
       "deleting": "Видалення...",
       "deleteDialogTitle": "Видалити товар?",
@@ -999,8 +1018,12 @@
         "descriptionMin10": "Додайте більш детальний опис",
         "priceRequired": "Вкажіть ціну",
         "priceInvalid": "Невірна ціна",
+        "sizeLabelRequired": "Вкажіть розмір",
+        "sizePriceRequired": "Вкажіть ціну для розміру",
+        "sizePriceInvalid": "Невірна ціна",
         "groupRequired": "Виберіть групу",
-        "categoriesRequired": "Додайте хоча б одну категорію"
+        "categoriesRequired": "Додайте хоча б одну категорію",
+        "sizesOnlyForMiniSets": "Розміри доступні лише для Mini Sets"
       }
     },
     "imageUpload": {
@@ -1075,6 +1098,9 @@
       "For Kids Girls": "Діти · Дівчатка",
       "For Her": "Для неї",
       "For Him": "Для нього",
+      "Mini Sets · For Kids": "Для дітей",
+      "Mini Sets · For Him": "Для нього",
+      "Mini Sets · For Her": "Для неї",
       "Love": "Кохання",
       "Mom": "Мама",
       "Anniversary": "Річниця",

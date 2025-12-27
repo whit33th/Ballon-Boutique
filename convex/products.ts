@@ -127,6 +127,18 @@ const CATEGORY_GROUP_MAP: Record<
   },
   "mini sets": { group: "mini-sets", category: "Mini Sets" },
   "mini gift sets": { group: "mini-sets", category: "Mini Sets" },
+  "mini sets · for kids": {
+    group: "mini-sets",
+    category: "Mini Sets · For Kids",
+  },
+  "mini sets · for him": {
+    group: "mini-sets",
+    category: "Mini Sets · For Him",
+  },
+  "mini sets · for her": {
+    group: "mini-sets",
+    category: "Mini Sets · For Her",
+  },
 };
 
 const GROUP_DEFAULT_CATEGORY: Record<CategoryGroupValue, string> = {
@@ -233,254 +245,254 @@ const SAMPLE_PRODUCTS: Array<{
   isPersonalizable?: { name: boolean; number: boolean };
   availableColors?: string[];
 }> = [
-    {
-      name: "Aurora Glow Balloon",
-      description:
-        "Soft gradient balloon that shifts from blush to sunrise gold.",
-      price: 6,
-      categoryGroup: "balloons",
-      categories: ["For Kids Girls", "For Her"],
-      inStock: true,
-      isPersonalizable: { name: true, number: true },
-      availableColors: randomColors(4),
-    },
-    {
-      name: "Sunrise Ombre Balloon",
-      description: "Warm ombre tones that brighten morning celebrations.",
-      price: 5.5,
-      categoryGroup: "balloons",
-      categories: ["For Her", "Anniversary"],
-      inStock: true,
-      isPersonalizable: { name: true, number: true },
-      availableColors: randomColors(4),
-    },
-    {
-      name: "Electric Blue Balloon",
-      description: "Vivid cobalt statement balloon for modern parties.",
-      price: 4.5,
-      categoryGroup: "balloons",
-      categories: ["For Kids Boys", "Any Event"],
-      inStock: true,
-      isPersonalizable: { name: true, number: true },
-      availableColors: randomColors(4),
-    },
-    {
-      name: "Cotton Candy Swirl Balloon",
-      description: "Pastel swirl pattern inspired by carnival treats.",
-      price: 5,
-      categoryGroup: "balloons",
-      categories: ["For Kids Girls"],
-      inStock: true,
-    },
-    {
-      name: "Midnight Spark Balloon",
-      description: "Deep navy balloon with metallic specks that shimmer.",
-      price: 7,
-      categoryGroup: "balloons",
-      categories: ["For Him"],
-      inStock: true,
-    },
-    {
-      name: "Cherry Jubilee Balloon",
-      description: "Rich cherry red balloon for bold centerpiece displays.",
-      price: 4,
-      categoryGroup: "balloons",
-      categories: ["Anniversary"],
-      inStock: true,
-    },
-    {
-      name: "Citrus Burst Balloon",
-      description: "Zesty orange balloon that energizes summer events.",
-      price: 3.5,
-      categoryGroup: "balloons",
-      categories: ["Any Event"],
-      inStock: true,
-    },
-    {
-      name: "Ocean Breeze Balloon",
-      description: "Cool teal balloon reminiscent of coastal escapes.",
-      price: 4.5,
-      categoryGroup: "balloons",
-      categories: ["Baby Birth"],
-      inStock: true,
-    },
-    {
-      name: "Lavender Dream Balloon",
-      description: "Soft lavender tones perfect for bridal showers.",
-      price: 5,
-      categoryGroup: "balloons",
-      categories: ["For Her"],
-      inStock: true,
-    },
-    {
-      name: "Golden Celebration Balloon",
-      description: "Luxe metallic gold balloon for milestone moments.",
-      price: 8,
-      categoryGroup: "balloons",
-      categories: ["Anniversary", "Love"],
-      inStock: true,
-      isPersonalizable: { name: true, number: true },
-      availableColors: randomColors(3),
-    },
-    {
-      name: "Silver Lining Balloon",
-      description: "Sleek silver balloon that complements modern decor.",
-      price: 7.5,
-      categoryGroup: "balloons",
-      categories: ["Any Event"],
-      inStock: true,
-      isPersonalizable: { name: true, number: true },
-      availableColors: randomColors(3),
-    },
-    {
-      name: "Emerald Sparkle Balloon",
-      description: "Jewel-toned balloon with subtle glitter overlay.",
-      price: 6.5,
-      categoryGroup: "balloon-bouquets",
-      categories: ["For Her"],
-      inStock: true,
-      isPersonalizable: { name: true, number: true },
-      availableColors: randomColors(3),
-    },
-    {
-      name: "Rose Gold Luxe Balloon",
-      description: "Trending rose gold balloon for chic gatherings.",
-      price: 8.5,
-      categoryGroup: "balloons",
-      categories: ["For Her"],
-      inStock: true,
-      isPersonalizable: { name: true, number: true },
-      availableColors: randomColors(4),
-    },
-    {
-      name: "Frosted Pearl Balloon",
-      description: "Frosted satin balloon with pearlescent sheen.",
-      price: 5.5,
-      categoryGroup: "balloons",
-      categories: ["For Her"],
-      inStock: true,
-    },
-    {
-      name: "Neon Carnival Balloon",
-      description: "Vibrant neon palette designed for night parties.",
-      price: 6,
-      categoryGroup: "balloons",
-      categories: ["For Kids Boys"],
-      inStock: true,
-    },
-    {
-      name: "Starry Night Balloon",
-      description: "Midnight blue balloon dotted with gold stars.",
-      price: 7.5,
-      categoryGroup: "balloons",
-      categories: ["For Kids Boys"],
-      inStock: true,
-    },
-    {
-      name: "Pastel Confetti Balloon",
-      description: "Transparent balloon filled with pastel confetti.",
-      price: 6.5,
-      categoryGroup: "balloons",
-      categories: ["Baby Birth"],
-      inStock: true,
-    },
-    {
-      name: "Mystic Teal Balloon",
-      description: "Moody teal balloon for enchanted themes.",
-      price: 5.5,
-      categoryGroup: "balloons",
-      categories: ["Love"],
-      inStock: true,
-    },
-    {
-      name: "Sunset Fiesta Balloon",
-      description: "Fiery gradient balloon inspired by tropical sunsets.",
-      price: 6.5,
-      categoryGroup: "balloons",
-      categories: ["Any Event"],
-      inStock: true,
-    },
-    {
-      name: "Royal Purple Balloon",
-      description: "Regal purple balloon suited for elegant soirees.",
-      price: 6,
-      categoryGroup: "balloons",
-      categories: ["Anniversary"],
-      inStock: true,
-    },
-    {
-      name: "Blush Bloom Balloon",
-      description: "Delicate blush balloon with watercolor finish.",
-      price: 5,
-      categoryGroup: "balloons",
-      categories: ["Mom"],
-      inStock: true,
-    },
-    {
-      name: "Arctic Sky Balloon",
-      description: "Cool gradient balloon shifting from ice blue to white.",
-      price: 5.5,
-      categoryGroup: "balloons",
-      categories: ["Any Event"],
-      inStock: true,
-    },
-    {
-      name: "Vintage Blush Balloon",
-      description: "Muted rose balloon for nostalgic celebrations.",
-      price: 4.5,
-      categoryGroup: "balloons",
-      categories: ["Love"],
-      inStock: true,
-    },
-    {
-      name: "Galaxy Twist Balloon",
-      description: "Cosmic balloon with swirling galaxy artwork.",
-      price: 7,
-      categoryGroup: "balloons",
-      categories: ["For Kids Girls"],
-      inStock: true,
-    },
-    {
-      name: "Tropical Sunrise Balloon",
-      description: "Bright coral and yellow balloon for beach parties.",
-      price: 5.5,
-      categoryGroup: "balloons",
-      categories: ["Any Event", "Surprise Box"],
-      inStock: true,
-    },
-    {
-      name: "Velvet Rouge Balloon",
-      description: "Deep wine balloon with luxe matte finish.",
-      price: 6.5,
-      categoryGroup: "balloons",
-      categories: ["Love"],
-      inStock: true,
-    },
-    {
-      name: "Crystal Clear Balloon",
-      description: "Glass-like balloon ready for custom fillings.",
-      price: 4,
-      categoryGroup: "balloons",
-      categories: ["Surprise Box"],
-      inStock: true,
-    },
-    {
-      name: "Amber Spark Balloon",
-      description: "Warm amber balloon with sparkling highlights.",
-      price: 5.5,
-      categoryGroup: "balloons",
-      categories: ["Love"],
-      inStock: true,
-    },
-    {
-      name: "Mint Breeze Balloon",
-      description: "Fresh mint green balloon for spring events.",
-      price: 4.5,
-      categoryGroup: "mini-sets",
-      categories: ["Mini Sets"],
-      inStock: true,
-    },
-  ];
+  {
+    name: "Aurora Glow Balloon",
+    description:
+      "Soft gradient balloon that shifts from blush to sunrise gold.",
+    price: 6,
+    categoryGroup: "balloons",
+    categories: ["For Kids Girls", "For Her"],
+    inStock: true,
+    isPersonalizable: { name: true, number: true },
+    availableColors: randomColors(4),
+  },
+  {
+    name: "Sunrise Ombre Balloon",
+    description: "Warm ombre tones that brighten morning celebrations.",
+    price: 5.5,
+    categoryGroup: "balloons",
+    categories: ["For Her", "Anniversary"],
+    inStock: true,
+    isPersonalizable: { name: true, number: true },
+    availableColors: randomColors(4),
+  },
+  {
+    name: "Electric Blue Balloon",
+    description: "Vivid cobalt statement balloon for modern parties.",
+    price: 4.5,
+    categoryGroup: "balloons",
+    categories: ["For Kids Boys", "Any Event"],
+    inStock: true,
+    isPersonalizable: { name: true, number: true },
+    availableColors: randomColors(4),
+  },
+  {
+    name: "Cotton Candy Swirl Balloon",
+    description: "Pastel swirl pattern inspired by carnival treats.",
+    price: 5,
+    categoryGroup: "balloons",
+    categories: ["For Kids Girls"],
+    inStock: true,
+  },
+  {
+    name: "Midnight Spark Balloon",
+    description: "Deep navy balloon with metallic specks that shimmer.",
+    price: 7,
+    categoryGroup: "balloons",
+    categories: ["For Him"],
+    inStock: true,
+  },
+  {
+    name: "Cherry Jubilee Balloon",
+    description: "Rich cherry red balloon for bold centerpiece displays.",
+    price: 4,
+    categoryGroup: "balloons",
+    categories: ["Anniversary"],
+    inStock: true,
+  },
+  {
+    name: "Citrus Burst Balloon",
+    description: "Zesty orange balloon that energizes summer events.",
+    price: 3.5,
+    categoryGroup: "balloons",
+    categories: ["Any Event"],
+    inStock: true,
+  },
+  {
+    name: "Ocean Breeze Balloon",
+    description: "Cool teal balloon reminiscent of coastal escapes.",
+    price: 4.5,
+    categoryGroup: "balloons",
+    categories: ["Baby Birth"],
+    inStock: true,
+  },
+  {
+    name: "Lavender Dream Balloon",
+    description: "Soft lavender tones perfect for bridal showers.",
+    price: 5,
+    categoryGroup: "balloons",
+    categories: ["For Her"],
+    inStock: true,
+  },
+  {
+    name: "Golden Celebration Balloon",
+    description: "Luxe metallic gold balloon for milestone moments.",
+    price: 8,
+    categoryGroup: "balloons",
+    categories: ["Anniversary", "Love"],
+    inStock: true,
+    isPersonalizable: { name: true, number: true },
+    availableColors: randomColors(3),
+  },
+  {
+    name: "Silver Lining Balloon",
+    description: "Sleek silver balloon that complements modern decor.",
+    price: 7.5,
+    categoryGroup: "balloons",
+    categories: ["Any Event"],
+    inStock: true,
+    isPersonalizable: { name: true, number: true },
+    availableColors: randomColors(3),
+  },
+  {
+    name: "Emerald Sparkle Balloon",
+    description: "Jewel-toned balloon with subtle glitter overlay.",
+    price: 6.5,
+    categoryGroup: "balloon-bouquets",
+    categories: ["For Her"],
+    inStock: true,
+    isPersonalizable: { name: true, number: true },
+    availableColors: randomColors(3),
+  },
+  {
+    name: "Rose Gold Luxe Balloon",
+    description: "Trending rose gold balloon for chic gatherings.",
+    price: 8.5,
+    categoryGroup: "balloons",
+    categories: ["For Her"],
+    inStock: true,
+    isPersonalizable: { name: true, number: true },
+    availableColors: randomColors(4),
+  },
+  {
+    name: "Frosted Pearl Balloon",
+    description: "Frosted satin balloon with pearlescent sheen.",
+    price: 5.5,
+    categoryGroup: "balloons",
+    categories: ["For Her"],
+    inStock: true,
+  },
+  {
+    name: "Neon Carnival Balloon",
+    description: "Vibrant neon palette designed for night parties.",
+    price: 6,
+    categoryGroup: "balloons",
+    categories: ["For Kids Boys"],
+    inStock: true,
+  },
+  {
+    name: "Starry Night Balloon",
+    description: "Midnight blue balloon dotted with gold stars.",
+    price: 7.5,
+    categoryGroup: "balloons",
+    categories: ["For Kids Boys"],
+    inStock: true,
+  },
+  {
+    name: "Pastel Confetti Balloon",
+    description: "Transparent balloon filled with pastel confetti.",
+    price: 6.5,
+    categoryGroup: "balloons",
+    categories: ["Baby Birth"],
+    inStock: true,
+  },
+  {
+    name: "Mystic Teal Balloon",
+    description: "Moody teal balloon for enchanted themes.",
+    price: 5.5,
+    categoryGroup: "balloons",
+    categories: ["Love"],
+    inStock: true,
+  },
+  {
+    name: "Sunset Fiesta Balloon",
+    description: "Fiery gradient balloon inspired by tropical sunsets.",
+    price: 6.5,
+    categoryGroup: "balloons",
+    categories: ["Any Event"],
+    inStock: true,
+  },
+  {
+    name: "Royal Purple Balloon",
+    description: "Regal purple balloon suited for elegant soirees.",
+    price: 6,
+    categoryGroup: "balloons",
+    categories: ["Anniversary"],
+    inStock: true,
+  },
+  {
+    name: "Blush Bloom Balloon",
+    description: "Delicate blush balloon with watercolor finish.",
+    price: 5,
+    categoryGroup: "balloons",
+    categories: ["Mom"],
+    inStock: true,
+  },
+  {
+    name: "Arctic Sky Balloon",
+    description: "Cool gradient balloon shifting from ice blue to white.",
+    price: 5.5,
+    categoryGroup: "balloons",
+    categories: ["Any Event"],
+    inStock: true,
+  },
+  {
+    name: "Vintage Blush Balloon",
+    description: "Muted rose balloon for nostalgic celebrations.",
+    price: 4.5,
+    categoryGroup: "balloons",
+    categories: ["Love"],
+    inStock: true,
+  },
+  {
+    name: "Galaxy Twist Balloon",
+    description: "Cosmic balloon with swirling galaxy artwork.",
+    price: 7,
+    categoryGroup: "balloons",
+    categories: ["For Kids Girls"],
+    inStock: true,
+  },
+  {
+    name: "Tropical Sunrise Balloon",
+    description: "Bright coral and yellow balloon for beach parties.",
+    price: 5.5,
+    categoryGroup: "balloons",
+    categories: ["Any Event", "Surprise Box"],
+    inStock: true,
+  },
+  {
+    name: "Velvet Rouge Balloon",
+    description: "Deep wine balloon with luxe matte finish.",
+    price: 6.5,
+    categoryGroup: "balloons",
+    categories: ["Love"],
+    inStock: true,
+  },
+  {
+    name: "Crystal Clear Balloon",
+    description: "Glass-like balloon ready for custom fillings.",
+    price: 4,
+    categoryGroup: "balloons",
+    categories: ["Surprise Box"],
+    inStock: true,
+  },
+  {
+    name: "Amber Spark Balloon",
+    description: "Warm amber balloon with sparkling highlights.",
+    price: 5.5,
+    categoryGroup: "balloons",
+    categories: ["Love"],
+    inStock: true,
+  },
+  {
+    name: "Mint Breeze Balloon",
+    description: "Fresh mint green balloon for spring events.",
+    price: 4.5,
+    categoryGroup: "mini-sets",
+    categories: ["Mini Sets"],
+    inStock: true,
+  },
+];
 
 export const getNewProducts = query({
   args: {
@@ -733,6 +745,14 @@ export const create = mutation({
     categoryGroup: v.optional(v.string()),
     imageUrls: v.array(v.string()),
     inStock: v.boolean(),
+    miniSetSizes: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          price: v.number(),
+        }),
+      ),
+    ),
     isPersonalizable: v.optional(
       v.object({
         name: v.boolean(),
@@ -754,15 +774,50 @@ export const create = mutation({
       args.categoryGroup,
     );
 
+    const normalizedMiniSetSizes = (args.miniSetSizes ?? [])
+      .map((entry) => ({
+        label: entry.label.trim(),
+        price: entry.price,
+      }))
+      .filter((entry) => entry.label.length > 0);
+
+    if (categoryGroup !== "mini-sets" && normalizedMiniSetSizes.length > 0) {
+      throw new Error("Size variants can only be set for mini-sets");
+    }
+
+    for (const entry of normalizedMiniSetSizes) {
+      if (entry.price < 0) {
+        throw new Error("Variant price must be non-negative");
+      }
+    }
+
+    const uniqueLabels = new Set<string>();
+    for (const entry of normalizedMiniSetSizes) {
+      const key = entry.label.toLowerCase();
+      if (uniqueLabels.has(key)) {
+        throw new Error("Variant size labels must be unique");
+      }
+      uniqueLabels.add(key);
+    }
+
+    const effectivePrice =
+      categoryGroup === "mini-sets" && normalizedMiniSetSizes.length > 0
+        ? Math.min(...normalizedMiniSetSizes.map((entry) => entry.price))
+        : args.price;
+
     return ctx.db.insert("products", {
       name: args.name,
       description: args.description,
-      price: args.price,
+      price: effectivePrice,
       categoryGroup,
       categories,
       imageUrls: args.imageUrls,
       inStock: args.inStock,
       soldCount: 0,
+      miniSetSizes:
+        categoryGroup === "mini-sets" && normalizedMiniSetSizes.length > 0
+          ? normalizedMiniSetSizes
+          : undefined,
       isPersonalizable: args.isPersonalizable ?? { name: false, number: false },
       availableColors: args.availableColors,
     });
@@ -779,6 +834,14 @@ export const update = mutation({
     categoryGroup: v.optional(v.string()),
     imageUrls: v.array(v.string()),
     inStock: v.boolean(),
+    miniSetSizes: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          price: v.number(),
+        }),
+      ),
+    ),
     isPersonalizable: v.optional(
       v.object({
         name: v.boolean(),
@@ -805,14 +868,49 @@ export const update = mutation({
       args.categoryGroup,
     );
 
+    const normalizedMiniSetSizes = (args.miniSetSizes ?? [])
+      .map((entry) => ({
+        label: entry.label.trim(),
+        price: entry.price,
+      }))
+      .filter((entry) => entry.label.length > 0);
+
+    if (categoryGroup !== "mini-sets" && normalizedMiniSetSizes.length > 0) {
+      throw new Error("Size variants can only be set for mini-sets");
+    }
+
+    for (const entry of normalizedMiniSetSizes) {
+      if (entry.price < 0) {
+        throw new Error("Variant price must be non-negative");
+      }
+    }
+
+    const uniqueLabels = new Set<string>();
+    for (const entry of normalizedMiniSetSizes) {
+      const key = entry.label.toLowerCase();
+      if (uniqueLabels.has(key)) {
+        throw new Error("Variant size labels must be unique");
+      }
+      uniqueLabels.add(key);
+    }
+
+    const effectivePrice =
+      categoryGroup === "mini-sets" && normalizedMiniSetSizes.length > 0
+        ? Math.min(...normalizedMiniSetSizes.map((entry) => entry.price))
+        : args.price;
+
     await ctx.db.patch(args.productId, {
       name: args.name,
       description: args.description,
-      price: args.price,
+      price: effectivePrice,
       categories,
       categoryGroup,
       imageUrls: args.imageUrls,
       inStock: args.inStock,
+      miniSetSizes:
+        categoryGroup === "mini-sets" && normalizedMiniSetSizes.length > 0
+          ? normalizedMiniSetSizes
+          : undefined,
       isPersonalizable: args.isPersonalizable ?? { name: false, number: false },
       availableColors: args.availableColors,
     });

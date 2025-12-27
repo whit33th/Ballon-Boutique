@@ -7,6 +7,7 @@ interface ProductInfoDisplayProps {
   description: string;
   price: number;
   inStock: boolean;
+  hidePrice?: boolean;
 }
 
 export async function ProductInfoDisplay({
@@ -15,6 +16,7 @@ export async function ProductInfoDisplay({
   description,
   price,
   inStock,
+  hidePrice,
 }: ProductInfoDisplayProps) {
   const t = await getTranslations({ locale, namespace: "product" });
 
@@ -34,14 +36,16 @@ export async function ProductInfoDisplay({
       </div>
 
       <div className="flex flex-wrap items-baseline justify-between gap-4">
-        <div>
-          <span className="text-deep/50 mb-1 block text-xs tracking-wider uppercase">
-            {t("price")}
-          </span>
-          <span className="text-deep text-2xl font-bold sm:text-3xl lg:text-4xl 2xl:text-5xl">
-            {price.toFixed(2)} €
-          </span>
-        </div>
+        {hidePrice ? null : (
+          <div>
+            <span className="text-deep/50 mb-1 block text-xs tracking-wider uppercase">
+              {t("price")}
+            </span>
+            <span className="text-deep text-2xl font-bold sm:text-3xl lg:text-4xl 2xl:text-5xl">
+              {price.toFixed(2)} €
+            </span>
+          </div>
+        )}
         <span
           className={`rounded-full px-5 py-2 text-sm font-semibold tracking-wide uppercase ${
             inStock ? "bg-secondary/10 text-secondary" : "bg-deep/10 text-deep"

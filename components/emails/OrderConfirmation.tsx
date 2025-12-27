@@ -113,12 +113,10 @@ const formatCurrency = (value: number, currency = "EUR") =>
   }).format(value);
 
 const formatDateTime = (dateString: string) =>
-  new Date(dateString).toLocaleString("de-AT", {
+  new Date(dateString).toLocaleDateString("de-AT", {
     year: "numeric",
     month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 
 // Inline styles for email compatibility

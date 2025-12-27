@@ -1,7 +1,10 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { addressValidator, optionalAddressValidator } from "./validators/address";
+import {
+  addressValidator,
+  optionalAddressValidator,
+} from "./validators/address";
 
 const usersTable = defineTable({
   name: v.optional(v.string()),
@@ -23,6 +26,14 @@ const applicationTables = {
     name: v.string(),
     description: v.string(),
     price: v.number(),
+    miniSetSizes: v.optional(
+      v.array(
+        v.object({
+          label: v.string(),
+          price: v.number(),
+        }),
+      ),
+    ),
     categoryGroup: v.string(),
     categories: v.array(v.string()),
     imageUrls: v.array(v.string()),
@@ -57,6 +68,12 @@ const applicationTables = {
     userId: v.id("users"),
     productId: v.id("products"),
     quantity: v.number(),
+    variant: v.optional(
+      v.object({
+        size: v.string(),
+        unitPrice: v.number(),
+      }),
+    ),
     personalization: v.optional(
       v.object({
         text: v.optional(v.string()),
@@ -82,6 +99,11 @@ const applicationTables = {
         productName: v.string(),
         quantity: v.number(),
         price: v.number(),
+        variant: v.optional(
+          v.object({
+            size: v.string(),
+          }),
+        ),
         productImageUrl: v.optional(v.union(v.string(), v.null())),
         personalization: v.optional(
           v.object({
@@ -165,6 +187,11 @@ const applicationTables = {
         productName: v.string(),
         quantity: v.number(),
         price: v.number(),
+        variant: v.optional(
+          v.object({
+            size: v.string(),
+          }),
+        ),
         personalization: v.optional(
           v.object({
             text: v.optional(v.string()),

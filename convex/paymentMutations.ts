@@ -11,6 +11,11 @@ import { orderItemValidator } from "./validators/order";
 export const orderItemInputValidator = v.object({
   productId: v.id("products"),
   quantity: v.number(),
+  variant: v.optional(
+    v.object({
+      size: v.string(),
+    }),
+  ),
   personalization: v.optional(
     v.object({
       text: v.optional(v.string()),
@@ -426,6 +431,7 @@ async function resolveOrderItems(
   items: Array<{
     productId: Id<"products">;
     quantity: number;
+    variant?: { size: string };
     personalization?: {
       text?: string;
       color?: string;
@@ -438,6 +444,7 @@ async function resolveOrderItems(
     productName: string;
     quantity: number;
     price: number;
+    variant?: { size: string };
     personalization?: {
       text?: string;
       color?: string;
@@ -455,11 +462,40 @@ async function resolveOrderItems(
       throw new Error(`${product.name} is out of stock`);
     }
 
+    const availableSizes = (product.miniSetSizes ?? []) as Array<{
+      label: string;
+      price: number;
+    }>;
+
+    let unitPrice = product.price;
+    let variant: { size: string } | undefined;
+
+    if (availableSizes.length > 0) {
+      const requestedSize = item.variant?.size?.trim();
+      if (!requestedSize) {
+        throw new Error("Please select a size for this mini-set");
+      }
+
+      const match = availableSizes.find(
+        (entry) =>
+          entry.label.trim().toLowerCase() === requestedSize.toLowerCase(),
+      );
+      if (!match) {
+        throw new Error("Selected size is not available");
+      }
+
+      unitPrice = match.price;
+      variant = { size: match.label.trim() };
+    } else if (item.variant?.size) {
+      throw new Error("Variant size is not supported for this product");
+    }
+
     resolved.push({
       productId: item.productId,
       productName: product.name,
       quantity: item.quantity,
-      price: product.price,
+      price: unitPrice,
+      variant,
       personalization: item.personalization,
     });
   }

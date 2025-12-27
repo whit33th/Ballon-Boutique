@@ -4,7 +4,7 @@ import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { snapshotFromProduct, useGuestCart } from "@/lib/guestCart";
@@ -38,12 +38,34 @@ export function ProductAddToCartWrapper({
   const user = useQuery(api.auth.loggedInUser);
   const { addItem: addGuestItem } = useGuestCart();
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [personalization, setPersonalization] =
     useState<PersonalizationOptions>({});
   const numberInputRef = useRef<HTMLInputElement>(null);
   const colorSectionRef = useRef<HTMLDivElement>(
     null,
   ) as React.RefObject<HTMLDivElement>;
+
+  const hasSizeVariants = (product?.miniSetSizes?.length ?? 0) > 0;
+  const selectedVariant = hasSizeVariants
+    ? (product?.miniSetSizes?.find((s) => s.label === selectedSize) ?? null)
+    : null;
+  const selectedUnitPrice = selectedVariant?.price ?? product?.price;
+
+  useEffect(() => {
+    if (!hasSizeVariants || !product?.miniSetSizes?.length) {
+      setSelectedSize(null);
+      return;
+    }
+
+    const first = product.miniSetSizes[0];
+    if (!first) {
+      setSelectedSize(null);
+      return;
+    }
+
+    setSelectedSize((prev) => prev ?? first.label);
+  }, [hasSizeVariants, product?.miniSetSizes]);
 
   const handleQuantityChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -64,6 +86,17 @@ export function ProductAddToCartWrapper({
       }
 
       const safeQuantity = Math.max(1, Math.floor(desired));
+
+      if (hasSizeVariants) {
+        if (!selectedSize) {
+          toast.error(t("pleaseSelectSize"));
+          return;
+        }
+        if (!selectedVariant || typeof selectedVariant.price !== "number") {
+          toast.error(t("pleaseSelectSize"));
+          return;
+        }
+      }
 
       // Validate required fields
       const needsColorSelection =
@@ -101,6 +134,9 @@ export function ProductAddToCartWrapper({
         addGuestItem(
           snapshotFromProduct(product),
           safeQuantity,
+          hasSizeVariants && selectedSize && selectedVariant
+            ? { size: selectedSize, unitPrice: selectedVariant.price }
+            : undefined,
           personalizedData,
         );
         toast.success(t("addedToCart", { count: safeQuantity }));
@@ -111,6 +147,10 @@ export function ProductAddToCartWrapper({
         await addToCart({
           productId: product._id,
           quantity: safeQuantity,
+          variant:
+            hasSizeVariants && selectedSize
+              ? { size: selectedSize }
+              : undefined,
           personalization: personalizedData,
         });
         toast.success(t("addedToCart", { count: safeQuantity }));
@@ -124,6 +164,9 @@ export function ProductAddToCartWrapper({
       addGuestItem,
       addToCart,
       quantity,
+      hasSizeVariants,
+      selectedSize,
+      selectedVariant,
       personalization,
       requiresColorSelection,
       isPersonalizable,
@@ -135,6 +178,24 @@ export function ProductAddToCartWrapper({
     <div className="space-y-6">
       {product && (
         <div className="flex flex-wrap items-center gap-4">
+          {hasSizeVariants && product.miniSetSizes ? (
+            <label className="text-deep flex items-center gap-3 text-sm font-medium">
+              <span className="tracking-wider uppercase">{t("size")}:</span>
+              <select
+                value={selectedSize ?? ""}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                disabled={!product.inStock}
+                className="border-border text-deep hover:border-secondary focus:border-secondary focus:ring-secondary/20 h-11 rounded-xl border-2 bg-white px-4 text-sm font-semibold transition-colors outline-none focus:ring-2 disabled:opacity-50"
+              >
+                {product.miniSetSizes.map((s) => (
+                  <option value={s.label} key={s.label}>
+                    {s.label} — €{s.price.toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
           <label className="text-deep flex items-center gap-3 text-sm font-medium">
             <span className="tracking-wider uppercase">{t("quantity")}:</span>
             <select
@@ -159,6 +220,12 @@ export function ProductAddToCartWrapper({
           >
             {!product.inStock ? t("soldOut") : t("addToCart")}
           </motion.button>
+
+          {hasSizeVariants && typeof selectedUnitPrice === "number" ? (
+            <div className="text-deep text-sm font-semibold tabular-nums">
+              {t("price")}: €{selectedUnitPrice.toFixed(2)}
+            </div>
+          ) : null}
         </div>
       )}
 

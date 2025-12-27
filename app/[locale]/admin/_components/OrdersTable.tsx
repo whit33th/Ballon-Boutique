@@ -278,14 +278,12 @@ export function OrdersTable({
                             : tOrders("pickupTime")}
                         </div>
                         <div className="text-sm text-slate-700">
-                          {new Date(order.pickupDateTime).toLocaleString(
+                          {new Date(order.pickupDateTime).toLocaleDateString(
                             undefined,
                             {
                               year: "numeric",
                               month: "numeric",
                               day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
                             },
                           )}
                         </div>

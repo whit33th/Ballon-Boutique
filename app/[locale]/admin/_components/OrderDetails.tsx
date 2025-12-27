@@ -250,13 +250,14 @@ export function OrderDetails({ order }: Props) {
                     {tOrderDetails("deliveryTime")}:{" "}
                   </span>
                   <span className="text-sm text-slate-700">
-                    {new Date(order.pickupDateTime).toLocaleString(undefined, {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(order.pickupDateTime).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                      },
+                    )}
                   </span>
                 </div>
               )}
@@ -287,13 +288,14 @@ export function OrderDetails({ order }: Props) {
                     {tOrderDetails("pickupTime")}:{" "}
                   </span>
                   <span className="text-sm text-slate-700">
-                    {new Date(order.pickupDateTime).toLocaleString(undefined, {
-                      year: "numeric",
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(order.pickupDateTime).toLocaleDateString(
+                      undefined,
+                      {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                      },
+                    )}
                   </span>
                 </div>
               )}

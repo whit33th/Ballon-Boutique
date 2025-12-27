@@ -6,6 +6,14 @@ export const productDocumentFields = {
   name: v.string(),
   description: v.string(),
   price: v.number(),
+  miniSetSizes: v.optional(
+    v.array(
+      v.object({
+        label: v.string(),
+        price: v.number(),
+      }),
+    ),
+  ),
   categoryGroup: v.string(),
   categories: v.array(v.string()),
   imageUrls: v.array(v.string()),

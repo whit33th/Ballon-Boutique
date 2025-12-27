@@ -108,6 +108,7 @@ export default async function ProductDetailPage({
                 description={product.description}
                 price={product.price}
                 inStock={product.inStock}
+                hidePrice={(product.miniSetSizes?.length ?? 0) > 0}
               />
 
               {/* Client Component - Interactive Add to Cart */}

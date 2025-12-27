@@ -49,6 +49,11 @@ export const createGuest = mutation({
       v.object({
         productId: v.id("products"),
         quantity: v.number(),
+        variant: v.optional(
+          v.object({
+            size: v.string(),
+          }),
+        ),
         personalization: v.optional(
           v.object({
             text: v.optional(v.string()),
@@ -71,17 +76,18 @@ export const createGuest = mutation({
       const selectedDate = new Date(args.pickupDateTime);
       const now = new Date();
 
-      // Minimum: 3 days from now
-      const minDate = new Date();
-      minDate.setDate(now.getDate() + 3); // minPickupDays = 3
-      minDate.setHours(0, 0, 0, 0);
+      // Minimum: 72 hours from now (preorder rule)
+      const minDate = new Date(now);
+      minDate.setHours(minDate.getHours() + 72);
 
       // Maximum: 1 year from now
       const maxDate = new Date();
       maxDate.setFullYear(now.getFullYear() + 1);
 
       if (selectedDate < minDate) {
-        throw new Error("Pickup date must be at least 3 days in advance");
+        throw new Error(
+          "Pickup/delivery date must be at least 72 hours in advance",
+        );
       }
 
       if (selectedDate > maxDate) {
@@ -107,18 +113,47 @@ export const createGuest = mutation({
         throw new Error(`${product.name} is out of stock`);
       }
 
+      const availableSizes = (product.miniSetSizes ?? []) as Array<{
+        label: string;
+        price: number;
+      }>;
+
+      let unitPrice = product.price;
+      let variant: { size: string } | undefined;
+
+      if (availableSizes.length > 0) {
+        const requestedSize = item.variant?.size?.trim();
+        if (!requestedSize) {
+          throw new Error("Please select a size for this mini-set");
+        }
+
+        const match = availableSizes.find(
+          (entry) =>
+            entry.label.trim().toLowerCase() === requestedSize.toLowerCase(),
+        );
+        if (!match) {
+          throw new Error("Selected size is not available");
+        }
+
+        unitPrice = match.price;
+        variant = { size: match.label.trim() };
+      } else if (item.variant?.size) {
+        throw new Error("Variant size is not supported for this product");
+      }
+
       const orderItem = {
         productId: item.productId,
         productName: product.name,
         quantity: item.quantity,
-        price: product.price,
+        price: unitPrice,
+        variant,
         personalization: item.personalization ?? undefined,
         productImageUrl: product.imageUrls?.[0] ?? null,
       } as OrderItem;
 
       orderItems.push(orderItem);
 
-      totalAmount += product.price * item.quantity;
+      totalAmount += unitPrice * item.quantity;
 
       await ctx.db.patch(product._id, {
         soldCount: (product.soldCount ?? 0) + item.quantity,
@@ -188,17 +223,18 @@ export const create = mutation({
       const selectedDate = new Date(args.pickupDateTime);
       const now = new Date();
 
-      // Minimum: 3 days from now
-      const minDate = new Date();
-      minDate.setDate(now.getDate() + 3); // minPickupDays = 3
-      minDate.setHours(0, 0, 0, 0);
+      // Minimum: 72 hours from now (preorder rule)
+      const minDate = new Date(now);
+      minDate.setHours(minDate.getHours() + 72);
 
       // Maximum: 1 year from now
       const maxDate = new Date();
       maxDate.setFullYear(now.getFullYear() + 1);
 
       if (selectedDate < minDate) {
-        throw new Error("Pickup date must be at least 3 days in advance");
+        throw new Error(
+          "Pickup/delivery date must be at least 72 hours in advance",
+        );
       }
 
       if (selectedDate > maxDate) {
@@ -233,11 +269,44 @@ export const create = mutation({
         throw new Error(`${product.name} is out of stock`);
       }
 
+      const availableSizes = (product.miniSetSizes ?? []) as Array<{
+        label: string;
+        price: number;
+      }>;
+
+      let unitPrice = product.price;
+      let variant: { size: string } | undefined;
+
+      if (availableSizes.length > 0) {
+        const requestedSize = (
+          cartItem.variant as { size?: string } | undefined
+        )?.size?.trim();
+        if (!requestedSize) {
+          throw new Error("Please select a size for this mini-set");
+        }
+
+        const match = availableSizes.find(
+          (entry) =>
+            entry.label.trim().toLowerCase() === requestedSize.toLowerCase(),
+        );
+        if (!match) {
+          throw new Error("Selected size is not available");
+        }
+
+        unitPrice =
+          (cartItem.variant as { unitPrice?: number } | undefined)?.unitPrice ??
+          match.price;
+        variant = { size: match.label.trim() };
+      } else if ((cartItem.variant as { size?: string } | undefined)?.size) {
+        throw new Error("Variant size is not supported for this product");
+      }
+
       const orderItem = {
         productId: cartItem.productId,
         productName: product.name,
         quantity: cartItem.quantity,
-        price: product.price,
+        price: unitPrice,
+        variant,
         // Preserve personalization from the cart so order shows color/text/number
         personalization: cartItem.personalization ?? undefined,
         productImageUrl: product.imageUrls?.[0] ?? null,
@@ -245,7 +314,7 @@ export const create = mutation({
 
       orderItems.push(orderItem);
 
-      totalAmount += product.price * cartItem.quantity;
+      totalAmount += unitPrice * cartItem.quantity;
 
       await ctx.db.patch(product._id, {
         soldCount: (product.soldCount ?? 0) + cartItem.quantity,

@@ -12,6 +12,10 @@ export type GuestCartProductSnapshot = {
 export type GuestCartItem = {
   productId: string;
   quantity: number;
+  variant?: {
+    size: string;
+    unitPrice: number;
+  };
   personalization?: {
     text?: string;
     color?: string;
@@ -42,11 +46,24 @@ const readGuestCart = (): GuestCartItem[] => {
     }
 
     return parsed.filter((item): item is GuestCartItem => {
+      const variant =
+        typeof item === "object" && item !== null
+          ? (item as { variant?: unknown }).variant
+          : undefined;
+
+      const hasValidVariant =
+        variant === undefined ||
+        (typeof variant === "object" &&
+          variant !== null &&
+          typeof (variant as { size?: unknown }).size === "string" &&
+          typeof (variant as { unitPrice?: unknown }).unitPrice === "number");
+
       return (
         typeof item === "object" &&
         item !== null &&
         typeof item.productId === "string" &&
         typeof item.quantity === "number" &&
+        hasValidVariant &&
         typeof item.product === "object" &&
         item.product !== null &&
         typeof item.product.name === "string" &&
@@ -95,9 +112,22 @@ const isSamePersonalization = (
   return a.text === b.text && a.color === b.color && a.number === b.number;
 };
 
+const isSameVariant = (
+  a?: { size: string; unitPrice: number },
+  b?: { size: string; unitPrice: number },
+) => {
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+  return a.size === b.size;
+};
+
 export const addGuestCartItem = (
   snapshot: GuestCartProductSnapshot,
   quantity: number,
+  variant?: {
+    size: string;
+    unitPrice: number;
+  },
   personalization?: {
     text?: string;
     color?: string;
@@ -107,6 +137,7 @@ export const addGuestCartItem = (
   console.log("🔵 addGuestCartItem called with:", {
     productId: snapshot.productId,
     quantity,
+    variant,
     personalization,
   });
 
@@ -119,6 +150,7 @@ export const addGuestCartItem = (
   const existing = cart.find(
     (item) =>
       item.productId === snapshot.productId &&
+      isSameVariant(item.variant, variant) &&
       isSamePersonalization(item.personalization, personalization),
   );
 
@@ -128,11 +160,13 @@ export const addGuestCartItem = (
     const desired = existing.quantity + quantity;
     existing.quantity = Math.max(1, Math.floor(desired));
     existing.product = snapshot;
+    existing.variant = variant;
     console.log("🟡 Updated existing item quantity to:", existing.quantity);
   } else {
     const newItem = {
       productId: snapshot.productId,
       quantity: Math.max(1, Math.floor(quantity)),
+      variant,
       personalization,
       product: snapshot,
     };
@@ -210,13 +244,17 @@ export const useGuestCart = () => {
     (
       snapshot: GuestCartProductSnapshot,
       quantity: number,
+      variant?: {
+        size: string;
+        unitPrice: number;
+      },
       personalization?: {
         text?: string;
         color?: string;
         number?: string;
       },
     ) => {
-      addGuestCartItem(snapshot, quantity, personalization);
+      addGuestCartItem(snapshot, quantity, variant, personalization);
     },
     [],
   );
@@ -235,7 +273,8 @@ export const useGuestCart = () => {
 
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce(
-    (sum, item) => sum + item.quantity * item.product.price,
+    (sum, item) =>
+      sum + item.quantity * (item.variant?.unitPrice ?? item.product.price),
     0,
   );
 
@@ -255,5 +294,6 @@ export const mapGuestCartForImport = (items: GuestCartItem[]) =>
   items.map((item) => ({
     productId: item.productId as Id<"products">,
     quantity: item.quantity,
+    variant: item.variant?.size ? { size: item.variant.size } : undefined,
     personalization: item.personalization,
   }));

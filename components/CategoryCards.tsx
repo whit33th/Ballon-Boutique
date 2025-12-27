@@ -47,7 +47,8 @@ export default function CategoryCards({ group }: CategoryCardsProps) {
     >
       {group.subcategories.map((subcategory) => {
         const normalized = subcategory.value.toLowerCase();
-        const imgFromMap = SUBCATEGORY_IMAGES[group.value][normalized];
+        const imgFromMap =
+          SUBCATEGORY_IMAGES[group.value]?.[normalized] ?? group.icon;
 
         const href = {
           pathname: "/catalog",

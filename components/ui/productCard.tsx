@@ -46,7 +46,27 @@ export default function ProductCard({
   const displayImage = product.primaryImageUrl ?? product.imageUrls[0] ?? null;
 
   const tags: ProductTag[] = product.tags ?? [];
-  const formattedPrice = `${product.price.toFixed(2)} €`;
+  const formattedPrice = useMemo(() => {
+    const sizes = (product as { miniSetSizes?: { price: number }[] })
+      .miniSetSizes;
+    if (!sizes || sizes.length === 0) {
+      return `${product.price.toFixed(2)} €`;
+    }
+
+    const prices = sizes
+      .map((s) => s.price)
+      .filter((price) => typeof price === "number" && Number.isFinite(price));
+    if (prices.length === 0) {
+      return `${product.price.toFixed(2)} €`;
+    }
+
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    if (min !== max) {
+      return `${min.toFixed(2)}–${max.toFixed(2)} €`;
+    }
+    return `${min.toFixed(2)} €`;
+  }, [product]);
 
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 

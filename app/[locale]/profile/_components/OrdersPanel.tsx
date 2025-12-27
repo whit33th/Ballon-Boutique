@@ -123,7 +123,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
         onClick={onToggle}
         className="w-full cursor-pointer px-4 py-4 transition-colors hover:bg-[rgba(var(--surface-rgb),0.02)] sm:px-6 sm:py-5"
       >
-        <div className="flex w-full items-center flex-col sm:flex-row justify-between gap-3 sm:gap-4">
+        <div className="flex w-full flex-col items-center justify-between gap-3 sm:flex-row sm:gap-4">
           <div className="flex min-w-0 flex-1 flex-col items-start gap-1 text-left">
             <div className="mb-1 flex flex-wrap items-center gap-2">
               <span className="text-secondary inline-block rounded-full bg-[rgba(var(--secondary-rgb),0.15)] px-2.5 py-0.5 text-[10px] font-bold tracking-widest uppercase">
@@ -136,7 +136,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
               </span>
             </div>
 
-            <p className="text-deep w-full wrap-break-word text-base font-bold leading-tight sm:text-lg">
+            <p className="text-deep w-full text-base leading-tight font-bold wrap-break-word sm:text-lg">
               {order.customerName}
             </p>
 
@@ -148,7 +148,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
               <button
                 type="button"
                 onClick={handleCopyId}
-                className="group/copy text-deep hover:bg-[rgba(var(--deep-rgb),0.05)] flex max-w-30 items-center gap-1 rounded px-2 py-1 font-mono text-[11px] font-semibold transition-colors sm:max-w-none"
+                className="group/copy text-deep flex max-w-30 items-center gap-1 rounded px-2 py-1 font-mono text-[11px] font-semibold transition-colors hover:bg-[rgba(var(--deep-rgb),0.05)] sm:max-w-none"
                 title="Click to copy order ID"
               >
                 <span className="truncate">#{order._id}</span>
@@ -239,11 +239,10 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                   <div>
                     <p className="text-deep text-sm font-medium">
                       {order.pickupDateTime
-                        ? new Date(order.pickupDateTime).toLocaleString(
+                        ? new Date(order.pickupDateTime).toLocaleDateString(
                             "de-DE",
                             {
                               dateStyle: "medium",
-                              timeStyle: "short",
                             },
                           )
                         : "—"}

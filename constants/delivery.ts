@@ -41,13 +41,18 @@ export const COURIER_DELIVERY_CITIES: CourierDeliveryCity[] = [
     price: 20,
   },
   {
-    id: "sankt-michael-in-obersteiermark",
-    name: "Sankt Michael in Obersteiermark",
+    id: "ingering-ii",
+    name: "Ingering II",
+    price: 17,
+  },
+  {
+    id: "gaal",
+    name: "Gaal",
     price: 20,
   },
   {
-    id: "leoben",
-    name: "Leoben",
-    price: 36,
+    id: "zeltweg",
+    name: "Zeltweg",
+    price: 15,
   },
 ];

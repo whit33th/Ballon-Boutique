@@ -76,7 +76,7 @@ Artikel:
 ${body.items.map((item) => `- ${item.productName} x${item.quantity}: €${(item.price * item.quantity).toFixed(2)}`).join("\n")}
 
 Lieferart: ${body.deliveryType === "pickup" ? "Selbstabholung" : "Kurierlieferung"}
-${body.pickupDateTime ? `Datum: ${new Date(body.pickupDateTime).toLocaleString("de-AT")}` : ""}
+${body.pickupDateTime ? `Datum: ${new Date(body.pickupDateTime).toLocaleDateString("de-AT")}` : ""}
 
 Sie können Ihre Bestellung online unter folgendem Link einsehen:
 ${confirmationUrl}

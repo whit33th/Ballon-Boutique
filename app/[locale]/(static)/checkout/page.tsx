@@ -114,48 +114,86 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value);
 
-/**
- * Calculate minimum pickup datetime (current date + minimum pickup days from config)
- */
-const getMinPickupDateTime = (): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + STORE_INFO.orderPolicy.minPickupDays);
-  // Format to datetime-local format: YYYY-MM-DDTHH:mm
-  return date.toISOString().slice(0, 16);
+const toDateInputValue = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateInput = (value: string): Date | null => {
+  const trimmed = (value || "").trim();
+  if (!trimmed) return null;
+
+  // Expect YYYY-MM-DD
+  const match = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
+  if (!match) return null;
+
+  const [y, m, d] = trimmed.split("-").map((part) => Number(part));
+  const parsed = new Date(y, (m ?? 1) - 1, d ?? 1);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed;
+};
+
+const buildPickupDateTimeISO = (
+  pickupDate: string,
+  deliveryType: DeliveryType,
+): string | null => {
+  const date = parseDateInput(pickupDate);
+  if (!date) return null;
+
+  // Store a deterministic time even though user selects only a date.
+  // - For delivery: align to courier start hour.
+  // - For pickup: use midday to avoid timezone/date shifting.
+  const hours =
+    deliveryType === "delivery" ? STORE_INFO.delivery.minDeliveryHour : 12;
+  date.setHours(hours, 0, 0, 0);
+  return date.toISOString();
 };
 
 /**
- * Calculate minimum delivery datetime with time constraints
+ * Calculate minimum pickup/delivery date (date-only).
+ * Business rule: preorder is possible only at least STORE_INFO.orderPolicy.preparationTime hours in advance.
+ * Since user selects only a date, we validate against an assumed time:
+ * - Delivery: courier start hour
+ * - Pickup: midday
  */
-const getMinDeliveryDateTime = (): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + STORE_INFO.orderPolicy.minPickupDays);
-  date.setHours(STORE_INFO.delivery.minDeliveryHour, 0, 0, 0);
-  // Format to datetime-local format: YYYY-MM-DDTHH:mm
-  return date.toISOString().slice(0, 16);
+const getMinPickupDate = (deliveryType: DeliveryType): string => {
+  const threshold = new Date();
+  threshold.setHours(
+    threshold.getHours() + STORE_INFO.orderPolicy.preparationTime,
+  );
+
+  const candidate = new Date(
+    threshold.getFullYear(),
+    threshold.getMonth(),
+    threshold.getDate(),
+  );
+  candidate.setHours(0, 0, 0, 0);
+
+  const assumed = new Date(candidate);
+  assumed.setHours(
+    deliveryType === "delivery" ? STORE_INFO.delivery.minDeliveryHour : 12,
+    0,
+    0,
+    0,
+  );
+
+  if (assumed < threshold) {
+    candidate.setDate(candidate.getDate() + 1);
+  }
+
+  return toDateInputValue(candidate);
 };
 
 /**
- * Calculate maximum pickup datetime (1 year from now)
+ * Calculate maximum pickup/delivery date (1 year from now).
  */
-const getMaxPickupDateTime = (): string => {
+const getMaxPickupDate = (): string => {
   const date = new Date();
+  date.setHours(0, 0, 0, 0);
   date.setFullYear(date.getFullYear() + 1);
-  // Format to datetime-local format: YYYY-MM-DDTHH:mm
-  return date.toISOString().slice(0, 16);
-};
-
-/**
- * Calculate maximum delivery datetime (1 year from now)
- * Note: max attribute in datetime-local only works for the specific date,
- * so we need to validate time in the validation function as well
- */
-const getMaxDeliveryDateTime = (): string => {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + 1);
-  date.setHours(STORE_INFO.delivery.maxDeliveryHour, 0, 0, 0);
-  // Format to datetime-local format: YYYY-MM-DDTHH:mm
-  return date.toISOString().slice(0, 16);
+  return toDateInputValue(date);
 };
 
 /**
@@ -394,6 +432,10 @@ type ServerCartItem = {
   userId: Id<"users">;
   productId: Id<"products">;
   quantity: number;
+  variant?: {
+    size: string;
+    unitPrice: number;
+  };
   personalization?: {
     text?: string;
     color?: string;
@@ -409,6 +451,9 @@ const isServerCartItem = (
 type CheckoutItemInput = {
   productId: Id<"products">;
   quantity: number;
+  variant?: {
+    size: string;
+  };
   personalization?: {
     text?: string;
     color?: string;
@@ -438,7 +483,7 @@ const createCheckoutDetailsSchema = (
           t("validation.validPhoneOrEmpty"),
         ),
       deliveryType: z.enum(["pickup", "delivery"]),
-      pickupDateTime: z.string().optional(),
+      pickupDate: z.string().optional(),
       address: z
         .object({
           streetAddress: z.string().optional(),
@@ -450,30 +495,52 @@ const createCheckoutDetailsSchema = (
       courierCityId: z.string().nullable().optional(),
     })
     .superRefine((data, ctx) => {
-      // Require pickupDateTime for both pickup and delivery
-      if (!data.pickupDateTime?.trim()) {
+      // Require pickupDate for both pickup and delivery
+      if (!data.pickupDate?.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["pickupDateTime"],
-          message: t("validation.pickupDateTimeRequired"),
+          path: ["pickupDate"],
+          message: t("validation.pickupDateRequired"),
         });
         return;
       }
 
-      const selectedDate = new Date(data.pickupDateTime);
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + STORE_INFO.orderPolicy.minPickupDays);
-      minDate.setHours(0, 0, 0, 0);
+      const parsedSelected = parseDateInput(data.pickupDate);
+      if (!parsedSelected) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["pickupDate"],
+          message: t("validation.pickupDateInvalid"),
+        });
+        return;
+      }
+
+      const selectedDate = parsedSelected;
+
+      const threshold = new Date();
+      threshold.setHours(
+        threshold.getHours() + STORE_INFO.orderPolicy.preparationTime,
+      );
+
+      const assumedSelected = new Date(selectedDate);
+      assumedSelected.setHours(
+        data.deliveryType === "delivery"
+          ? STORE_INFO.delivery.minDeliveryHour
+          : 12,
+        0,
+        0,
+        0,
+      );
 
       // Validate maximum date (1 year from now)
       const maxDate = new Date();
       maxDate.setFullYear(maxDate.getFullYear() + 1);
 
-      // Validate that date is not earlier than minimum days
-      if (selectedDate < minDate) {
+      // Validate preorder lead time (>= preparationTime hours)
+      if (assumedSelected < threshold) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["pickupDateTime"],
+          path: ["pickupDate"],
           message: t("validation.pickupDateMinDays", {
             days: STORE_INFO.orderPolicy.minPickupDays,
           }),
@@ -484,7 +551,7 @@ const createCheckoutDetailsSchema = (
       if (selectedDate > maxDate) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          path: ["pickupDateTime"],
+          path: ["pickupDate"],
           message: t("validation.pickupDateMaxOneYear"),
         });
       }
@@ -494,40 +561,7 @@ const createCheckoutDetailsSchema = (
         return;
       }
 
-      // For delivery, validate time constraints strictly
-      if (data.deliveryType === "delivery") {
-        const selectedHour = selectedDate.getHours();
-        const selectedMinutes = selectedDate.getMinutes();
-
-        // Check if hour is outside allowed range
-        if (
-          selectedHour < STORE_INFO.delivery.minDeliveryHour ||
-          selectedHour > STORE_INFO.delivery.maxDeliveryHour
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["pickupDateTime"],
-            message: t("validation.deliveryTimeRange", {
-              min: STORE_INFO.delivery.minDeliveryHour,
-              max: STORE_INFO.delivery.maxDeliveryHour,
-            }),
-          });
-        }
-        // If hour is exactly maxDeliveryHour, check that minutes are 0
-        else if (
-          selectedHour === STORE_INFO.delivery.maxDeliveryHour &&
-          selectedMinutes > 0
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ["pickupDateTime"],
-            message: t("validation.deliveryTimeRange", {
-              min: STORE_INFO.delivery.minDeliveryHour,
-              max: STORE_INFO.delivery.maxDeliveryHour,
-            }),
-          });
-        }
-      }
+      // Time selection is disabled; we validate date only.
 
       // For delivery, validate courier city and address
       if (!data.courierCityId) {
@@ -919,19 +953,24 @@ function OrderSummary({
   const tCommon = useTranslations("common");
   const getItemDetails = (item: ServerCartItem | GuestCartItem) => {
     if (isServerCartItem(item)) {
+      const unitPrice = item.variant?.unitPrice ?? item.product.price;
       return {
         key: item._id,
         name: item.product.name,
-        price: item.product.price,
+        unitPrice,
         quantity: item.quantity,
+        size: item.variant?.size,
         personalization: item.personalization,
       } as const;
     }
+
+    const unitPrice = item.variant?.unitPrice ?? item.product.price;
     return {
       key: item.productId,
       name: item.product.name,
-      price: item.product.price,
+      unitPrice,
       quantity: item.quantity,
+      size: item.variant?.size,
       personalization: item.personalization,
     } as const;
   };
@@ -957,6 +996,11 @@ function OrderSummary({
                   <p className="text-xs text-gray-500">
                     {tCommon("quantity")}: {details.quantity}
                   </p>
+                  {details.size ? (
+                    <p className="text-xs text-gray-500">
+                      {t("common.size")}: {details.size}
+                    </p>
+                  ) : null}
                   {details.personalization && (
                     <div className="mt-1 space-y-0.5 text-xs text-gray-600">
                       {details.personalization.color && (
@@ -978,7 +1022,7 @@ function OrderSummary({
                   )}
                 </div>
                 <p className="text-sm font-semibold text-gray-900">
-                  {formatCurrency(details.price * details.quantity)}
+                  {formatCurrency(details.unitPrice * details.quantity)}
                 </p>
               </div>
             );
@@ -1058,7 +1102,7 @@ export default function CheckoutPage() {
       customerEmail: user?.email ?? "",
       phone: user?.phone ?? "",
       deliveryType: "pickup",
-      pickupDateTime: "",
+      pickupDate: "",
       address: user?.address ?? createEmptyAddressFields(),
       courierCityId: null,
     } as CheckoutDetailsFormValues,
@@ -1080,7 +1124,7 @@ export default function CheckoutPage() {
       : "skip",
   );
   const deliveryType = form.watch("deliveryType");
-  const pickupDateTime = form.watch("pickupDateTime") ?? "";
+  const pickupDate = form.watch("pickupDate") ?? "";
   const selectedCourierCityId = form.watch("courierCityId") ?? null;
   const customerName = form.watch("customerName");
   const customerEmail = form.watch("customerEmail");
@@ -1260,6 +1304,7 @@ export default function CheckoutPage() {
         return {
           productId: item.productId,
           quantity: item.quantity,
+          variant: item.variant?.size ? { size: item.variant.size } : undefined,
           personalization: item.personalization,
         } satisfies CheckoutItemInput;
       }
@@ -1267,6 +1312,7 @@ export default function CheckoutPage() {
       return {
         productId: item.productId as Id<"products">,
         quantity: item.quantity,
+        variant: item.variant?.size ? { size: item.variant.size } : undefined,
         personalization: item.personalization,
       } satisfies CheckoutItemInput;
     });
@@ -1277,10 +1323,11 @@ export default function CheckoutPage() {
       items: checkoutItems.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
+        variant: item.variant ?? null,
         personalization: item.personalization ?? null,
       })),
       deliveryType,
-      pickupDateTime,
+      pickupDate,
       address: shippingAddress,
       email: customerEmail,
       name: customerName,
@@ -1290,7 +1337,7 @@ export default function CheckoutPage() {
   }, [
     checkoutItems,
     deliveryType,
-    pickupDateTime,
+    pickupDate,
     customerEmail,
     customerName,
     total,
@@ -1304,8 +1351,8 @@ export default function CheckoutPage() {
       shouldValidate: true,
     });
     if (type === "delivery") {
-      // Keep pickupDateTime for delivery, just trigger validation
-      form.trigger("pickupDateTime");
+      // Keep pickupDate for delivery, just trigger validation
+      form.trigger("pickupDate");
       if (!form.getValues("courierCityId")) {
         const currentAddress =
           form.getValues("address") ?? createEmptyAddressFields();
@@ -1357,7 +1404,7 @@ export default function CheckoutPage() {
     const currentCustomerName = (formValues.customerName || "").trim();
     const currentCustomerEmail = (formValues.customerEmail || "").trim();
     const currentDeliveryType = formValues.deliveryType;
-    const currentPickupDateTime = (formValues.pickupDateTime || "").trim();
+    const currentPickupDate = (formValues.pickupDate || "").trim();
 
     const itemsList = (itemsToDisplay ?? []).map((item) => {
       const name = isServerCartItem(item)
@@ -1373,7 +1420,7 @@ export default function CheckoutPage() {
       currentCustomerEmail,
       composeAddress(currentShippingAddress),
       currentDeliveryType,
-      currentPickupDateTime,
+      currentPickupDate,
       itemsList,
       Math.round(total * 100) / 100,
     );
@@ -1451,7 +1498,10 @@ export default function CheckoutPage() {
     const currentCustomerEmail = (formValues.customerEmail || "").trim();
     const _currentPhone = (formValues.phone || "").trim();
     const currentDeliveryType = formValues.deliveryType;
-    const currentPickupDateTime = (formValues.pickupDateTime || "").trim();
+    const currentPickupDate = (formValues.pickupDate || "").trim();
+    const derivedPickupDateTime = currentPickupDate
+      ? buildPickupDateTimeISO(currentPickupDate, currentDeliveryType)
+      : null;
 
     setIsCashSubmitting(true);
     try {
@@ -1466,7 +1516,7 @@ export default function CheckoutPage() {
           paymentMethod,
           whatsappConfirmed:
             paymentMethod === "cash" ? whatsappConfirmed : undefined,
-          pickupDateTime: currentPickupDateTime || undefined,
+          pickupDateTime: derivedPickupDateTime || undefined,
         });
       } else {
         orderId = await createGuestOrder({
@@ -1477,10 +1527,14 @@ export default function CheckoutPage() {
           paymentMethod,
           whatsappConfirmed:
             paymentMethod === "cash" ? whatsappConfirmed : undefined,
-          pickupDateTime: currentPickupDateTime || undefined,
+          pickupDateTime: derivedPickupDateTime || undefined,
           items: guestItems.map((item) => ({
             productId: item.productId as Id<"products">,
             quantity: item.quantity,
+            variant: item.variant?.size
+              ? { size: item.variant.size }
+              : undefined,
+            personalization: item.personalization,
           })),
         });
         clearGuestCart();
@@ -1567,17 +1621,21 @@ export default function CheckoutPage() {
       const currentCustomerEmail = (formValues.customerEmail || "").trim();
       const currentPhone = (formValues.phone || "").trim();
       const currentDeliveryType = formValues.deliveryType;
-      const currentPickupDateTime = (formValues.pickupDateTime || "").trim();
+      const currentPickupDate = (formValues.pickupDate || "").trim();
+      const derivedPickupDateTime = currentPickupDate
+        ? buildPickupDateTimeISO(currentPickupDate, currentDeliveryType)
+        : null;
 
       // Recalculate cart signature with current form values to ensure data integrity
       const currentCartSignature = JSON.stringify({
         items: checkoutItems.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
+          variant: item.variant ?? null,
           personalization: item.personalization ?? null,
         })),
         deliveryType: currentDeliveryType,
-        pickupDateTime: currentPickupDateTime,
+        pickupDate: currentPickupDate,
         address: currentShippingAddress,
         email: currentCustomerEmail,
         name: currentCustomerName,
@@ -1596,7 +1654,7 @@ export default function CheckoutPage() {
           shipping: {
             address: currentShippingAddress,
             deliveryType: currentDeliveryType,
-            pickupDateTime: currentPickupDateTime || undefined,
+            pickupDateTime: derivedPickupDateTime || undefined,
             deliveryFee: deliveryCost || undefined,
           },
           paymentCurrency: PAYMENT_CURRENCY,
@@ -2007,16 +2065,13 @@ function StepOne({
           </div>
           <FormField
             control={form.control}
-            name="pickupDateTime"
+            name="pickupDate"
             render={({ field }) => {
               const isDelivery = deliveryType === "delivery";
-              const minDateTime = isDelivery
-                ? getMinDeliveryDateTime()
-                : getMinPickupDateTime();
-              const maxDateTime = isDelivery
-                ? getMaxDeliveryDateTime()
-                : getMaxPickupDateTime();
-              const minDate = new Date(minDateTime);
+              const minDate = getMinPickupDate(deliveryType);
+              const maxDate = getMaxPickupDate();
+              const minDateObj = new Date(`${minDate}T00:00:00`);
+              const maxDateObj = new Date(`${maxDate}T23:59:59`);
 
               const validateAndSetValue = (value: string) => {
                 if (!value) {
@@ -2024,71 +2079,29 @@ function StepOne({
                   return;
                 }
 
-                const selectedDate = new Date(value);
-
-                // If selected date is before minimum, set to minimum
-                if (selectedDate < minDate) {
-                  field.onChange(minDateTime);
-                  // Trigger validation to show error message
+                const parsed = parseDateInput(value);
+                if (!parsed) {
+                  field.onChange(value);
                   setTimeout(() => {
-                    form.trigger("pickupDateTime");
+                    form.trigger("pickupDate");
                   }, 0);
                   return;
                 }
 
-                // For delivery, validate time constraints strictly
-                if (isDelivery) {
-                  const selectedHour = selectedDate.getHours();
-                  const selectedMinutes = selectedDate.getMinutes();
+                if (parsed < minDateObj) {
+                  field.onChange(minDate);
+                  setTimeout(() => {
+                    form.trigger("pickupDate");
+                  }, 0);
+                  return;
+                }
 
-                  // Check if hour is outside allowed range
-                  if (
-                    selectedHour < STORE_INFO.delivery.minDeliveryHour ||
-                    selectedHour > STORE_INFO.delivery.maxDeliveryHour
-                  ) {
-                    // Adjust to valid time range
-                    const adjustedDate = new Date(selectedDate);
-                    if (selectedHour < STORE_INFO.delivery.minDeliveryHour) {
-                      adjustedDate.setHours(
-                        STORE_INFO.delivery.minDeliveryHour,
-                        0,
-                        0,
-                        0,
-                      );
-                    } else if (
-                      selectedHour > STORE_INFO.delivery.maxDeliveryHour
-                    ) {
-                      adjustedDate.setHours(
-                        STORE_INFO.delivery.maxDeliveryHour,
-                        0,
-                        0,
-                        0,
-                      );
-                    }
-                    field.onChange(adjustedDate.toISOString().slice(0, 16));
-                    setTimeout(() => {
-                      form.trigger("pickupDateTime");
-                    }, 0);
-                    return;
-                  }
-                  // If hour is exactly maxDeliveryHour, ensure minutes are 0
-                  else if (
-                    selectedHour === STORE_INFO.delivery.maxDeliveryHour &&
-                    selectedMinutes > 0
-                  ) {
-                    const adjustedDate = new Date(selectedDate);
-                    adjustedDate.setHours(
-                      STORE_INFO.delivery.maxDeliveryHour,
-                      0,
-                      0,
-                      0,
-                    );
-                    field.onChange(adjustedDate.toISOString().slice(0, 16));
-                    setTimeout(() => {
-                      form.trigger("pickupDateTime");
-                    }, 0);
-                    return;
-                  }
+                if (parsed > maxDateObj) {
+                  field.onChange(maxDate);
+                  setTimeout(() => {
+                    form.trigger("pickupDate");
+                  }, 0);
+                  return;
                 }
 
                 field.onChange(value);
@@ -2109,27 +2122,30 @@ function StepOne({
                 <FormItem className="mt-4 flex flex-col gap-2">
                   <FormLabel className="text-sm font-medium text-gray-700">
                     {isDelivery
-                      ? t("delivery.preferredDeliveryDateTime")
-                      : t("delivery.preferredPickupDateTime")}{" "}
+                      ? t("delivery.preferredDeliveryDate")
+                      : t("delivery.preferredPickupDate")}{" "}
                     (
                     {t("delivery.daysAheadMinimum", {
                       count: STORE_INFO.orderPolicy.minPickupDays,
                     })}
                     )
-                    {isDelivery &&
-                      ` ${STORE_INFO.delivery.minDeliveryHour}:00-${STORE_INFO.delivery.maxDeliveryHour}:00`}
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      type="datetime-local"
-                      min={minDateTime}
-                      max={maxDateTime}
+                      type="date"
+                      min={minDate}
+                      max={maxDate}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       className="rounded-xl border-gray-200 px-4 py-3 text-base"
                     />
                   </FormControl>
+                  <p className="text-xs text-gray-500">
+                    {t("delivery.preorderMinimumNotice", {
+                      hours: STORE_INFO.orderPolicy.preparationTime,
+                    })}
+                  </p>
                   <FormMessage />
                 </FormItem>
               );

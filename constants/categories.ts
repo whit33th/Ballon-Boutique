@@ -27,6 +27,12 @@ export const BALLOON_SUBCATEGORIES: readonly CategoryDescriptor[] = [
   { value: "Any Event", label: "Any Event" },
 ] as const;
 
+export const MINI_SET_SUBCATEGORIES: readonly CategoryDescriptor[] = [
+  { value: "Mini Sets · For Kids", label: "For Kids" },
+  { value: "Mini Sets · For Him", label: "For Him" },
+  { value: "Mini Sets · For Her", label: "For Her" },
+] as const;
+
 const BOUQUET_CATEGORY_VALUES = [
   "For Kids Boys",
   "For Kids Girls",
@@ -69,12 +75,13 @@ export const PRODUCT_CATEGORY_GROUPS: readonly CategoryGroup[] = [
     label: "Mini Sets",
     icon: "/imgs/categories/mini-sets-new.webp",
     categoryValue: "Mini Sets",
-    subcategories: [],
+    subcategories: MINI_SET_SUBCATEGORIES,
   },
 ] as const;
 
 export const PRODUCT_CATEGORIES = [
   ...BALLOON_SUBCATEGORIES.map((subcategory) => subcategory.value),
+  ...MINI_SET_SUBCATEGORIES.map((subcategory) => subcategory.value),
   "Balloon Bouquets",
   "Mini Sets",
 ] as const;
@@ -84,10 +91,8 @@ export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
 export const CATEGORY_TO_GROUP: Record<string, CategoryGroupValue> =
   PRODUCT_CATEGORY_GROUPS.reduce(
     (acc, group) => {
-      if (group.subcategories.length === 0) {
-        const key = group.categoryValue ?? group.label;
-        acc[key] = group.value;
-      }
+      const key = group.categoryValue ?? group.label;
+      acc[key] = group.value;
       for (const subcategory of group.subcategories) {
         acc[subcategory.value] = group.value;
       }

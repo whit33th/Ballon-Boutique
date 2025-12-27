@@ -15,6 +15,11 @@ type Personalization = {
   number?: string;
 };
 
+type Variant = {
+  size: string;
+  unitPrice: number;
+};
+
 type CartItemDoc = Doc<"cartItems">;
 
 type CartItemResponse = {
@@ -24,6 +29,7 @@ type CartItemResponse = {
   productId: Id<"products">;
   quantity: number;
   personalization?: Personalization;
+  variant?: Variant;
   personalizationSignature: string;
   product: ProductWithImage;
 };
@@ -39,6 +45,12 @@ const cartItemResponseValidator = v.object({
       text: v.optional(v.string()),
       color: v.optional(v.string()),
       number: v.optional(v.string()),
+    }),
+  ),
+  variant: v.optional(
+    v.object({
+      size: v.string(),
+      unitPrice: v.number(),
     }),
   ),
   personalizationSignature: v.string(),
@@ -69,15 +81,29 @@ const normalizePersonalization = (
 
 const buildPersonalizationSignature = (
   personalization?: Personalization,
+  variant?: Variant,
 ): string => {
-  if (!personalization) {
+  if (!personalization && !variant) {
     return PERSONALIZATION_NONE;
   }
 
+  // Backwards-compatible: keep the legacy shape when no variant is present.
+  if (!variant) {
+    return JSON.stringify({
+      text: personalization?.text ?? null,
+      color: personalization?.color ?? null,
+      number: personalization?.number ?? null,
+    });
+  }
+
   return JSON.stringify({
-    text: personalization.text ?? null,
-    color: personalization.color ?? null,
-    number: personalization.number ?? null,
+    variant: {
+      size: variant.size,
+      unitPrice: variant.unitPrice,
+    },
+    text: personalization?.text ?? null,
+    color: personalization?.color ?? null,
+    number: personalization?.number ?? null,
   });
 };
 
@@ -92,12 +118,54 @@ const isSamePersonalization = (
 
 const resolvePersonalizationSignature = (
   personalization: Personalization | undefined,
+  variant: Variant | undefined,
   signature?: string,
 ) => {
   if (signature) {
     return signature;
   }
-  return buildPersonalizationSignature(personalization);
+  return buildPersonalizationSignature(personalization, variant);
+};
+
+const normalizeVariantSize = (size?: string): string | undefined => {
+  const trimmed = size?.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const resolveVariantForProduct = (
+  product: Doc<"products">,
+  variantSize?: string,
+): Variant | undefined => {
+  const normalizedSize = normalizeVariantSize(variantSize);
+  const sizes = (product.miniSetSizes ?? []) as Array<{
+    label: string;
+    price: number;
+  }>;
+
+  if (sizes.length === 0) {
+    if (normalizedSize) {
+      throw new Error("Variant size is not supported for this product");
+    }
+    return undefined;
+  }
+
+  if (!normalizedSize) {
+    throw new Error("Please select a size for this mini-set");
+  }
+
+  const match = sizes.find(
+    (entry) =>
+      entry.label.trim().toLowerCase() === normalizedSize.toLowerCase(),
+  );
+
+  if (!match) {
+    throw new Error("Selected size is not available");
+  }
+
+  return {
+    size: match.label.trim(),
+    unitPrice: match.price,
+  };
 };
 
 const mergeDuplicateCartItems = async (
@@ -165,6 +233,7 @@ const findCartItemBySignature = async (
     );
     const legacySignature = resolvePersonalizationSignature(
       normalizedLegacy,
+      undefined,
       item.personalizationSignature,
     );
 
@@ -202,6 +271,7 @@ const incrementCartItem = async (
   productId: Id<"products">,
   delta: number,
   personalization?: Personalization,
+  variantSize?: string,
 ) => {
   ensurePositiveInteger(delta);
 
@@ -210,8 +280,16 @@ const incrementCartItem = async (
     throw new Error("Product not found");
   }
 
+  const resolvedVariant = resolveVariantForProduct(
+    product as Doc<"products">,
+    variantSize,
+  );
+
   const normalizedPersonalization = normalizePersonalization(personalization);
-  const signature = buildPersonalizationSignature(normalizedPersonalization);
+  const signature = buildPersonalizationSignature(
+    normalizedPersonalization,
+    resolvedVariant,
+  );
 
   const existingItem = await findCartItemBySignature(
     ctx,
@@ -231,6 +309,7 @@ const incrementCartItem = async (
     await ctx.db.patch(existingItem._id, {
       quantity: newQuantity,
       personalization: normalizedPersonalization,
+      variant: resolvedVariant,
       personalizationSignature: signature,
     });
   } else {
@@ -239,6 +318,7 @@ const incrementCartItem = async (
       productId,
       quantity: newQuantity,
       personalization: normalizedPersonalization,
+      variant: resolvedVariant,
       personalizationSignature: signature,
     });
   }
@@ -283,6 +363,7 @@ export const list = query({
         personalization: normalizedPersonalization,
         personalizationSignature: resolvePersonalizationSignature(
           normalizedPersonalization,
+          (item.variant as Variant | undefined) ?? undefined,
           item.personalizationSignature,
         ),
         product: productWithImage,
@@ -297,6 +378,11 @@ export const add = mutation({
   args: {
     productId: v.id("products"),
     quantity: v.number(),
+    variant: v.optional(
+      v.object({
+        size: v.string(),
+      }),
+    ),
     personalization: v.optional(
       v.object({
         text: v.optional(v.string()),
@@ -314,6 +400,7 @@ export const add = mutation({
       args.productId,
       args.quantity,
       args.personalization,
+      args.variant?.size,
     );
     return null;
   },
@@ -393,6 +480,11 @@ export const importGuestItems = mutation({
       v.object({
         productId: v.id("products"),
         quantity: v.number(),
+        variant: v.optional(
+          v.object({
+            size: v.string(),
+          }),
+        ),
         personalization: v.optional(
           v.object({
             text: v.optional(v.string()),
@@ -422,6 +514,7 @@ export const importGuestItems = mutation({
         item.productId,
         item.quantity,
         item.personalization as Personalization | undefined,
+        item.variant?.size,
       );
     }
 
@@ -463,7 +556,9 @@ export const getTotal = query({
         continue;
       }
 
-      total += product.price * item.quantity;
+      const unitPrice =
+        (item.variant as Variant | undefined)?.unitPrice ?? product.price;
+      total += unitPrice * item.quantity;
       itemCount += item.quantity;
     }
 

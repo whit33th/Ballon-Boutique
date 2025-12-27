@@ -2,7 +2,7 @@
 
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type FieldErrors,
   type UseFormReturn,
@@ -55,8 +55,24 @@ export function createProductFormSchema(t: (key: string) => string) {
           const numeric = Number(raw.replace(",", "."));
           return !Number.isNaN(numeric) && numeric >= 0;
         }, t("validation.priceInvalid")),
+      miniSetSizes: z
+        .array(
+          z.object({
+            label: z.string().min(1, t("validation.sizeLabelRequired")),
+            price: z
+              .string()
+              .min(1, t("validation.sizePriceRequired"))
+              .refine((raw) => {
+                const numeric = Number(raw.replace(",", "."));
+                return !Number.isNaN(numeric) && numeric >= 0;
+              }, t("validation.sizePriceInvalid")),
+          }),
+        )
+        .default([]),
       categoryGroup: z.string().min(1, t("validation.groupRequired")),
-      categories: z.array(z.string()).min(1, t("validation.categoriesRequired")),
+      categories: z
+        .array(z.string())
+        .min(1, t("validation.categoriesRequired")),
       inStock: z.boolean(),
       isPersonalizable: z
         .object({
@@ -74,6 +90,14 @@ export function createProductFormSchema(t: (key: string) => string) {
           message: t("validation.categoriesRequired"),
         });
       }
+
+      if (data.categoryGroup !== "mini-sets" && data.miniSetSizes.length > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["miniSetSizes"],
+          message: t("validation.sizesOnlyForMiniSets"),
+        });
+      }
     });
 }
 
@@ -89,6 +113,20 @@ export const productFormSchema = z
         const numeric = Number(raw.replace(",", "."));
         return !Number.isNaN(numeric) && numeric >= 0;
       }, "Некорректная цена"),
+    miniSetSizes: z
+      .array(
+        z.object({
+          label: z.string().min(1, "Укажите размер"),
+          price: z
+            .string()
+            .min(1, "Укажите цену для размера")
+            .refine((raw) => {
+              const numeric = Number(raw.replace(",", "."));
+              return !Number.isNaN(numeric) && numeric >= 0;
+            }, "Некорректная цена"),
+        }),
+      )
+      .default([]),
     categoryGroup: z.string().min(1, "Выберите группу"),
     categories: z.array(z.string()).min(1, "Добавьте хотя бы одну категорию"),
     inStock: z.boolean(),
@@ -108,9 +146,19 @@ export const productFormSchema = z
         message: "Добавьте хотя бы одну категорию",
       });
     }
+
+    if (data.categoryGroup !== "mini-sets" && data.miniSetSizes.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["miniSetSizes"],
+        message: "Размеры доступны только для мини-сетов",
+      });
+    }
   });
 
-export type ProductFormValues = z.infer<ReturnType<typeof createProductFormSchema>>;
+export type ProductFormValues = z.infer<
+  ReturnType<typeof createProductFormSchema>
+>;
 
 interface ProductFormProps {
   form: UseFormReturn<ProductFormValues>;
@@ -158,6 +206,42 @@ export function ProductForm({
     control: form.control,
     name: "categoryGroup",
   });
+  const miniSetSizes =
+    useWatch({
+      control: form.control,
+      name: "miniSetSizes",
+    }) ?? [];
+
+  const sizesEnabled = categoryGroup === "mini-sets" && miniSetSizes.length > 0;
+
+  useEffect(() => {
+    if (categoryGroup !== "mini-sets") {
+      if (miniSetSizes.length > 0) {
+        form.setValue("miniSetSizes", [], { shouldDirty: true });
+      }
+      return;
+    }
+
+    if (!sizesEnabled) {
+      return;
+    }
+
+    const numericPrices = miniSetSizes
+      .map((entry) => Number(String(entry.price ?? "").replace(",", ".")))
+      .filter((value) => Number.isFinite(value) && value >= 0);
+    if (numericPrices.length === 0) {
+      return;
+    }
+    const min = Math.min(...numericPrices);
+    const current = Number(
+      String(form.getValues("price") ?? "").replace(",", "."),
+    );
+    if (!Number.isFinite(current) || current !== min) {
+      form.setValue("price", String(min), { shouldDirty: true });
+    }
+  }, [categoryGroup, form, miniSetSizes, sizesEnabled]);
+
+  const sizeRows = useMemo(() => miniSetSizes, [miniSetSizes]);
 
   const currentGroup = PRODUCT_CATEGORY_GROUPS.find(
     (item) => item.value === (categoryGroup as CategoryGroupValue),
@@ -249,6 +333,7 @@ export function ProductForm({
                       step="0.1"
                       min="0"
                       placeholder="6.50"
+                      disabled={sizesEnabled}
                       aria-invalid={fieldState.invalid}
                     />
                   </FormControl>
@@ -256,6 +341,147 @@ export function ProductForm({
                 </FormItem>
               )}
             />
+
+            {categoryGroup === "mini-sets" ? (
+              <div className="md:col-span-2">
+                <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {t("sizeVariantsTitle")}
+                      </p>
+                      <p className="text-xs text-slate-600">
+                        {t("sizeVariantsDescription")}
+                      </p>
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-slate-800">
+                      <input
+                        type="checkbox"
+                        checked={sizesEnabled}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            form.setValue(
+                              "miniSetSizes",
+                              [{ label: "", price: "" }],
+                              { shouldDirty: true },
+                            );
+                          } else {
+                            form.setValue("miniSetSizes", [], {
+                              shouldDirty: true,
+                            });
+                          }
+                        }}
+                        className="accent-accent"
+                      />
+                      {t("enableSizeVariants")}
+                    </label>
+                  </div>
+
+                  {sizesEnabled ? (
+                    <div className="mt-4 grid gap-3">
+                      {sizeRows.map((_, index) => (
+                        <div
+                          key={index}
+                          className="grid gap-3 md:grid-cols-[1fr_180px_auto]"
+                        >
+                          <FormField
+                            control={form.control}
+                            name={`miniSetSizes.${index}.label` as never}
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">
+                                  {t("sizeLabel")}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    className="px-2.5"
+                                    placeholder="S / M / L"
+                                    aria-invalid={fieldState.invalid}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`miniSetSizes.${index}.price` as never}
+                            render={({ field, fieldState }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">
+                                  {t("sizePrice")}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    className="px-2.5"
+                                    type="number"
+                                    inputMode="decimal"
+                                    step="0.1"
+                                    min="0"
+                                    placeholder="6.50"
+                                    aria-invalid={fieldState.invalid}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="flex items-end">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="text-slate-600"
+                              onClick={() => {
+                                const next = miniSetSizes.filter(
+                                  (_entry, i) => i !== index,
+                                );
+                                form.setValue("miniSetSizes", next, {
+                                  shouldDirty: true,
+                                });
+                              }}
+                            >
+                              {t("removeSize")}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+
+                      <div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => {
+                            form.setValue(
+                              "miniSetSizes",
+                              [...miniSetSizes, { label: "", price: "" }],
+                              { shouldDirty: true },
+                            );
+                          }}
+                        >
+                          {t("addSize")}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {sizesEnabled ? (
+                    <FormField
+                      control={form.control}
+                      name={"miniSetSizes"}
+                      render={() => (
+                        <FormItem className="mt-3">
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
 
             <FormField
               control={form.control}

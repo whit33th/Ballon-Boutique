@@ -71,6 +71,7 @@ const buildProductDefaultValues = (): ProductFormValues => ({
   name: "",
   description: "",
   price: "",
+  miniSetSizes: [],
   categoryGroup: DEFAULT_CATEGORY_GROUP.value,
   categories: [...DEFAULT_CATEGORIES],
   inStock: true,
@@ -401,6 +402,10 @@ export default function AdminPageClient({
       name: product.name,
       description: product.description,
       price: String(product.price),
+      miniSetSizes: (product.miniSetSizes ?? []).map((entry) => ({
+        label: entry.label,
+        price: String(entry.price),
+      })),
       categoryGroup: product.categoryGroup,
       categories: product.categories?.length
         ? [...product.categories]
@@ -538,7 +543,23 @@ export default function AdminPageClient({
         });
       }
 
-      const numericPrice = Number(values.price.replace(",", "."));
+      const normalizedMiniSetSizes = (values.miniSetSizes ?? [])
+        .map((entry) => ({
+          label: (entry.label ?? "").trim(),
+          price: Number(String(entry.price ?? "").replace(",", ".")),
+        }))
+        .filter(
+          (entry) =>
+            entry.label.length > 0 &&
+            Number.isFinite(entry.price) &&
+            entry.price >= 0,
+        );
+
+      const numericPrice =
+        values.categoryGroup === "mini-sets" &&
+        normalizedMiniSetSizes.length > 0
+          ? Math.min(...normalizedMiniSetSizes.map((entry) => entry.price))
+          : Number(values.price.replace(",", "."));
       const sanitizedCategories = values.categories
         .map((category) => category.trim())
         .filter((category) => category.length > 0);
@@ -552,6 +573,11 @@ export default function AdminPageClient({
         name: values.name.trim(),
         description: values.description.trim(),
         price: numericPrice,
+        miniSetSizes:
+          values.categoryGroup === "mini-sets" &&
+          normalizedMiniSetSizes.length > 0
+            ? normalizedMiniSetSizes
+            : undefined,
         categoryGroup: values.categoryGroup,
         categories: normalizedCategories,
         imageUrls: [...existingImageUrls, ...uploadedImageUrls],
