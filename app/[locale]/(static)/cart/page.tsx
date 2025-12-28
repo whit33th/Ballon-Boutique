@@ -65,10 +65,11 @@ export default function CartPage() {
             ? JSON.stringify(item.personalization)
             : "none";
           return {
-            _id: `${item.productId}-${personalizationKey}-${index}`,
+            _id: `${item.productId}-${item.variant?.size ?? "no-size"}-${personalizationKey}-${index}`,
             quantity: item.quantity,
             personalization: item.personalization,
             product: item.product,
+            variant: item.variant,
             guestIndex: index, // Save original index for operations
           };
         });

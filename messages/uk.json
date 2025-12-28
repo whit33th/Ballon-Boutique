@@ -144,6 +144,7 @@
     "continueShopping": "Продовжити покупки",
     "items": "{count, plural, =0 {немає товарів} one {# товар} few {# товари} many {# товарів} other {# товарів}}",
     "checkout": "Оформити замовлення",
+    "size": "Розмір",
     "itemRemoved": "Товар видалено з кошика",
     "failedToUpdate": "Не вдалося оновити кількість",
     "failedToRemove": "Не вдалося видалити товар",

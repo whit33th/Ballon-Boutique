@@ -80,13 +80,13 @@ export function OrdersTable({
                       {formatDateTime(order._creationTime)}
                     </div>
                   </td>
-                  <td className="max-w-[220px] px-6 py-4">
+                  <td className="max-w-55 px-6 py-4">
                     <div className="font-medium">{order.customerName}</div>
                     <div className="text-xs text-slate-400">
                       {order.customerEmail}
                     </div>
                   </td>
-                  <td className="max-w-[280px] px-6 py-4 text-sm text-slate-600">
+                  <td className="max-w-70 px-6 py-4 text-sm text-slate-600">
                     {order.items.slice(0, 2).map((item, idx) => (
                       <span key={`${order._id}-${item.productId}-${idx}`}>
                         {item.productName} ×{item.quantity}

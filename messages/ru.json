@@ -144,6 +144,7 @@
     "continueShopping": "Продолжить покупки",
     "items": "{count, plural, =0 {нет товаров} one {# товар} few {# товара} many {# товаров} other {# товаров}}",
     "checkout": "Оформить заказ",
+    "size": "Размер",
     "itemRemoved": "Товар удален из корзины",
     "failedToUpdate": "Не удалось обновить количество",
     "failedToRemove": "Не удалось удалить товар",

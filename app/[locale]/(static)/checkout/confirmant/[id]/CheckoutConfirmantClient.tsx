@@ -10,7 +10,7 @@ import {
   PackageCheck,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode } from "react";
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { getFormattedAddress, STORE_INFO } from "@/constants/config";
 import type { api } from "@/convex/_generated/api";
@@ -52,37 +52,6 @@ export default function CheckoutConfirmantClient({
   const router = useRouter();
 
   const order = usePreloadedQuery(preloadedOrder);
-  const emailSentRef = useRef<string | null>(null);
-
-  // Send confirmation email once when order loads
-  useEffect(() => {
-    if (!order || emailSentRef.current === order._id) return;
-
-    // Mark as sent immediately to prevent duplicate sends
-    emailSentRef.current = order._id;
-
-    // Fire-and-forget email sending
-    fetch("/api/send-order-email", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        orderId: order._id,
-        customerName: order.customerName,
-        customerEmail: order.customerEmail,
-        items: order.items,
-        totalAmount: order.totalAmount,
-        grandTotal: order.grandTotal,
-        deliveryFee: order.deliveryFee,
-        deliveryType: order.deliveryType,
-        paymentMethod: order.paymentMethod,
-        pickupDateTime: order.pickupDateTime,
-        shippingAddress: order.shippingAddress,
-        currency: order.currency,
-      }),
-    }).catch((err) => {
-      console.error("[CheckoutConfirmant] Failed to send confirmation email:", err);
-    });
-  }, [order]);
 
   const handlePrimaryAction = () => router.push("/");
   const _handleSecondaryAction = () => router.push("/profile");
@@ -239,6 +208,17 @@ export default function CheckoutConfirmantClient({
                     {item.productName}
                   </p>
 
+                  {item.variant?.size ? (
+                    <p className="mt-1 text-xs text-gray-600">
+                      <span className="text-[10px] font-semibold text-gray-500">
+                        {tCheckout("common.size")}:
+                      </span>{" "}
+                      <span className="whitespace-nowrap">
+                        {item.variant.size}
+                      </span>
+                    </p>
+                  ) : null}
+
                   {/* Personalization details */}
                   {item.personalization && (
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-gray-600">
@@ -291,7 +271,7 @@ export default function CheckoutConfirmantClient({
                   )}
 
                   <p className="mt-2 text-xs text-gray-500">
-                    Qty: {item.quantity}
+                    {tCommon("quantity")}: {item.quantity}
                   </p>
                 </div>
 
@@ -390,7 +370,10 @@ export default function CheckoutConfirmantClient({
                 const personalization = it.personalization
                   ? `\n  ${tPdf("common.color")}: ${it.personalization.color ?? ""}\n  ${tPdf("common.text")}: ${it.personalization.text ?? ""}\n  ${tPdf("common.number")}: ${it.personalization.number ?? ""}`
                   : "";
-                return `<div style="margin-bottom:8px;"><strong>${it.productName}</strong><br/>${tPdf("common.quantity")}: ${it.quantity}<br/>${tPdf("common.price")}: ${new Intl.NumberFormat("de-AT", { style: "currency", currency }).format(it.price * it.quantity)}<pre style="white-space:pre-wrap;margin:4px 0 0 0;">${personalization}</pre></div>`;
+                const sizeLine = it.variant?.size
+                  ? `<br/>${tPdf("checkout.common.size")}: ${it.variant.size}`
+                  : "";
+                return `<div style="margin-bottom:8px;"><strong>${it.productName}</strong><br/>${tPdf("common.quantity")}: ${it.quantity}${sizeLine}<br/>${tPdf("common.price")}: ${new Intl.NumberFormat("de-AT", { style: "currency", currency }).format(it.price * it.quantity)}<pre style="white-space:pre-wrap;margin:4px 0 0 0;">${personalization}</pre></div>`;
               })
               .join("\n");
 

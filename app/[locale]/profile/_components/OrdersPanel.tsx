@@ -329,6 +329,7 @@ type OrderItem = Doc<"orders">["items"][number];
 
 function OrderItemRow({ item }: { item: OrderItem }) {
   const t = useTranslations("profile.orders");
+  const tCheckoutCommon = useTranslations("checkout.common");
   const product = useQuery(api.products.get, { id: item.productId });
   const colorHex = (() => {
     const colorName = item.personalization?.color;
@@ -367,6 +368,12 @@ function OrderItemRow({ item }: { item: OrderItem }) {
             <p className="text-deep leading-tight font-medium">
               {item.productName}
             </p>
+
+            {item.variant?.size ? (
+              <p className={`text-xs ${palette.mutedText}`}>
+                {tCheckoutCommon("size")}: {item.variant.size}
+              </p>
+            ) : null}
 
             {item.personalization && (
               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">

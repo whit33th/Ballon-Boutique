@@ -28,7 +28,7 @@ import {
   User,
 } from "lucide-react";
 import type { Route } from "next";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { ChangeEvent, FocusEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Resolver, type UseFormReturn, useForm } from "react-hook-form";
@@ -912,10 +912,9 @@ function CourierCityCard({ city, selected, onSelect }: CourierCityCardProps) {
           : "border-gray-200 bg-white"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-gray-900">{city.name}</p>
-          <p className="text-xs text-gray-600">{t("delivery.courier")}</p>
         </div>
         <div className="text-right">
           <p className="text-sm font-semibold text-gray-900">
@@ -1067,6 +1066,7 @@ function OrderSummary({
 
 export default function CheckoutPage() {
   const t = useTranslations("checkout");
+  const locale = useLocale();
   const router = useRouter();
   const user = useQuery(api.auth.loggedInUser);
   const isAuthenticated = Boolean(user);
@@ -1403,21 +1403,31 @@ export default function CheckoutPage() {
     };
     const currentCustomerName = (formValues.customerName || "").trim();
     const currentCustomerEmail = (formValues.customerEmail || "").trim();
+    const currentCustomerPhone = (formValues.phone || "").trim();
     const currentDeliveryType = formValues.deliveryType;
     const currentPickupDate = (formValues.pickupDate || "").trim();
 
     const itemsList = (itemsToDisplay ?? []).map((item) => {
-      const name = isServerCartItem(item)
-        ? item.product.name
-        : item.product.name;
+      const name = item.product.name;
       const quantity = item.quantity;
+      const size = item.variant?.size ?? null;
+      const unitPrice =
+        (isServerCartItem(item)
+          ? item.variant?.unitPrice
+          : item.variant?.unitPrice) ?? item.product.price;
       const personalization = item.personalization ?? null;
-      return { name, quantity, personalization };
+      return { name, quantity, size, unitPrice, personalization };
     });
 
-    const message = WHATSAPP_MESSAGES.orderConfirmationDe(
+    const template =
+      locale === "de"
+        ? WHATSAPP_MESSAGES.orderConfirmationDe
+        : WHATSAPP_MESSAGES.orderConfirmation;
+
+    const message = template(
       currentCustomerName,
       currentCustomerEmail,
+      currentCustomerPhone,
       composeAddress(currentShippingAddress),
       currentDeliveryType,
       currentPickupDate,
@@ -2044,16 +2054,7 @@ function StepOne({
             />
             <OptionCard
               icon={<Truck className="text-secondary h-5 w-5" />}
-              title={`${t("delivery.courierDelivery")} (${t("delivery.hours", {
-                start: String(STORE_INFO.delivery.minDeliveryHour).padStart(
-                  2,
-                  "0",
-                ),
-                end: String(STORE_INFO.delivery.maxDeliveryHour).padStart(
-                  2,
-                  "0",
-                ),
-              })})`}
+              title={t("delivery.courierDelivery")}
               description={
                 selectedCourierCity
                   ? `+${formatCurrency(selectedCourierCity.price)}`

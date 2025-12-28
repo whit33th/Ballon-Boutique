@@ -1,18 +1,34 @@
-import {
-  Body,
-  Column,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Img,
-  Link,
-  Preview,
-  Row,
-  Section,
-  Text,
-} from "@react-email/components";
+// Email templates are disabled/removed from this project.
+
+export interface OrderConfirmationEmailProps {
+  orderId: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{
+    productId: string;
+    productName: string;
+    quantity: number;
+    price: number;
+    variant?: { size: string };
+    personalization?: { text?: string; color?: string; number?: string };
+    productImageUrl?: string | null;
+  }>;
+  totalAmount: number;
+  grandTotal?: number;
+  deliveryFee?: number;
+  deliveryType: "pickup" | "delivery";
+  paymentMethod?: "full_online" | "partial_online" | "cash";
+  pickupDateTime?: string;
+  shippingAddress?: unknown;
+  currency?: string;
+  confirmationUrl: string;
+}
+
+export default function OrderConfirmationEmail(_props: OrderConfirmationEmailProps) {
+  return null;
+}
+
+/*
 
 // Order types matching the Convex schema
 interface OrderItem {
@@ -20,6 +36,9 @@ interface OrderItem {
   productName: string;
   quantity: number;
   price: number;
+  variant?: {
+    size: string;
+  };
   personalization?: {
     text?: string;
     color?: string;
@@ -85,6 +104,7 @@ const t = {
   deliveryFee: "Liefergebühr",
   subtotal: "Zwischensumme",
   quantity: "Menge",
+  size: "Größe",
   color: "Farbe",
   text: "Text",
   number: "Nummer",
@@ -329,7 +349,7 @@ export function OrderConfirmationEmail({
       <Preview>{t.previewText}</Preview>
       <Body style={styles.main}>
         <Container style={styles.container}>
-          {/* Header */}
+          {/* Header * /}
           <Section style={styles.header}>
             <Text style={styles.smallKicker}>{t.checkoutDone}</Text>
             <Img
@@ -356,7 +376,7 @@ export function OrderConfirmationEmail({
             )}
           </Section>
 
-          {/* Order Info */}
+          {/* Order Info * /}
           <Section style={{ padding: "22px 24px" }}>
             <Section style={{ ...styles.section, marginBottom: "18px" }}>
               <Row>
@@ -415,7 +435,7 @@ export function OrderConfirmationEmail({
               </Row>
             </Section>
 
-            {/* Order Items */}
+            {/* Order Items * /}
             <Section style={styles.section}>
               <Text style={styles.sectionTitle}>{t.itemsReserved}</Text>
               {items.map((item, index) => (
@@ -429,6 +449,11 @@ export function OrderConfirmationEmail({
                       <Text style={styles.itemDetail}>
                         {t.quantity}: {item.quantity}
                       </Text>
+                      {item.variant?.size && (
+                        <Text style={styles.itemDetail}>
+                          {t.size}: {item.variant.size}
+                        </Text>
+                      )}
                       {item.personalization?.color && (
                         <Text style={styles.itemDetail}>
                           {t.color}: {item.personalization.color}
@@ -490,7 +515,7 @@ export function OrderConfirmationEmail({
               </Section>
             </Section>
 
-            {/* Delivery Address */}
+            {/* Delivery Address * /}
             <Section style={styles.section}>
               <Text style={styles.sectionTitle}>
                 {deliveryType === "delivery"
@@ -505,7 +530,7 @@ export function OrderConfirmationEmail({
               </Text>
             </Section>
 
-            {/* CTA Button */}
+            {/* CTA Button * /}
             <Section
               style={{
                 textAlign: "center",
@@ -520,7 +545,7 @@ export function OrderConfirmationEmail({
             </Section>
           </Section>
 
-          {/* Footer */}
+          {/* Footer * /}
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
               <strong>{STORE.name}</strong> — {STORE.slogan}
@@ -541,3 +566,5 @@ export function OrderConfirmationEmail({
 }
 
 export default OrderConfirmationEmail;
+
+*/

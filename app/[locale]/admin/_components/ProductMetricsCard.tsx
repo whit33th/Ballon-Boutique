@@ -17,7 +17,7 @@ interface ProductMetricsCardProps {
 
 export function ProductMetricsCard({ metrics }: ProductMetricsCardProps) {
   const t = useTranslations("admin.metrics");
-  
+
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm">
       <div>
@@ -28,14 +28,15 @@ export function ProductMetricsCard({ metrics }: ProductMetricsCardProps) {
           {metrics.total}
         </p>
         <p className="text-xs text-slate-500">
-          {metrics.available} {t("inStock")} · {metrics.outOfStock} {t("outOfStock")}
+          {metrics.available} {t("inStock")} · {metrics.outOfStock}{" "}
+          {t("outOfStock")}
         </p>
       </div>
       <div>
         <p className="text-xs font-semibold text-slate-400 uppercase">
           {t("averagePrice")}
         </p>
-        <p className="mt-1 text-xl font-semibold text-slate-900">
+        <p className="mt-1 max-w-full text-xl font-semibold wrap-break-word whitespace-normal text-slate-900">
           {metrics.total ? formatCurrency(metrics.averagePrice) : "—"}
         </p>
         <p className="text-xs text-slate-500">

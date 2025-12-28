@@ -73,7 +73,7 @@ export const PRODUCT_CATEGORY_GROUPS: readonly CategoryGroup[] = [
   {
     value: "mini-sets",
     label: "Mini Sets",
-    icon: "/imgs/categories/mini-sets-new.webp",
+    icon: "/imgs/categories/mini-sets.webp",
     categoryValue: "Mini Sets",
     subcategories: MINI_SET_SUBCATEGORIES,
   },

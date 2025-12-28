@@ -7,7 +7,6 @@ export function PreferencesPanel() {
   const t = useTranslations('profile.settings.preferences');
   
   const preferenceItems = [
-    { label: t('orderConfirmations'), defaultChecked: true },
     { label: t('shippingUpdates'), defaultChecked: true },
     { label: t('promotionsInspiration'), defaultChecked: false },
     { label: t('restockAlerts'), defaultChecked: false },

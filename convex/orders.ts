@@ -30,6 +30,8 @@ const orderValidator = v.object({
   currency: v.optional(v.string()),
   deliveryFee: v.optional(v.number()),
   grandTotal: v.optional(v.number()),
+  confirmationEmailSendingAt: v.optional(v.number()),
+  confirmationEmailSentAt: v.optional(v.number()),
 });
 
 export const createGuest = mutation({

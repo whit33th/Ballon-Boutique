@@ -52,21 +52,6 @@ export function ProductAddToCartWrapper({
     : null;
   const selectedUnitPrice = selectedVariant?.price ?? product?.price;
 
-  useEffect(() => {
-    if (!hasSizeVariants || !product?.miniSetSizes?.length) {
-      setSelectedSize(null);
-      return;
-    }
-
-    const first = product.miniSetSizes[0];
-    if (!first) {
-      setSelectedSize(null);
-      return;
-    }
-
-    setSelectedSize((prev) => prev ?? first.label);
-  }, [hasSizeVariants, product?.miniSetSizes]);
-
   const handleQuantityChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
       setQuantity(Number(event.target.value));
@@ -183,10 +168,13 @@ export function ProductAddToCartWrapper({
               <span className="tracking-wider uppercase">{t("size")}:</span>
               <select
                 value={selectedSize ?? ""}
-                onChange={(e) => setSelectedSize(e.target.value)}
+                onChange={(e) => setSelectedSize(e.target.value || null)}
                 disabled={!product.inStock}
                 className="border-border text-deep hover:border-secondary focus:border-secondary focus:ring-secondary/20 h-11 rounded-xl border-2 bg-white px-4 text-sm font-semibold transition-colors outline-none focus:ring-2 disabled:opacity-50"
               >
+                <option value="" disabled>
+                  {t("pleaseSelectSize")}
+                </option>
                 {product.miniSetSizes.map((s) => (
                   <option value={s.label} key={s.label}>
                     {s.label} — €{s.price.toFixed(2)}
@@ -215,15 +203,15 @@ export function ProductAddToCartWrapper({
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => void handleAddToCart()}
-            disabled={!product.inStock}
+            disabled={!product.inStock || (hasSizeVariants && !selectedSize)}
             className="focus-visible:border-ring focus-visible:ring-ring/50 bg-accent text-on-accent inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-6 text-sm font-medium whitespace-nowrap transition-[background-color,color,border-color,opacity,filter,transform] duration-200 outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-red-600 aria-invalid:ring-red-600/20 dark:aria-invalid:ring-red-600/40 pointer-coarse:active:scale-[0.99] pointer-coarse:active:brightness-95 pointer-fine:hover:brightness-95 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             {!product.inStock ? t("soldOut") : t("addToCart")}
           </motion.button>
 
-          {hasSizeVariants && typeof selectedUnitPrice === "number" ? (
+          {hasSizeVariants && selectedVariant ? (
             <div className="text-deep text-sm font-semibold tabular-nums">
-              {t("price")}: €{selectedUnitPrice.toFixed(2)}
+              {t("price")}: €{selectedVariant.price.toFixed(2)}
             </div>
           ) : null}
         </div>

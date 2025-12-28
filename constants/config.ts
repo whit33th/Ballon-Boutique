@@ -187,12 +187,15 @@ export const WHATSAPP_MESSAGES = {
   orderConfirmation: (
     customerName: string,
     customerEmail: string,
+    customerPhone: string,
     shippingAddress: string,
     deliveryType: string,
     pickupDateTime?: string,
     items?: Array<{
       name: string;
       quantity: number;
+      size?: string | null;
+      unitPrice?: number | null;
       personalization?: {
         text?: string;
         color?: string;
@@ -203,6 +206,7 @@ export const WHATSAPP_MESSAGES = {
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Самовывоз" : "Доставка";
     const dateTime = pickupDateTime || "не указано";
+    const phoneText = customerPhone?.trim() ? customerPhone.trim() : "не указано";
 
     let itemsText = "";
     if (items?.length) {
@@ -210,7 +214,12 @@ export const WHATSAPP_MESSAGES = {
         "\n\nТовары:\n" +
         items
           .map((it) => {
-            const parts = [`- ${it.name} x${it.quantity}`];
+            const parts = [
+              `- ${it.name}${it.size ? ` (размер: ${it.size})` : ""} x${it.quantity}`,
+            ];
+            if (typeof it.unitPrice === "number") {
+              parts.push(`цена: ${it.unitPrice} EUR`);
+            }
             if (it.personalization) {
               const p = it.personalization;
               if (p.color) parts.push(`цвет: ${p.color}`);
@@ -225,18 +234,21 @@ export const WHATSAPP_MESSAGES = {
     const totalText =
       typeof total === "number" ? `\n\nИтого: ${total} EUR` : "";
 
-    return `Добрый день! Я хочу подтвердить заказ.\n\nИмя: ${customerName}\nEmail: ${customerEmail}\nАдрес: ${shippingAddress}\nСпособ доставки: ${deliveryText}\nДата и время: ${dateTime}${itemsText}${totalText}`;
+    return `Добрый день! Я хочу подтвердить заказ.\n\nИмя: ${customerName}\nEmail: ${customerEmail}\nТелефон: ${phoneText}\nАдрес: ${shippingAddress}\nСпособ доставки: ${deliveryText}\nДата и время: ${dateTime}${itemsText}${totalText}`;
   },
 
   orderConfirmationDe: (
     customerName: string,
     customerEmail: string,
+    customerPhone: string,
     shippingAddress: string,
     deliveryType: string,
     pickupDateTime?: string,
     items?: Array<{
       name: string;
       quantity: number;
+      size?: string | null;
+      unitPrice?: number | null;
       personalization?: {
         text?: string;
         color?: string;
@@ -247,6 +259,7 @@ export const WHATSAPP_MESSAGES = {
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Abholung" : "Lieferung";
     const dateTime = pickupDateTime || "nicht angegeben";
+    const phoneText = customerPhone?.trim() ? customerPhone.trim() : "nicht angegeben";
 
     let itemsText = "";
     if (items?.length) {
@@ -254,7 +267,12 @@ export const WHATSAPP_MESSAGES = {
         "\n\nProdukte:\n" +
         items
           .map((it) => {
-            const parts = [`- ${it.name} x${it.quantity}`];
+            const parts = [
+              `- ${it.name}${it.size ? ` (Größe: ${it.size})` : ""} x${it.quantity}`,
+            ];
+            if (typeof it.unitPrice === "number") {
+              parts.push(`Preis: ${it.unitPrice} EUR`);
+            }
             if (it.personalization) {
               const p = it.personalization;
               if (p.color) parts.push(`Farbe: ${p.color}`);
@@ -269,7 +287,7 @@ export const WHATSAPP_MESSAGES = {
     const totalText =
       typeof total === "number" ? `\n\nGesamt: ${total} EUR` : "";
 
-    return `Guten Tag! Ich möchte meine Bestellung bestätigen.\n\nName: ${customerName}\nEmail: ${customerEmail}\nAdresse: ${shippingAddress}\nLieferart: ${deliveryText}\nDatum und Uhrzeit: ${dateTime}${itemsText}${totalText}`;
+    return `Guten Tag! Ich möchte meine Bestellung bestätigen.\n\nName: ${customerName}\nEmail: ${customerEmail}\nTelefon: ${phoneText}\nAdresse: ${shippingAddress}\nLieferart: ${deliveryText}\nDatum und Uhrzeit: ${dateTime}${itemsText}${totalText}`;
   },
 };
 

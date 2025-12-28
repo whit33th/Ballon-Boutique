@@ -32,6 +32,13 @@ const SUBCATEGORY_IMAGES: Record<string, Record<string, string>> = {
     "for her": "/imgs/subcategories/bouquets/for-her.webp",
     "for him": "/imgs/subcategories/bouquets/for-him.webp",
   },
+  "mini-sets": {
+    "mini sets · for kids": "/imgs/subcategories/mini-sets/mini-sets-kids.webp",
+    "mini sets · for him":
+      "/imgs/subcategories/mini-sets/mini-sets-for-him.webp",
+    "mini sets · for her":
+      "/imgs/subcategories/mini-sets/mini-sets-for-her.webp",
+  },
 };
 
 export default function CategoryCards({ group }: CategoryCardsProps) {
