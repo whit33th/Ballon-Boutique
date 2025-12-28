@@ -206,7 +206,9 @@ export const WHATSAPP_MESSAGES = {
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Самовывоз" : "Доставка";
     const dateTime = pickupDateTime || "не указано";
-    const phoneText = customerPhone?.trim() ? customerPhone.trim() : "не указано";
+    const phoneText = customerPhone?.trim()
+      ? customerPhone.trim()
+      : "не указано";
 
     let itemsText = "";
     if (items?.length) {
@@ -259,7 +261,9 @@ export const WHATSAPP_MESSAGES = {
   ) => {
     const deliveryText = deliveryType === "pickup" ? "Abholung" : "Lieferung";
     const dateTime = pickupDateTime || "nicht angegeben";
-    const phoneText = customerPhone?.trim() ? customerPhone.trim() : "nicht angegeben";
+    const phoneText = customerPhone?.trim()
+      ? customerPhone.trim()
+      : "nicht angegeben";
 
     let itemsText = "";
     if (items?.length) {

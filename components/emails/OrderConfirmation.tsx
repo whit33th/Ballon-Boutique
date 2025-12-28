@@ -24,7 +24,9 @@ export interface OrderConfirmationEmailProps {
   confirmationUrl: string;
 }
 
-export default function OrderConfirmationEmail(_props: OrderConfirmationEmailProps) {
+export default function OrderConfirmationEmail(
+  _props: OrderConfirmationEmailProps,
+) {
   return null;
 }
 

@@ -194,8 +194,8 @@ export default function CheckoutConfirmantClient({
             const colorName = item.personalization?.color;
             const colorHex = colorName
               ? BALLOON_COLORS.find(
-                (c) => c.name.toLowerCase() === colorName.toLowerCase(),
-              )?.hex
+                  (c) => c.name.toLowerCase() === colorName.toLowerCase(),
+                )?.hex
               : undefined;
 
             return (
@@ -357,12 +357,12 @@ export default function CheckoutConfirmantClient({
                   : "—";
             const pickupWindowForPrint = order.pickupDateTime
               ? new Date(order.pickupDateTime).toLocaleString("de-AT", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
               : "";
 
             const lines = order.items
@@ -389,10 +389,11 @@ export default function CheckoutConfirmantClient({
                   ${customerPhone ? `<div>${tPdf("common.phone")}: ${customerPhone}</div>` : ""}
                   <div>${tPdf("checkoutConfirmant.delivery")}: ${shippingAddressForPrint}</div>
                   ${paymentLabel ? `<div>${tPdf("checkoutConfirmant.payment")}: ${paymentLabel}</div>` : ""}
-                  ${pickupWindowForPrint
-                ? `<div>${order.deliveryType === "delivery" ? tPdf("checkoutConfirmant.deliveryWindow") : tPdf("checkoutConfirmant.pickupWindow")}: ${pickupWindowForPrint}</div>`
-                : ""
-              }
+                  ${
+                    pickupWindowForPrint
+                      ? `<div>${order.deliveryType === "delivery" ? tPdf("checkoutConfirmant.deliveryWindow") : tPdf("checkoutConfirmant.pickupWindow")}: ${pickupWindowForPrint}</div>`
+                      : ""
+                  }
                   <hr/>
                   
                   ${lines}

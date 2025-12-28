@@ -1,15 +1,15 @@
 "use client";
 
-import { useTranslations } from 'next-intl';
+import { useTranslations } from "next-intl";
 import { palette } from "./palette";
 
 export function PreferencesPanel() {
-  const t = useTranslations('profile.settings.preferences');
-  
+  const t = useTranslations("profile.settings.preferences");
+
   const preferenceItems = [
-    { label: t('shippingUpdates'), defaultChecked: true },
-    { label: t('promotionsInspiration'), defaultChecked: false },
-    { label: t('restockAlerts'), defaultChecked: false },
+    { label: t("shippingUpdates"), defaultChecked: true },
+    { label: t("promotionsInspiration"), defaultChecked: false },
+    { label: t("restockAlerts"), defaultChecked: false },
   ];
 
   return (
