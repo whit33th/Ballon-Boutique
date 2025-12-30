@@ -14,14 +14,8 @@ import { balloonColors } from "../ProductGrid";
 
 type ProductTag = "new" | "bestseller";
 
-type ProductCardProduct = Doc<"products"> & {
-  primaryImageUrl: string | null;
-  imageUrls: string[];
-  tags?: ProductTag[];
-};
-
 interface ProductCardProps {
-  product: ProductCardProduct;
+  product: Doc<"products">;
   index: number;
   transitionGroups?: string[];
   imageSizes?: string;
@@ -43,9 +37,8 @@ export default function ProductCard({
       ? transitionGroups.map((group) => `product-image-${group}-${product._id}`)
       : [`product-image-${product._id}`];
 
-  const displayImage = product.primaryImageUrl ?? product.imageUrls[0] ?? null;
+  const displayImage = product.imageUrls[0] ?? null;
 
-  const tags: ProductTag[] = product.tags ?? [];
   const formattedPrice = useMemo(() => {
     const sizes = (product as { miniSetSizes?: { price: number }[] })
       .miniSetSizes;
@@ -105,51 +98,37 @@ export default function ProductCard({
           className="relative aspect-3/4 w-full"
           style={{ backgroundColor: bgColor }}
         >
-          {displayImage ? (
-            transitionNames.reduceRight<ReactNode>(
-              (child, name) => (
-                <ViewTransition key={name} name={name}>
-                  {child}
-                </ViewTransition>
-              ),
-              (
-                <Image
-                  src={displayImage}
-                  alt={product.name}
-                  fill
-                  className="aspect-3/4 h-full w-full object-cover"
-                  transformation={DEFAULT_PRODUCT_IMAGE_TRANSFORMATION}
-                  sizes={
-                    imageSizes ??
-                    "(max-width: 720px) 50vw, (min-width: 965px) 33vw, (min-width: 1200px) 25vw, (min-width: 1440px) 20vw, (min-width: 1680px) 17vw, 400px "
-                  }
-                  style={placeholderStyle}
-                  onLoad={() => {
-                    setShowPlaceholder(false);
-                  }}
-                />
-              ) as ReactNode,
-            )
-          ) : (
-            <div className="bg-card flex h-full w-full items-center justify-center text-xs tracking-wide text-black/60 uppercase">
-              {product.name}
-            </div>
-          )}
+          {product.imageUrls[0]
+            ? transitionNames.reduceRight<ReactNode>(
+                (child, name) => (
+                  <ViewTransition key={name} name={name}>
+                    {child}
+                  </ViewTransition>
+                ),
+                (
+                  <Image
+                    src={product.imageUrls[0]}
+                    alt={product.name}
+                    fill
+                    className="aspect-3/4 h-full w-full object-cover"
+                    transformation={DEFAULT_PRODUCT_IMAGE_TRANSFORMATION}
+                    sizes={
+                      imageSizes ??
+                      "(max-width: 720px) 50vw, (min-width: 965px) 33vw, (min-width: 1200px) 25vw, (min-width: 1440px) 20vw, (min-width: 1680px) 17vw, 400px "
+                    }
+                    style={placeholderStyle}
+                    onLoad={() => {
+                      setShowPlaceholder(false);
+                    }}
+                  />
+                ) as ReactNode,
+              )
+            : null}
         </div>
 
         {/* Product Info */}
-        <div className="border-foreground relative flex flex-col gap-1 border-t px-4 py-3">
-          <div className="flex flex-wrap gap-1">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-primary/20 rounded-full py-0.5 pr-2 text-xs font-medium tracking-wide text-red-500/90 uppercase"
-              >
-                {tag === "new" ? "New" : "Bestseller"}
-              </span>
-            ))}
-          </div>
-          <h3 className="text-sm leading-tight wrap-break-word">
+        <div className="border-foreground relative flex h-full flex-col justify-between gap-1 border-t px-4 py-3">
+          <h3 className="line-clamp-2 text-sm leading-tight wrap-break-word">
             {product.name}
           </h3>
           <span className="text-sm font-semibold">{formattedPrice}</span>

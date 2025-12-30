@@ -101,6 +101,7 @@
     "shopBy": "Магазин по",
     "category": "Категории",
     "collections": "коллекций",
+    "collectionsCount": "{count, plural, one {# коллекция} few {# коллекции} many {# коллекций} other {# коллекции}}",
     "viewCollection": "Посмотреть коллекцию",
     "allProducts": "Все товары",
     "viewAllItems": "Посмотреть все товары",

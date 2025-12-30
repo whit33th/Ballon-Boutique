@@ -72,12 +72,12 @@ export async function CategorySection() {
 
                 {/* Category Info */}
                 <div className="border-foreground relative flex flex-col gap-0.5 border-t px-3 py-2 sm:gap-1 sm:px-4 sm:py-3">
-                  <h3 className="text-xs leading-tight font-semibold sm:text-sm">
+                  <h3 className="text-sm leading-tight font-semibold">
                     {tCatalog(`categoryGroups.${group.value}`)}
                   </h3>
-                  <span className="text-[10px] font-medium text-[rgba(var(--deep-rgb),0.70)] sm:text-xs">
+                  <span className="text-xs font-medium text-[rgba(var(--deep-rgb),0.70)]">
                     {hasSubcategories
-                      ? `${collectionsCount} ${t("collections")}`
+                      ? t("collectionsCount", { count: collectionsCount })
                       : t("viewCollection")}
                   </span>
                 </div>
@@ -107,10 +107,10 @@ export async function CategorySection() {
             </div>
 
             <div className="border-foreground relative flex flex-col gap-0.5 border-t px-3 py-2 sm:gap-1 sm:px-4 sm:py-3">
-              <h3 className="text-xs leading-tight font-semibold sm:text-sm">
+              <h3 className="text-sm leading-tight font-semibold">
                 {t("allProducts")}
               </h3>
-              <span className="text-[10px] font-medium text-[rgba(var(--deep-rgb),0.70)] sm:text-xs">
+              <span className="text-xs font-medium text-[rgba(var(--deep-rgb),0.70)]">
                 {t("viewAllItems")}
               </span>
             </div>

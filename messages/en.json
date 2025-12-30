@@ -101,6 +101,7 @@
     "shopBy": "Shop by",
     "category": "Category",
     "collections": "collections",
+    "collectionsCount": "{count, plural, one {# collection} other {# collections}}",
     "viewCollection": "View collection",
     "allProducts": "All Products",
     "viewAllItems": "View all items",

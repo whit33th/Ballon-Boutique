@@ -101,6 +101,7 @@
     "shopBy": "Магазин за",
     "category": "Категорії",
     "collections": "колекцій",
+    "collectionsCount": "{count, plural, one {# колекція} few {# колекції} many {# колекцій} other {# колекції}}",
     "viewCollection": "Переглянути колекцію",
     "allProducts": "Всі товари",
     "viewAllItems": "Переглянути всі товари",
