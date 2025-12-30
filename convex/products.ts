@@ -109,7 +109,7 @@ const CATEGORY_GROUP_MAP: Record<
   string,
   { group: CategoryGroupValue; category: string }
 > = {
-  "for kids": { group: "balloons", category: "For Kids Boys" },
+  "for kids": { group: "balloons", category: "For Kids" },
   "for kids boys": { group: "balloons", category: "For Kids Boys" },
   "for kids girls": { group: "balloons", category: "For Kids Girls" },
   "for her": { group: "balloons", category: "For Her" },
@@ -655,7 +655,15 @@ export const list = query({
     const filtered = allProducts.filter((product) => {
       if (category) {
         const categories = getProductCategories(product);
-        const hasCategory = categories.some((value) => value === category);
+        const hasCategory =
+          category === "For Kids"
+            ? categories.some(
+                (value) =>
+                  value === "For Kids" ||
+                  value === "For Kids Boys" ||
+                  value === "For Kids Girls",
+              )
+            : categories.some((value) => value === category);
         if (!hasCategory) {
           return false;
         }

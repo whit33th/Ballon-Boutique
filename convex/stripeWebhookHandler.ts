@@ -71,7 +71,7 @@ export const handleStripeWebhookEvent = internalAction({
       switch (event.type) {
         case "payment_intent.succeeded": {
           const intent = event.data.object as Stripe.PaymentIntent;
-          const result = await ctx.runMutation(
+          await ctx.runMutation(
             internal.paymentMutations.finalizePaymentFromIntent,
             {
               paymentIntentId: intent.id,

@@ -33,27 +33,11 @@ export const MINI_SET_SUBCATEGORIES: readonly CategoryDescriptor[] = [
   { value: "Mini Sets · For Her", label: "For Her" },
 ] as const;
 
-const BOUQUET_CATEGORY_VALUES = [
-  "For Kids Boys",
-  "For Kids Girls",
-  "For Her",
-  "For Him",
-  "Any Event",
+export const BOUQUET_SUBCATEGORIES: readonly CategoryDescriptor[] = [
+  { value: "For Kids", label: "For Kids" },
+  { value: "For Her", label: "For Her" },
+  { value: "For Him", label: "For Him" },
 ] as const;
-
-type BouquetCategoryValue = (typeof BOUQUET_CATEGORY_VALUES)[number];
-
-const BOUQUET_SUBCATEGORIES: readonly CategoryDescriptor[] =
-  BALLOON_SUBCATEGORIES.filter(
-    (
-      subcategory,
-    ): subcategory is CategoryDescriptor & {
-      value: BouquetCategoryValue;
-    } =>
-      BOUQUET_CATEGORY_VALUES.includes(
-        subcategory.value as BouquetCategoryValue,
-      ),
-  );
 
 export const PRODUCT_CATEGORY_GROUPS: readonly CategoryGroup[] = [
   {
@@ -81,6 +65,7 @@ export const PRODUCT_CATEGORY_GROUPS: readonly CategoryGroup[] = [
 
 export const PRODUCT_CATEGORIES = [
   ...BALLOON_SUBCATEGORIES.map((subcategory) => subcategory.value),
+  ...BOUQUET_SUBCATEGORIES.map((subcategory) => subcategory.value),
   ...MINI_SET_SUBCATEGORIES.map((subcategory) => subcategory.value),
   "Balloon Bouquets",
   "Mini Sets",

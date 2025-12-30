@@ -10,7 +10,7 @@ import {
   PackageCheck,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { getFormattedAddress, STORE_INFO } from "@/constants/config";
 import type { api } from "@/convex/_generated/api";
@@ -167,6 +167,7 @@ export default function CheckoutConfirmantClient({
               icon={<Mail className="h-4 w-4" />}
               label={t("receipt")}
               value={order.customerEmail}
+              valueClassName="normal-case"
             />
             {order.paymentMethod && (
               <InfoBadge
@@ -456,16 +457,19 @@ type InfoBadgeProps = {
   icon: ReactNode;
   label: string;
   value: string;
+  valueClassName?: string;
 };
 
-function InfoBadge({ icon, label, value }: InfoBadgeProps) {
+function InfoBadge({ icon, label, value, valueClassName }: InfoBadgeProps) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white/70 p-4">
       <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-gray-500 uppercase">
         {icon}
         <span>{label}</span>
       </div>
-      <p className="mt-2 text-sm font-semibold text-gray-900 capitalize">
+      <p
+        className={`mt-2 text-sm font-semibold text-gray-900 ${valueClassName ?? "capitalize"}`}
+      >
         {value}
       </p>
     </div>

@@ -61,3 +61,48 @@ export const backfillCartPersonalizationSignature = migrations.define({
 export const runBackfillCartPersonalizationSignature = migrations.runner(
   internal.migrations.backfillCartPersonalizationSignature,
 );
+
+export const migrateBouquetKidsCategories = migrations.define({
+  table: "products",
+  migrateOne: async (_ctx, product) => {
+    if (product.categoryGroup !== "balloon-bouquets") {
+      return undefined;
+    }
+
+    const currentCategories = Array.isArray(product.categories)
+      ? product.categories
+      : [];
+
+    const hasLegacyKids = currentCategories.some(
+      (category) =>
+        category === "For Kids Boys" || category === "For Kids Girls",
+    );
+
+    if (!hasLegacyKids) {
+      return undefined;
+    }
+
+    const nextCategories = currentCategories
+      .map((category) =>
+        category === "For Kids Boys" || category === "For Kids Girls"
+          ? "For Kids"
+          : category,
+      )
+      .filter((category) => Boolean(category && category.trim().length > 0));
+
+    const deduped = Array.from(new Set(nextCategories));
+    if (!deduped.includes("For Kids")) {
+      deduped.push("For Kids");
+    }
+
+    const changed =
+      deduped.length !== currentCategories.length ||
+      deduped.some((category, index) => currentCategories[index] !== category);
+
+    return changed ? { categories: deduped } : undefined;
+  },
+});
+
+export const runMigrateBouquetKidsCategories = migrations.runner(
+  internal.migrations.migrateBouquetKidsCategories,
+);

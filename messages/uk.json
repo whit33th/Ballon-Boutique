@@ -173,7 +173,7 @@
       "description": "Ми надсилаємо квитанції та оновлення замовлення на цю інформацію.",
       "fullName": "Повне ім'я",
       "emailForReceipts": "Електронна пошта для квитанцій",
-      "phoneNumberOptional": "Номер телефону (необов'язково)",
+      "phoneNumber": "Номер телефону",
       "includeCountryCode": "Включити код країни"
     },
     "delivery": {
@@ -260,6 +260,8 @@
       "fullNameMin2Chars": "Повне ім'я повинно містити принаймні 2 символи.",
       "emailRequired": "Електронна пошта обов'язкова.",
       "validEmail": "Введіть дійсну адресу електронної пошти.",
+      "phoneRequired": "Номер телефону обов'язковий.",
+      "validPhone": "Введіть дійсний номер телефону.",
       "validPhoneOrEmpty": "Введіть дійсний номер телефону або залиште поле порожнім.",
       "pickupDateRequired": "Дата обов'язкова.",
       "pickupDateInvalid": "Введіть коректну дату.",
@@ -491,6 +493,7 @@
       "mini-sets": "Міні набори"
     },
     "subcategories": {
+      "For Kids": "Для дітей",
       "For Kids Boys": "Діти · Хлопчики",
       "For Kids Girls": "Діти · Дівчатка",
       "For Her": "Для неї",
@@ -1095,6 +1098,7 @@
       "mini-sets": "Міні набори"
     },
     "subcategories": {
+      "For Kids": "Для дітей",
       "For Kids Boys": "Діти · Хлопчики",
       "For Kids Girls": "Діти · Дівчатка",
       "For Her": "Для неї",

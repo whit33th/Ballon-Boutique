@@ -172,7 +172,7 @@
       "description": "We send receipts and order updates to this information.",
       "fullName": "Full name",
       "emailForReceipts": "Email for receipts",
-      "phoneNumberOptional": "Phone number (optional)",
+      "phoneNumber": "Phone number",
       "includeCountryCode": "Include country code"
     },
     "delivery": {
@@ -259,6 +259,8 @@
       "fullNameMin2Chars": "Full name must be at least 2 characters.",
       "emailRequired": "Email is required.",
       "validEmail": "Enter a valid email address.",
+      "phoneRequired": "Phone number is required.",
+      "validPhone": "Enter a valid phone number.",
       "validPhoneOrEmpty": "Enter a valid phone number or leave the field empty.",
       "pickupDateRequired": "Date is required.",
       "pickupDateInvalid": "Enter a valid date.",
@@ -491,6 +493,7 @@
       "mini-sets": "Mini Sets"
     },
     "subcategories": {
+      "For Kids": "For Kids",
       "For Kids Boys": "Kids · Boys",
       "For Kids Girls": "Kids · Girls",
       "For Her": "For Her",
@@ -1071,6 +1074,7 @@
       "mini-sets": "Mini Sets"
     },
     "subcategories": {
+      "For Kids": "For Kids",
       "For Kids Boys": "Kids · Boys",
       "For Kids Girls": "Kids · Girls",
       "For Her": "For Her",

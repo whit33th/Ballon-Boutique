@@ -28,7 +28,7 @@ import {
   User,
 } from "lucide-react";
 import type { Route } from "next";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { ChangeEvent, FocusEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Resolver, type UseFormReturn, useForm } from "react-hook-form";
@@ -476,11 +476,10 @@ const createCheckoutDetailsSchema = (
         .email(t("validation.validEmail")),
       phone: z
         .string()
-        .optional()
-
+        .min(1, t("validation.phoneRequired"))
         .refine(
-          (value) => !value || phoneRegex.test(value.trim()),
-          t("validation.validPhoneOrEmpty"),
+          (value) => phoneRegex.test(value.trim()),
+          t("validation.validPhone"),
         ),
       deliveryType: z.enum(["pickup", "delivery"]),
       pickupDate: z.string().optional(),
@@ -859,7 +858,7 @@ function OptionCard({
       type="button"
       onClick={onSelect}
       disabled={disabled}
-      className={`hover:border-secondary flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition ${
+      className={`hover:border-secondary flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition ${
         selected
           ? "border-secondary bg-secondary/5"
           : "border-gray-200 bg-white"
@@ -1066,7 +1065,6 @@ function OrderSummary({
 
 export default function CheckoutPage() {
   const t = useTranslations("checkout");
-  const locale = useLocale();
   const router = useRouter();
   const user = useQuery(api.auth.loggedInUser);
   const isAuthenticated = Boolean(user);
@@ -1419,12 +1417,7 @@ export default function CheckoutPage() {
       return { name, quantity, size, unitPrice, personalization };
     });
 
-    const template =
-      locale === "de"
-        ? WHATSAPP_MESSAGES.orderConfirmationDe
-        : WHATSAPP_MESSAGES.orderConfirmation;
-
-    const message = template(
+    const message = WHATSAPP_MESSAGES.orderConfirmation(
       currentCustomerName,
       currentCustomerEmail,
       currentCustomerPhone,
@@ -1875,7 +1868,13 @@ export default function CheckoutPage() {
             <ArrowLeft className="h-4 w-4" />
             {t("backToCart")}
           </button>
-          <StepIndicator currentStep={currentStep} t={t} />
+          <StepIndicator
+            currentStep={currentStep}
+            t={t}
+            onGoToStep1={() => {
+              setCurrentStep(1);
+            }}
+          />
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -2020,7 +2019,7 @@ function StepOne({
                 <FormItem className="md:col-span-2">
                   <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700">
                     <Phone className="h-4 w-4" />{" "}
-                    {t("contactDetails.phoneNumberOptional")}
+                    {t("contactDetails.phoneNumber")}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -2050,16 +2049,22 @@ function StepOne({
               description={`${STORE_INFO.address.street}, ${STORE_INFO.address.city}`}
               selected={deliveryType === "pickup"}
               onSelect={() => handleDeliveryTypeChange("pickup")}
-              badge={t("delivery.popular")}
             />
             <OptionCard
               icon={<Truck className="text-secondary h-5 w-5" />}
               title={t("delivery.courierDelivery")}
-              description={
-                selectedCourierCity
+              description={(() => {
+                const hoursLabel = t("delivery.hours", {
+                  start: STORE_INFO.delivery.minDeliveryHour,
+                  end: STORE_INFO.delivery.maxDeliveryHour,
+                });
+
+                const priceOrPrompt = selectedCourierCity
                   ? `+${formatCurrency(selectedCourierCity.price)}`
-                  : t("delivery.chooseYourCity")
-              }
+                  : t("delivery.chooseYourCity");
+
+                return `${hoursLabel} · ${priceOrPrompt}`;
+              })()}
               selected={deliveryType === "delivery"}
               onSelect={() => handleDeliveryTypeChange("delivery")}
             />
@@ -2454,30 +2459,59 @@ function StepTwo({
 function StepIndicator({
   currentStep,
   t,
+  onGoToStep1,
 }: {
   currentStep: number;
   t: ReturnType<typeof useTranslations<"checkout">>;
+  onGoToStep1?: () => void;
 }) {
   return (
     <div className="flex items-center gap-3 text-sm font-semibold text-gray-700">
       {steps.map((step, index) => (
         <div key={step.id} className="flex items-center gap-3">
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
-              currentStep === step.id
-                ? "border-secondary text-secondary"
-                : "border-gray-300 text-gray-400"
-            }`}
-          >
-            {step.id}
-          </div>
-          <span
-            className={
-              currentStep === step.id ? "text-gray-900" : "text-gray-400"
-            }
-          >
-            {t(step.titleKey)}
-          </span>
+          {step.id === 1 && currentStep !== 1 && onGoToStep1 ? (
+            <button
+              type="button"
+              onClick={onGoToStep1}
+              className="flex items-center gap-3"
+            >
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
+                  currentStep === step.id
+                    ? "border-secondary text-secondary"
+                    : "border-gray-300 text-gray-400"
+                }`}
+              >
+                {step.id}
+              </div>
+              <span
+                className={
+                  currentStep === step.id ? "text-gray-900" : "text-gray-400"
+                }
+              >
+                {t(step.titleKey)}
+              </span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
+                  currentStep === step.id
+                    ? "border-secondary text-secondary"
+                    : "border-gray-300 text-gray-400"
+                }`}
+              >
+                {step.id}
+              </div>
+              <span
+                className={
+                  currentStep === step.id ? "text-gray-900" : "text-gray-400"
+                }
+              >
+                {t(step.titleKey)}
+              </span>
+            </div>
+          )}
           {index < steps.length - 1 && (
             <div className="h-px w-12 bg-gray-200" />
           )}

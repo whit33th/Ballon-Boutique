@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "bun run --bun next dev --turbopack",
-    "build": "bun run --bun next build --turbopack",
-    "start": "bun run --bun next start",
-    "lint": "bun run --bun biome check",
-    "format": "bun run --bun prettier --write .",
-    "format:check": "bun run --bun prettier --check ."
+    "dev": "bun --bun next dev",
+    "build": "bun --bun next build",
+    "start": "bun --bun next start",
+    "lint": "bun --bun biome check",
+    "format": "bun --bun prettier --write .",
+    "format:check": "bun --bun prettier --check ."
   },
   "dependencies": {
     "@auth/core": "0.37.0",

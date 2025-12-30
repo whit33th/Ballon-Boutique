@@ -134,7 +134,7 @@ export const STORE_INFO = {
   delivery: {
     // Delivery hours when couriers work (source of truth)
     minDeliveryHour: 16, // minimum hour for delivery selection (24-hour format)
-    maxDeliveryHour: 21, // maximum hour for delivery selection (24-hour format)
+    maxDeliveryHour: 22, // maximum hour for delivery selection (24-hour format)
     cost: 16, // in EUR
   },
 
@@ -185,61 +185,6 @@ export { PRIMARY_CATEGORY_CARDS as CATEGORIES } from "./categories";
  */
 export const WHATSAPP_MESSAGES = {
   orderConfirmation: (
-    customerName: string,
-    customerEmail: string,
-    customerPhone: string,
-    shippingAddress: string,
-    deliveryType: string,
-    pickupDateTime?: string,
-    items?: Array<{
-      name: string;
-      quantity: number;
-      size?: string | null;
-      unitPrice?: number | null;
-      personalization?: {
-        text?: string;
-        color?: string;
-        number?: string;
-      } | null;
-    }> | null,
-    total?: number,
-  ) => {
-    const deliveryText = deliveryType === "pickup" ? "Самовывоз" : "Доставка";
-    const dateTime = pickupDateTime || "не указано";
-    const phoneText = customerPhone?.trim()
-      ? customerPhone.trim()
-      : "не указано";
-
-    let itemsText = "";
-    if (items?.length) {
-      itemsText =
-        "\n\nТовары:\n" +
-        items
-          .map((it) => {
-            const parts = [
-              `- ${it.name}${it.size ? ` (размер: ${it.size})` : ""} x${it.quantity}`,
-            ];
-            if (typeof it.unitPrice === "number") {
-              parts.push(`цена: ${it.unitPrice} EUR`);
-            }
-            if (it.personalization) {
-              const p = it.personalization;
-              if (p.color) parts.push(`цвет: ${p.color}`);
-              if (p.text) parts.push(`текст: "${p.text}"`);
-              if (p.number) parts.push(`номер: ${p.number}`);
-            }
-            return parts.join(", ");
-          })
-          .join("\n");
-    }
-
-    const totalText =
-      typeof total === "number" ? `\n\nИтого: ${total} EUR` : "";
-
-    return `Добрый день! Я хочу подтвердить заказ.\n\nИмя: ${customerName}\nEmail: ${customerEmail}\nТелефон: ${phoneText}\nАдрес: ${shippingAddress}\nСпособ доставки: ${deliveryText}\nДата и время: ${dateTime}${itemsText}${totalText}`;
-  },
-
-  orderConfirmationDe: (
     customerName: string,
     customerEmail: string,
     customerPhone: string,

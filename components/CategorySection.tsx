@@ -23,6 +23,11 @@ export async function CategorySection() {
       <div className="border-foreground grid w-full grid-cols-2 gap-0 border-t md:grid-cols-4">
         {PRODUCT_CATEGORY_GROUPS.map((group, index) => {
           const hasSubcategories = group.subcategories.length > 0;
+          const collectionsCount =
+            group.value === "balloons" || group.value === "balloon-bouquets"
+              ? group.subcategories.filter((s) => s.value !== "Any Event")
+                  .length
+              : group.subcategories.length;
           // Assign colors based on category - matching product card theme
           const balloonColors = [
             "#FFB3BA", // pastel pink
@@ -71,8 +76,8 @@ export async function CategorySection() {
                     {tCatalog(`categoryGroups.${group.value}`)}
                   </h3>
                   <span className="text-[10px] font-medium text-[rgba(var(--deep-rgb),0.70)] sm:text-xs">
-                    {group.subcategories.length > 0
-                      ? `${group.subcategories.length} ${t("collections")}`
+                    {hasSubcategories
+                      ? `${collectionsCount} ${t("collections")}`
                       : t("viewCollection")}
                   </span>
                 </div>

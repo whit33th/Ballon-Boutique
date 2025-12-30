@@ -4,7 +4,7 @@ import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { snapshotFromProduct, useGuestCart } from "@/lib/guestCart";
@@ -50,7 +50,6 @@ export function ProductAddToCartWrapper({
   const selectedVariant = hasSizeVariants
     ? (product?.miniSetSizes?.find((s) => s.label === selectedSize) ?? null)
     : null;
-  const selectedUnitPrice = selectedVariant?.price ?? product?.price;
 
   const handleQuantityChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -162,58 +161,58 @@ export function ProductAddToCartWrapper({
   return (
     <div className="space-y-6">
       {product && (
-        <div className="flex flex-wrap items-center gap-4">
-          {hasSizeVariants && product.miniSetSizes ? (
-            <label className="text-deep flex items-center gap-3 text-sm font-medium">
-              <span className="tracking-wider uppercase">{t("size")}:</span>
-              <select
-                value={selectedSize ?? ""}
-                onChange={(e) => setSelectedSize(e.target.value || null)}
-                disabled={!product.inStock}
-                className="border-border text-deep hover:border-secondary focus:border-secondary focus:ring-secondary/20 h-11 rounded-xl border-2 bg-white px-4 text-sm font-semibold transition-colors outline-none focus:ring-2 disabled:opacity-50"
-              >
-                <option value="" disabled>
-                  {t("pleaseSelectSize")}
-                </option>
-                {product.miniSetSizes.map((s) => (
-                  <option value={s.label} key={s.label}>
-                    {s.label} — €{s.price.toFixed(2)}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center">
+            {hasSizeVariants && product.miniSetSizes ? (
+              <label className="text-deep flex flex-col gap-2 text-sm font-medium lg:flex-row lg:items-center lg:gap-3">
+                <span className="tracking-wider uppercase">{t("size")}:</span>
+                <select
+                  value={selectedSize ?? ""}
+                  onChange={(e) => setSelectedSize(e.target.value || null)}
+                  disabled={!product.inStock}
+                  className="border-border text-deep hover:border-secondary focus:border-secondary focus:ring-secondary/20 h-11 w-full rounded-xl border-2 bg-white px-4 text-sm font-semibold transition-colors outline-none focus:ring-2 disabled:opacity-50 lg:w-auto"
+                >
+                  <option value="" disabled>
+                    {t("pleaseSelectSize")}
                   </option>
-                ))}
+                  {product.miniSetSizes.map((s) => (
+                    <option value={s.label} key={s.label}>
+                      {s.label} — €{s.price.toFixed(2)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            <label className="text-deep flex flex-col gap-2 text-sm font-medium lg:flex-row lg:items-center lg:gap-3">
+              <span className="tracking-wider uppercase">{t("quantity")}:</span>
+              <select
+                value={quantity}
+                onChange={handleQuantityChange}
+                disabled={!product.inStock}
+                className="border-border text-deep hover:border-secondary focus:border-secondary focus:ring-secondary/20 h-11 w-full rounded-xl border-2 bg-white px-4 text-sm font-semibold transition-colors outline-none focus:ring-2 disabled:opacity-50 lg:w-auto"
+              >
+                {Array.from({ length: 10 }, (_, idx) => idx + 1).map(
+                  (value) => (
+                    <option value={value} key={value}>
+                      {value}
+                    </option>
+                  ),
+                )}
               </select>
             </label>
-          ) : null}
+          </div>
 
-          <label className="text-deep flex items-center gap-3 text-sm font-medium">
-            <span className="tracking-wider uppercase">{t("quantity")}:</span>
-            <select
-              value={quantity}
-              onChange={handleQuantityChange}
-              disabled={!product.inStock}
-              className="border-border text-deep hover:border-secondary focus:border-secondary focus:ring-secondary/20 h-11 rounded-xl border-2 bg-white px-4 text-sm font-semibold transition-colors outline-none focus:ring-2 disabled:opacity-50"
+          <div className="flex">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => void handleAddToCart()}
+              disabled={!product.inStock || (hasSizeVariants && !selectedSize)}
+              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-accent text-on-accent inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-6 text-sm font-medium whitespace-nowrap transition-[background-color,color,border-color,opacity,filter,transform] duration-200 outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-red-600 aria-invalid:ring-red-600/20 lg:w-auto dark:aria-invalid:ring-red-600/40 pointer-coarse:active:scale-[0.99] pointer-coarse:active:brightness-95 pointer-fine:hover:brightness-95 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
             >
-              {Array.from({ length: 10 }, (_, idx) => idx + 1).map((value) => (
-                <option value={value} key={value}>
-                  {value}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => void handleAddToCart()}
-            disabled={!product.inStock || (hasSizeVariants && !selectedSize)}
-            className="focus-visible:border-ring focus-visible:ring-ring/50 bg-accent text-on-accent inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-6 text-sm font-medium whitespace-nowrap transition-[background-color,color,border-color,opacity,filter,transform] duration-200 outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-red-600 aria-invalid:ring-red-600/20 dark:aria-invalid:ring-red-600/40 pointer-coarse:active:scale-[0.99] pointer-coarse:active:brightness-95 pointer-fine:hover:brightness-95 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-          >
-            {!product.inStock ? t("soldOut") : t("addToCart")}
-          </motion.button>
-
-          {hasSizeVariants && selectedVariant ? (
-            <div className="text-deep text-sm font-semibold tabular-nums">
-              {t("price")}: €{selectedVariant.price.toFixed(2)}
-            </div>
-          ) : null}
+              {!product.inStock ? t("soldOut") : t("addToCart")}
+            </motion.button>
+          </div>
         </div>
       )}
 
