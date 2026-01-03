@@ -29,6 +29,13 @@ const formatCurrency = (value: number, currency = "EUR") =>
     maximumFractionDigits: 2,
   }).format(value);
 
+const formatDateOnly = (dateString: string): string =>
+  new Date(dateString).toLocaleDateString("de-AT", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
 type OrderWithPhoneFields = Doc<"orders"> & {
   phone?: string | null;
   customerPhone?: string | null;
@@ -115,14 +122,7 @@ export default function CheckoutConfirmantClient({
               {order.deliveryType === "delivery"
                 ? t("deliveryWindow")
                 : t("pickupWindow")}
-              :{" "}
-              {new Date(order.pickupDateTime).toLocaleString(undefined, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              : {formatDateOnly(order.pickupDateTime)}
             </span>
           </p>
         ) : null
@@ -357,13 +357,7 @@ export default function CheckoutConfirmantClient({
                   ? composeAddress(order.shippingAddress)
                   : "—";
             const pickupWindowForPrint = order.pickupDateTime
-              ? new Date(order.pickupDateTime).toLocaleString("de-AT", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+              ? formatDateOnly(order.pickupDateTime)
               : "";
 
             const lines = order.items
