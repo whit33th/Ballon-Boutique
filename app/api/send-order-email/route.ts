@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     }
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://ballon-boutique.vercel.app";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://ballon.boutique";
     const confirmationUrl =
       body.confirmationUrl ?? `${baseUrl}/checkout/confirmant/${body.orderId}`;
 

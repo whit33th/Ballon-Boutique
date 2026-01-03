@@ -34,7 +34,7 @@ export const sendOrderConfirmationEmail = internalAction({
   }),
   handler: async (ctx, args) => {
     const appUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://ballon-boutique.vercel.app";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://ballon.boutique";
 
     const internalApiSecret = process.env.INTERNAL_EMAIL_WEBHOOK_SECRET ?? "";
 

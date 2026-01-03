@@ -57,7 +57,7 @@ export const STORE_INFO = {
   },
 
   // Website
-  website: "https://ballon-boutique.vercel.app/",
+  website: "https://ballon.boutique/",
 
   // Business Hours
   businessHours: {

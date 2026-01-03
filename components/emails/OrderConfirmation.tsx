@@ -79,8 +79,8 @@ const STORE = {
   email: "ballonboutique.at@gmail.com",
   phone: "+43 690 200 84085",
   address: "Sandgasse 3/3, 8720 Knittelfeld, Austria",
-  website: "https://ballon-boutique.vercel.app",
-  logoUrl: "https://ballon-boutique.vercel.app/logo.png",
+  website: "https://ballon.boutique",
+  logoUrl: "https://ballon.boutique/logo.png",
 };
 
 // Translation strings (German - primary language)
