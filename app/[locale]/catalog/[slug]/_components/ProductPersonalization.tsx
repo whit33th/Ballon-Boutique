@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { forwardRef, type RefObject, useState } from "react";
+import { forwardRef, type RefObject, useEffect, useState } from "react";
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 
 interface PersonalizationOptions {
@@ -37,6 +37,24 @@ export const ProductPersonalization = forwardRef<
   const [text, setText] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [number, setNumber] = useState("");
+
+  useEffect(() => {
+    if (availableColors.length !== 1) {
+      return;
+    }
+
+    const onlyColor = availableColors[0] ?? "";
+    if (!onlyColor || selectedColor === onlyColor) {
+      return;
+    }
+
+    setSelectedColor(onlyColor);
+    onChange({
+      text: text || undefined,
+      color: onlyColor,
+      number: number || undefined,
+    });
+  }, [availableColors, number, onChange, selectedColor, text]);
 
   const handleTextChange = (value: string) => {
     setText(value);
@@ -94,10 +112,11 @@ export const ProductPersonalization = forwardRef<
                 key={color.name}
                 type="button"
                 onClick={() => handleColorChange(color.name)}
-                className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all ${selectedColor === color.name
-                  ? "border-accent/60 bg-accent/10 shadow-md"
-                  : "hover:border-accent/50 border-black/10"
-                  }`}
+                className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all ${
+                  selectedColor === color.name
+                    ? "border-accent/60 bg-accent/10 shadow-md"
+                    : "hover:border-accent/50 border-black/10"
+                }`}
               >
                 <div
                   className="h-12 w-12 shrink-0 rounded-full shadow-md"
@@ -140,10 +159,11 @@ export const ProductPersonalization = forwardRef<
             min="0"
             max="99"
             required
-            className={`text-deep h-11 w-full rounded-xl border-2 bg-white px-4 font-semibold transition-all outline-none focus:ring-2 ${!number.trim()
-              ? "bg-accent/5 focus:border-accent/85 focus:ring-accent/10 border-black/20"
-              : "focus:border-accent focus:ring-accent/30 border-black/20"
-              }`}
+            className={`text-deep h-11 w-full rounded-xl border-2 bg-white px-4 font-semibold transition-all outline-none focus:ring-2 ${
+              !number.trim()
+                ? "bg-accent/5 focus:border-accent/85 focus:ring-accent/10 border-black/20"
+                : "focus:border-accent focus:ring-accent/30 border-black/20"
+            }`}
           />
         </div>
       )}

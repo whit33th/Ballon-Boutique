@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
+import { internal } from "./_generated/api.js";
 import { mutation, query } from "./_generated/server";
 import { ensureAdmin } from "./helpers/admin";
 import { requireUser } from "./helpers/auth";
@@ -193,6 +194,12 @@ export const createGuest = mutation({
       pickupDateTime: args.pickupDateTime,
     });
 
+    if (args.paymentMethod === "cash") {
+      await ctx.scheduler.runAfter(0, internal.orderEmailActions.sendOrderConfirmationEmail, {
+        orderId,
+      });
+    }
+
     return orderId;
   },
 });
@@ -336,6 +343,12 @@ export const create = mutation({
       whatsappConfirmed: args.whatsappConfirmed,
       pickupDateTime: args.pickupDateTime,
     });
+
+    if (args.paymentMethod === "cash") {
+      await ctx.scheduler.runAfter(0, internal.orderEmailActions.sendOrderConfirmationEmail, {
+        orderId,
+      });
+    }
 
     // Clear the user's cart after a successful checkout regardless of payment method
     for (const cartItem of cartItems) {

@@ -71,13 +71,18 @@ export const handleStripeWebhookEvent = internalAction({
       switch (event.type) {
         case "payment_intent.succeeded": {
           const intent = event.data.object as Stripe.PaymentIntent;
-          await ctx.runMutation(
+          const finalized = await ctx.runMutation(
             internal.paymentMutations.finalizePaymentFromIntent,
             {
               paymentIntentId: intent.id,
               stripeChargeId: getLatestChargeId(intent),
             },
           );
+
+          if (finalized?.orderId) {
+            // Email sending is triggered from order creation/confirmation logic
+            // (see internal orderEmailActions + scheduling from mutations).
+          }
           break;
         }
         case "payment_intent.payment_failed":

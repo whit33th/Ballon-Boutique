@@ -27,9 +27,9 @@ const SUBCATEGORY_IMAGES: Record<string, Record<string, string>> = {
     "surprise box": "/imgs/subcategories/balloons/surprise-box.webp",
   },
   "balloon-bouquets": {
-    "for kids": "/imgs/subcategories/balloons/kids-for-him.webp",
+    "for kids": "/imgs/subcategories/bouquets/for-kids.webp",
     "for her": "/imgs/subcategories/bouquets/for-her.webp",
-    "for him": "/imgs/subcategories/balloons/for-him.webp",
+    "for him": "/imgs/subcategories/bouquets/for-him.webp",
   },
   "mini-sets": {
     "mini sets · for kids": "/imgs/subcategories/mini-sets/mini-sets-kids.webp",

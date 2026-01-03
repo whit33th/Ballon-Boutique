@@ -142,6 +142,8 @@ const applicationTables = {
     pickupDateTime: v.optional(v.string()),
     confirmationEmailSendingAt: v.optional(v.number()),
     confirmationEmailSentAt: v.optional(v.number()),
+    confirmationEmailLastError: v.optional(v.string()),
+    confirmationEmailLastStatus: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_status", ["status"])

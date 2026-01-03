@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api.js";
 import {
   internalMutation,
   internalQuery,
@@ -257,6 +258,23 @@ export const finalizePaymentFromIntent = internalMutation({
         stripeLatestChargeId: args.stripeChargeId,
         lastError: undefined,
       });
+
+      await ctx.db.patch(payment.orderId, {
+        status: "confirmed",
+        paymentMethod: "full_online",
+        paymentIntentId: payment.paymentIntentId,
+        pickupDateTime: payment.shipping.pickupDateTime,
+        currency: payment.displayAmount?.currency ?? payment.currency,
+        deliveryFee: payment.shipping.deliveryFee,
+        grandTotal: payment.displayAmount?.value ?? payment.amountBase,
+      });
+
+      await ctx.scheduler.runAfter(
+        0,
+        internal.orderEmailActions.sendOrderConfirmationEmail,
+        { orderId: payment.orderId },
+      );
+
       return { paymentId: payment._id, orderId: payment.orderId };
     }
 
@@ -287,6 +305,10 @@ export const finalizePaymentFromIntent = internalMutation({
       status: "succeeded",
       stripeLatestChargeId: args.stripeChargeId,
       lastError: undefined,
+    });
+
+    await ctx.scheduler.runAfter(0, internal.orderEmailActions.sendOrderConfirmationEmail, {
+      orderId,
     });
 
     for (const item of payment.items) {
@@ -328,6 +350,8 @@ export const getPaymentAndOrder = internalQuery({
         deliveryType: v.optional(
           v.union(v.literal("pickup"), v.literal("delivery")),
         ),
+        pickupDateTime: v.optional(v.string()),
+        deliveryFee: v.optional(v.number()),
         paymentMethod: v.optional(v.string()),
         status: v.string(),
         totalAmount: v.number(),
@@ -375,6 +399,8 @@ export const getPaymentAndOrder = internalQuery({
         customerEmail: order.customerEmail,
         shippingAddress: order.shippingAddress,
         deliveryType: order.deliveryType,
+        pickupDateTime: order.pickupDateTime,
+        deliveryFee: order.deliveryFee,
         paymentMethod: order.paymentMethod,
         status: order.status,
         totalAmount: order.totalAmount,
@@ -423,6 +449,80 @@ export const recordRefund = internalMutation({
       ],
       status: "refunded",
     });
+  },
+});
+
+export const claimOrderConfirmationEmailSend = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+  },
+  returns: v.object({
+    shouldSend: v.boolean(),
+  }),
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      return { shouldSend: false };
+    }
+
+    if (order.confirmationEmailSentAt) {
+      return { shouldSend: false };
+    }
+
+    const now = Date.now();
+    const lastAttempt = order.confirmationEmailSendingAt;
+    if (lastAttempt && now - lastAttempt < 10 * 60 * 1000) {
+      return { shouldSend: false };
+    }
+
+    await ctx.db.patch(args.orderId, {
+      confirmationEmailSendingAt: now,
+    });
+
+    return { shouldSend: true };
+  },
+});
+
+export const markOrderConfirmationEmailSent = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.orderId, {
+      confirmationEmailSentAt: Date.now(),
+    });
+    return null;
+  },
+});
+
+export const recordOrderConfirmationEmailFailure = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+    status: v.optional(v.number()),
+    error: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.orderId, {
+      confirmationEmailLastStatus: args.status,
+      confirmationEmailLastError: args.error,
+    });
+    return null;
+  },
+});
+
+export const clearOrderConfirmationEmailFailure = internalMutation({
+  args: {
+    orderId: v.id("orders"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.orderId, {
+      confirmationEmailLastStatus: undefined,
+      confirmationEmailLastError: undefined,
+    });
+    return null;
   },
 });
 
