@@ -342,7 +342,7 @@ export default function OrderConfirmationEmail({
             <Text style={styles.subheading}>{t.description}</Text>
             {pickupDateTime ? (
               <div style={styles.pill}>
-                          {t.pickupPill}: {formatDate(pickupDateTime)}
+                {t.pickupPill}: {formatDate(pickupDateTime)}
               </div>
             ) : null}
           </Section>
