@@ -66,7 +66,8 @@ const t = {
   titleFull: "Zahlung erhalten — Bestellung bestätigt",
   titlePartial: "Bestellung bestätigt",
   titleCash: "Bestellung reserviert — Zahlung bei Abholung",
-  description: "Wir haben Ihre Artikel reserviert. Die Details finden Sie unten.",
+  description:
+    "Wir haben Ihre Artikel reserviert. Die Details finden Sie unten.",
   pickupPill: "Abholdatum",
   orderReference: "Bestellreferenz",
   totalPaid: "Gesamt bezahlt",
@@ -302,7 +303,10 @@ export default function OrderConfirmationEmail({
   confirmationUrl,
 }: OrderConfirmationEmailProps) {
   const finalTotal = grandTotal ?? totalAmount;
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = items.reduce(
+    (acc, item) => acc + item.price * item.quantity,
+    0,
+  );
 
   const title =
     paymentMethod === "cash"
@@ -381,7 +385,9 @@ export default function OrderConfirmationEmail({
                 </Column>
                 <Column style={{ width: "33%" }}>
                   <Text style={styles.label}>{t.delivery}</Text>
-                  <Text style={styles.value}>{t.deliveryType[deliveryType]}</Text>
+                  <Text style={styles.value}>
+                    {t.deliveryType[deliveryType]}
+                  </Text>
                 </Column>
                 <Column style={{ width: "33%" }}>
                   <Text style={styles.label}>Rechnung</Text>
@@ -393,7 +399,9 @@ export default function OrderConfirmationEmail({
                 <>
                   <Hr style={styles.divider} />
                   <Text style={styles.label}>{t.payment}</Text>
-                  <Text style={styles.value}>{t.paymentMethod[paymentMethod]}</Text>
+                  <Text style={styles.value}>
+                    {t.paymentMethod[paymentMethod]}
+                  </Text>
                 </>
               ) : null}
             </Section>
@@ -475,7 +483,9 @@ export default function OrderConfirmationEmail({
 
             <Section style={styles.card}>
               <Text style={styles.sectionTitle}>
-                {deliveryType === "delivery" ? t.whereWeDeliver : t.pickupAddress}
+                {deliveryType === "delivery"
+                  ? t.whereWeDeliver
+                  : t.pickupAddress}
               </Text>
               <Text style={styles.value}>{customerName}</Text>
               <Text style={{ ...styles.itemDetail, whiteSpace: "pre-line" }}>
@@ -498,7 +508,7 @@ export default function OrderConfirmationEmail({
             </Text>
             <Text style={styles.footerText}>{STORE.address}</Text>
             <Text style={styles.footerText}>
-              {t.questions} {" "}
+              {t.questions}{" "}
               <Link href={`mailto:${STORE.email}`} style={styles.footerLink}>
                 {STORE.email}
               </Link>{" "}

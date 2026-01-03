@@ -1,11 +1,23 @@
+import type { FunctionReference } from "convex/server";
 import { v } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
 import { internal } from "./_generated/api.js";
+import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { ensureAdmin } from "./helpers/admin";
 import { requireUser } from "./helpers/auth";
 import { addressValidator } from "./validators/address";
 import { orderItemValidator, orderStatusValidator } from "./validators/order";
+
+const orderEmailActionsInternal = internal as unknown as {
+  orderEmailActions: {
+    sendOrderConfirmationEmail: FunctionReference<
+      "action",
+      "internal",
+      { orderId: Id<"orders"> },
+      { ok: boolean }
+    >;
+  };
+};
 
 const orderValidator = v.object({
   _id: v.id("orders"),
@@ -33,6 +45,8 @@ const orderValidator = v.object({
   grandTotal: v.optional(v.number()),
   confirmationEmailSendingAt: v.optional(v.number()),
   confirmationEmailSentAt: v.optional(v.number()),
+  confirmationEmailLastStatus: v.optional(v.number()),
+  confirmationEmailLastError: v.optional(v.string()),
 });
 
 export const createGuest = mutation({
@@ -195,9 +209,13 @@ export const createGuest = mutation({
     });
 
     if (args.paymentMethod === "cash") {
-      await ctx.scheduler.runAfter(0, internal.orderEmailActions.sendOrderConfirmationEmail, {
-        orderId,
-      });
+      await ctx.scheduler.runAfter(
+        0,
+        orderEmailActionsInternal.orderEmailActions.sendOrderConfirmationEmail,
+        {
+          orderId,
+        },
+      );
     }
 
     return orderId;
@@ -345,9 +363,13 @@ export const create = mutation({
     });
 
     if (args.paymentMethod === "cash") {
-      await ctx.scheduler.runAfter(0, internal.orderEmailActions.sendOrderConfirmationEmail, {
-        orderId,
-      });
+      await ctx.scheduler.runAfter(
+        0,
+        orderEmailActionsInternal.orderEmailActions.sendOrderConfirmationEmail,
+        {
+          orderId,
+        },
+      );
     }
 
     // Clear the user's cart after a successful checkout regardless of payment method

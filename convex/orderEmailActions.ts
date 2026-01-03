@@ -1,11 +1,29 @@
 "use node";
 
+import type { FunctionReference } from "convex/server";
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api.js";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import { internalAction } from "./_generated/server";
 
 type OrderItem = Doc<"orders">["items"][number];
+
+const paymentMutationsInternal = internal as unknown as {
+  paymentMutations: {
+    recordOrderConfirmationEmailFailure: FunctionReference<
+      "mutation",
+      "internal",
+      { orderId: Id<"orders">; status?: number; error: string },
+      null
+    >;
+    clearOrderConfirmationEmailFailure: FunctionReference<
+      "mutation",
+      "internal",
+      { orderId: Id<"orders"> },
+      null
+    >;
+  };
+};
 
 export const sendOrderConfirmationEmail = internalAction({
   args: {
@@ -16,9 +34,7 @@ export const sendOrderConfirmationEmail = internalAction({
   }),
   handler: async (ctx, args) => {
     const appUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      "https://ballon-boutique.vercel.app";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://ballon-boutique.vercel.app";
 
     const internalApiSecret = process.env.INTERNAL_EMAIL_WEBHOOK_SECRET ?? "";
 
@@ -31,7 +47,9 @@ export const sendOrderConfirmationEmail = internalAction({
       return { ok: true };
     }
 
-    const order = await ctx.runQuery(api.orders.getPublic, { id: args.orderId });
+    const order = await ctx.runQuery(api.orders.getPublic, {
+      id: args.orderId,
+    });
 
     if (!order) {
       return { ok: false };
@@ -73,7 +91,9 @@ export const sendOrderConfirmationEmail = internalAction({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(internalApiSecret ? { "x-internal-secret": internalApiSecret } : {}),
+        ...(internalApiSecret
+          ? { "x-internal-secret": internalApiSecret }
+          : {}),
       },
       body: JSON.stringify(payload),
     });
@@ -83,7 +103,8 @@ export const sendOrderConfirmationEmail = internalAction({
       console.error("Order confirmation email failed", res.status, text);
 
       await ctx.runMutation(
-        (internal as any).paymentMutations.recordOrderConfirmationEmailFailure,
+        paymentMutationsInternal.paymentMutations
+          .recordOrderConfirmationEmailFailure,
         {
           orderId: args.orderId,
           status: res.status,
@@ -94,12 +115,16 @@ export const sendOrderConfirmationEmail = internalAction({
       return { ok: false };
     }
 
-    await ctx.runMutation(internal.paymentMutations.markOrderConfirmationEmailSent, {
-      orderId: args.orderId,
-    });
+    await ctx.runMutation(
+      internal.paymentMutations.markOrderConfirmationEmailSent,
+      {
+        orderId: args.orderId,
+      },
+    );
 
     await ctx.runMutation(
-      (internal as any).paymentMutations.clearOrderConfirmationEmailFailure,
+      paymentMutationsInternal.paymentMutations
+        .clearOrderConfirmationEmailFailure,
       { orderId: args.orderId },
     );
 

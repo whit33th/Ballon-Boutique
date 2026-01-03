@@ -12,8 +12,6 @@ import {
 } from "@/lib/imagekit";
 import { balloonColors } from "../ProductGrid";
 
-type ProductTag = "new" | "bestseller";
-
 interface ProductCardProps {
   product: Doc<"products">;
   index: number;

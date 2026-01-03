@@ -1,6 +1,7 @@
+import type { FunctionReference } from "convex/server";
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api.js";
+import type { Id } from "./_generated/dataModel";
 import {
   internalMutation,
   internalQuery,
@@ -241,6 +242,17 @@ export const finalizePaymentFromIntent = internalMutation({
     v.null(),
   ),
   handler: async (ctx, args) => {
+    const orderEmailActionsInternal = internal as unknown as {
+      orderEmailActions: {
+        sendOrderConfirmationEmail: FunctionReference<
+          "action",
+          "internal",
+          { orderId: Id<"orders"> },
+          { ok: boolean }
+        >;
+      };
+    };
+
     const payment = await ctx.db
       .query("payments")
       .withIndex("by_payment_intent_id", (q) =>
@@ -271,7 +283,7 @@ export const finalizePaymentFromIntent = internalMutation({
 
       await ctx.scheduler.runAfter(
         0,
-        internal.orderEmailActions.sendOrderConfirmationEmail,
+        orderEmailActionsInternal.orderEmailActions.sendOrderConfirmationEmail,
         { orderId: payment.orderId },
       );
 
@@ -307,9 +319,13 @@ export const finalizePaymentFromIntent = internalMutation({
       lastError: undefined,
     });
 
-    await ctx.scheduler.runAfter(0, internal.orderEmailActions.sendOrderConfirmationEmail, {
-      orderId,
-    });
+    await ctx.scheduler.runAfter(
+      0,
+      orderEmailActionsInternal.orderEmailActions.sendOrderConfirmationEmail,
+      {
+        orderId,
+      },
+    );
 
     for (const item of payment.items) {
       const product = await ctx.db.get(item.productId);
