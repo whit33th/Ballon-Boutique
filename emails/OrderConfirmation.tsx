@@ -107,13 +107,11 @@ const formatCurrency = (value: number, currency = "EUR") =>
     maximumFractionDigits: 2,
   }).format(value);
 
-const formatDateTime = (dateString: string) =>
-  new Date(dateString).toLocaleString("de-AT", {
+const formatDate = (dateString: string) =>
+  new Date(dateString).toLocaleDateString("de-AT", {
     year: "numeric",
     month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 
 const styles = {
@@ -344,7 +342,7 @@ export default function OrderConfirmationEmail({
             <Text style={styles.subheading}>{t.description}</Text>
             {pickupDateTime ? (
               <div style={styles.pill}>
-                {t.pickupPill}: {formatDateTime(pickupDateTime)}
+                          {t.pickupPill}: {formatDate(pickupDateTime)}
               </div>
             ) : null}
           </Section>

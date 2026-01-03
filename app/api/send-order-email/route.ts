@@ -87,7 +87,7 @@ ${body.items
   .join("\n")}
 
 Lieferart: ${body.deliveryType === "pickup" ? "Selbstabholung" : "Kurierlieferung"}
-${body.pickupDateTime ? `Datum: ${new Date(body.pickupDateTime).toLocaleString("de-AT")}` : ""}
+${body.pickupDateTime ? `Datum: ${new Date(body.pickupDateTime).toLocaleDateString("de-AT")}` : ""}
 
 Sie können Ihre Bestellung online unter folgendem Link einsehen:
 ${confirmationUrl}
