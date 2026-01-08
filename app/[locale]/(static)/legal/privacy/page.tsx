@@ -43,11 +43,13 @@ export default async function PrivacyPolicyPage({
                 companyName: STORE_INFO.legal.companyName,
               })}
               <br />
-              {t("section1.address")}
-              <br />
-              {t("section1.email", { email: STORE_INFO.contact.email })}
+              <span className="whitespace-pre-line">
+                {t("section1.address")}
+              </span>
               <br />
               {t("section1.phone", { phone: STORE_INFO.contact.phoneDisplay })}
+              <br />
+              {t("section1.email", { email: STORE_INFO.contact.email })}
             </p>
           </div>
 
@@ -121,6 +123,9 @@ export default async function PrivacyPolicyPage({
                 ),
               )}
             </ul>
+            {t("section7.outro", { default: "" }) ? (
+              <p className="mt-2 whitespace-pre-line">{t("section7.outro")}</p>
+            ) : null}
           </div>
 
           <div>
@@ -129,16 +134,9 @@ export default async function PrivacyPolicyPage({
             </h2>
             <p>{t("section8.intro")}</p>
             <p className="mt-2">
-              <a
-                href={`https://wa.me/${STORE_INFO.contact.whatsapp}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-secondary underline"
-              >
-                {t("section8.whatsapp", {
-                  phone: STORE_INFO.contact.phoneDisplay,
-                })}
-              </a>
+              {t("section8.phoneWhatsapp", {
+                phone: STORE_INFO.contact.phoneDisplay,
+              })}
               <br />
               <a
                 href={`mailto:${STORE_INFO.contact.email}`}
@@ -146,15 +144,12 @@ export default async function PrivacyPolicyPage({
               >
                 {t("section8.email", { email: STORE_INFO.contact.email })}
               </a>
-              <br />
-              <a
-                href={`tel:${STORE_INFO.contact.phone}`}
-                className="hover:text-secondary underline"
-              >
-                {t("section8.phone", {
-                  phone: STORE_INFO.contact.phoneDisplay,
-                })}
-              </a>
+              {t("section8.outro", { default: "" }) ? (
+                <>
+                  <br />
+                  {t("section8.outro")}
+                </>
+              ) : null}
             </p>
           </div>
         </section>
@@ -162,6 +157,3 @@ export default async function PrivacyPolicyPage({
     </section>
   );
 }
-
-
-

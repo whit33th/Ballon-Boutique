@@ -85,6 +85,7 @@
     "company": "Company",
     "imprint": "Imprint",
     "terms": "Terms & Conditions",
+    "withdrawal": "Withdrawal Policy",
     "privacy": "Privacy Policy",
     "cancellation": "Cancellation Policy",
     "social": "Social",
@@ -644,12 +645,12 @@
         "description": "These General Terms and Conditions (AGB) apply to all orders placed through the seller's online shop."
       },
       "clause1": {
-        "title": "AGB – General Terms and Conditions",
-        "body": "These General Terms and Conditions (AGB) apply to all orders placed through the seller's online shop. Deviating conditions of the customer will not be recognized unless the seller expressly agrees to them in writing. This applies until the seller confirms this via WhatsApp."
+        "title": "1. Scope",
+        "body": "These General Terms and Conditions (AGB) apply to all orders placed through the seller's online shop. Deviating terms of the customer will not be recognized unless the seller expressly agrees to them in writing (e.g., by email)."
       },
       "clause2": {
         "title": "2. Contracting Party",
-        "body": "The purchase contract is concluded between the customer and:\n\n{companyName},\n\nSandgasse 3/3, Knittelfeld 8720\n\n{email} / {phone}"
+        "body": "The purchase contract is concluded between the customer and:\n{companyName}\nSandgasse 3/3, 8720 Knittelfeld, Austria\nEmail: {email}\nPhone: {phone}"
       },
       "clause3": {
         "title": "3. Offer and Product Presentation",
@@ -661,23 +662,23 @@
       },
       "clause4": {
         "title": "4. Order Process and Contract Conclusion",
-        "body": "By submitting the order, the customer makes a binding offer to purchase.\n\nThe purchase contract is concluded as soon as the seller has clearly and in writing confirmed the order via WhatsApp."
+        "body": "By submitting the order, the customer makes a binding offer to purchase.\nThe purchase contract is concluded as soon as the seller confirms the order in writing by email."
       },
       "clause5": {
         "title": "5. Prices and Shipping Costs",
-        "body": "All prices are final prices without value-added tax, as the seller does not charge value-added tax in accordance with § 6 para. 1 no. 27 UStG (small business regulation).\n\nShipping costs are shown separately in the ordering process."
+        "body": "All prices are final prices without value-added tax, as the seller does not charge value-added tax in accordance with § 6 para. 1 no. 27 UStG (small business regulation).\nShipping costs are shown separately in the ordering process."
       },
       "clause6": {
         "title": "6. Delivery",
-        "body": "Delivery takes place by agreement within the specified delivery area. Delivery times may vary depending on the order situation. Delays caused by shipping service providers are outside the seller's responsibility."
+        "body": "Delivery takes place by agreement within the specified delivery area. Delivery times may vary depending on the order situation.\nWe are not liable for delays that are outside our control, e.g., caused by shipping service providers."
       },
       "clause7": {
         "title": "7. Payment",
-        "body": "The seller offers various payment methods, such as:\n\nCredit card\n\nPayment on pickup"
+        "body": "The seller offers various payment methods, such as:\nCredit card\nPayment on pickup"
       },
       "clause8": {
         "title": "8. Right of Withdrawal / Right of Cancellation (14 Days)",
-        "body": "Customers have a right of withdrawal of 14 days in accordance with the Austrian Distance and Off-Premises Transactions Act (FAGG).\n\nExcluded from withdrawal are:\n\npersonalized products,\nperishable goods (e.g., helium balloons due to limited float time)."
+        "body": "Customers have a right of withdrawal of 14 days in accordance with the Austrian Distance and Off-Premises Transactions Act (FAGG).\nThe exact conditions, exceptions to the right of withdrawal, and information on how to exercise the withdrawal are described on the website under “Right of Withdrawal / Cancellation”."
       },
       "clause9": {
         "title": "9. Warranty and Liability",
@@ -707,29 +708,31 @@
     },
     "privacy": {
       "header": {
-        "title": "Privacy Policy",
-        "subtitle": "Datenschutz",
-        "description": "Responsible for data processing on this website:"
+        "title": "Privacy Policy (Austria / GDPR)",
+        "subtitle": "Privacy",
+        "description": "The controller responsible for processing personal data on this website is:"
       },
       "section1": {
         "title": "1. Responsible Party",
-        "intro": "Responsible for data processing on this website is:",
+        "intro": "The controller responsible for processing personal data on this website is:",
         "company": "{companyName}",
-        "address": "Sandgasse 3/3, Knittelfeld 8720",
-        "email": "{email}",
-        "phone": "{phone}"
+        "address": "Sandgasse 3/3\n8720 Knittelfeld\nAustria",
+        "phone": "Phone: {phone}",
+        "email": "Email: {email}"
       },
       "section2": {
         "title": "2. Collection and Processing of Personal Data",
-        "intro": "We process personal data that you voluntarily provide to us, such as:",
+        "intro": "We process personal data that you voluntarily provide to us, in particular:",
         "dataList": [
-          "Name, address, email",
+          "First and last name",
+          "Address",
+          "Email address",
           "Phone number",
-          "Order data (products, quantity, date)"
+          "Order data (e.g., products, quantity, date)"
         ],
         "purposeIntro": "This data is used for the following purposes:",
         "purposeList": [
-          "Processing of orders and shipping",
+          "Processing of orders and delivery",
           "Communication with customers (including WhatsApp)",
           "Invoicing",
           "Fulfillment of legal obligations"
@@ -737,49 +740,52 @@
       },
       "section3": {
         "title": "3. Legal Basis for Processing",
-        "body": "Processing is carried out in accordance with Art. 6 para. 1 lit. b GDPR (contract fulfillment) and lit. c (legal obligations)."
+        "body": "Processing of personal data is based on:\nArt. 6(1)(b) GDPR (performance of a contract)\nArt. 6(1)(c) GDPR (legal obligation)"
       },
       "section4": {
-        "title": "4. Storage",
-        "body": "Your data will only be stored for as long as is necessary for the fulfillment of the purposes or legal retention obligations exist (e.g., tax retention obligations)."
+        "title": "4. Retention Period",
+        "body": "Personal data is stored only for as long as required for the respective processing purposes or as long as statutory retention obligations apply (e.g., tax and commercial retention obligations)."
       },
       "section5": {
         "title": "5. Disclosure to Third Parties",
-        "intro": "Personal data will only be disclosed to third parties insofar as this is necessary for the processing of the order, such as:",
+        "intro": "Personal data is only disclosed to third parties insofar as this is necessary for contract performance, in particular to:",
         "thirdPartiesList": [
           "Shipping service providers",
-          "Payment providers (Credit/Debit card)"
+          "Payment service providers (e.g., credit or debit card providers)"
         ],
-        "conclusion": "No other disclosure will take place without your express consent."
+        "conclusion": "No further disclosure takes place without your explicit consent or unless there is a legal obligation."
       },
       "section6": {
         "title": "6. Cookies",
-        "body": "Only necessary cookies are used on this website to ensure the functionality of the website."
+        "body": "This website uses only technically necessary cookies that are required for operation and basic functionality.\nNo processing of personal data for analytics or marketing purposes takes place."
       },
       "section7": {
         "title": "7. Rights of Data Subjects",
-        "intro": "You have the right:",
+        "intro": "Under the GDPR, you have the right to:",
         "rightsList": [
-          "To obtain information about your stored data",
-          "To request correction of incorrect data",
-          "To request deletion or restriction of processing",
-          "To object to processing",
-          "To request data portability",
-          "To file a complaint with the data protection authority"
-        ]
+          "Obtain access to your stored personal data",
+          "Request rectification of inaccurate or incomplete data",
+          "Request deletion of your personal data, unless a statutory retention obligation applies",
+          "Request restriction of processing",
+          "Object to processing",
+          "Request data portability",
+          "Withdraw consent at any time",
+          "Lodge a complaint with the competent data protection authority"
+        ],
+        "outro": "Competent supervisory authority in Austria:\nAustrian Data Protection Authority – www.dsb.gv.at"
       },
       "section8": {
         "title": "8. Contact",
         "intro": "For questions regarding data protection, please contact:",
-        "whatsapp": "WhatsApp: {phone}",
-        "email": "{email}",
-        "phone": "Phone: {phone}"
+        "phoneWhatsapp": "Phone / WhatsApp: {phone}",
+        "email": "Email: {email}",
+        "outro": ""
       }
     },
     "imprint": {
       "header": {
-        "title": "Imprint",
-        "subtitle": "Impressum",
+        "title": "Imprint (Austria)",
+        "subtitle": "Imprint",
         "description": "Legal information and company details according to Austrian law."
       },
       "section1": {
@@ -787,49 +793,49 @@
         "value": "{companyName}"
       },
       "section2": {
-        "title": "2. Legal Form:",
+        "title": "2. Legal Form",
         "value": "{legalForm}"
       },
       "section3": {
-        "title": "3. Business Address:",
+        "title": "3. Business Address",
         "street": "{street}",
         "city": "{postalCode} {city}",
         "country": "Austria"
       },
       "section4": {
-        "title": "4. Contact Information:",
+        "title": "4. Contact Information",
         "phone": "Phone: {phone}",
         "email": "Email: {email}",
         "website": "Website: {website}"
       },
       "section5": {
-        "title": "5. Represented by:",
+        "title": "5. Owner / Authorized Representative",
         "value": "{owner}"
       },
       "section6": {
-        "title": "6. Company Register Number (if available):",
-        "value": "[Number or \"not available\"]"
+        "title": "6. Trade License",
+        "value": "Retail trade"
       },
       "section7": {
-        "title": "7. Company Register Court (if available):",
-        "value": "[e.g., Handelsgericht Wien]"
+        "title": "7. Issuing Authority",
+        "value": "District Authority Murtal"
       },
       "section8": {
-        "title": "8. UID Number (ATU…):",
-        "value": "[Your number or \"no UID number\"]"
+        "title": "8. GISA Number",
+        "value": "{gisaNumber}"
       },
       "section9": {
-        "title": "9. Trade License:",
-        "license": "[e.g., Handelsgewerbe]",
-        "issuedBy": "Issued by: [Authority]"
+        "title": "9. Member of the Economic Chamber",
+        "value": "Austrian Economic Chamber (WKO)\n(specific professional group to be provided)"
       },
       "section10": {
-        "title": "10. Member of the Economic Chamber (WKO):",
-        "value": "[e.g., Wirtschaftskammer Niederösterreich]"
+        "title": "10. Company Register",
+        "value": "Not registered in the company register"
       },
       "section11": {
-        "title": "11. Professional Legal Regulations:",
-        "intro": "Applicable legal regulations:",
+        "title": "11. Applicable Legal Provisions",
+        "law": "Trade Regulation Act (GewO)",
+        "intro": "available at:",
         "link": "{applicableLaw}"
       },
       "section12": {
@@ -841,6 +847,46 @@
         "title": "13. Copyright:",
         "paragraph1": "All content, images and texts on this website are subject to copyright.",
         "paragraph2": "Use without written permission is not permitted."
+      }
+    },
+    "withdrawal": {
+      "header": {
+        "title": "Withdrawal Policy",
+        "subtitle": "Right of Withdrawal",
+        "description": "Information about the 14-day right of withdrawal and its exceptions."
+      },
+      "section1": {
+        "title": "1. Right of Withdrawal",
+        "body": "Consumers have the right to withdraw from this purchase contract within 14 days without giving any reason."
+      },
+      "section2": {
+        "title": "2. Withdrawal Period",
+        "body": "The withdrawal period is 14 days from the day on which the customer, or a third party designated by the customer who is not the carrier, has received the goods."
+      },
+      "section3": {
+        "title": "3. Exclusion of the Right of Withdrawal",
+        "intro": "The right of withdrawal does not apply to the following goods:",
+        "exclusions": [
+          "Individually made products manufactured to customer specifications, including balloon compositions, custom sets, and goods with individually selected colors, shapes, lettering, and decorative elements.",
+          "Helium-filled balloons, as they have a limited float time and their properties deteriorate over time.",
+          "Balloon compositions and decorations made for a specific date or event.",
+          "Goods with limited shelf life, including chocolate, sweets, fresh flowers, and other food items that are part of gift sets.",
+          "Gift sets and gift boxes if the packaging has been opened after handover, a seal has been removed, or the contents have been altered.",
+          "Goods that have been used in whole or in part after receipt, in particular inflated balloons and decorative elements."
+        ],
+        "damage": "In case of damage upon delivery, please contact us within 24 hours of receipt."
+      },
+      "section4": {
+        "title": "4. Effects of Withdrawal",
+        "body": "If the withdrawal is effective, we will reimburse all payments received from the customer, including delivery costs (except for additional costs resulting from the customer's choice of a type of delivery other than the cheapest standard delivery we offer), without undue delay and no later than 14 days from the day we receive notice of withdrawal from this contract.\nWe will use the same means of payment that the customer used for the original transaction, unless expressly agreed otherwise."
+      },
+      "section5": {
+        "title": "5. Notice of Withdrawal",
+        "body": "To exercise the right of withdrawal, the customer must inform the seller by means of a clear statement of their decision to withdraw from this contract, for example via:\nEmail: {email}\nWhatsApp: {phone}"
+      },
+      "section6": {
+        "title": "6. Return of Goods",
+        "body": "The customer must return or hand over the goods without undue delay and in any event no later than 14 days from the day on which they inform us about the withdrawal from this contract.\nThe customer bears the direct costs of returning the goods, unless otherwise agreed."
       }
     }
   },

@@ -49,7 +49,11 @@ export default async function ImprintPage({
               {t("section2.title")}
             </h2>
             <p>
-              {t("section2.value", { legalForm: STORE_INFO.legal.legalForm })}
+              <span className="whitespace-pre-line">
+                {t("section2.value", {
+                  legalForm: STORE_INFO.legal.legalForm,
+                })}
+              </span>
             </p>
           </div>
 
@@ -78,7 +82,7 @@ export default async function ImprintPage({
               <br />
               {t("section4.email", { email: STORE_INFO.contact.email })}
               <br />
-              {t("section4.website", { website: STORE_INFO.website })}{" "}
+              {t("section4.website", { website: "" })}
               <a
                 href={STORE_INFO.website}
                 target="_blank"
@@ -101,21 +105,23 @@ export default async function ImprintPage({
             <h2 className="text-deep text-base font-semibold tracking-tight">
               {t("section6.title")}
             </h2>
-            <p>{t("section6.value")}</p>
+            <p className="whitespace-pre-line">{t("section6.value")}</p>
           </div>
 
           <div>
             <h2 className="text-deep text-base font-semibold tracking-tight">
               {t("section7.title")}
             </h2>
-            <p>{t("section7.value")}</p>
+            <p className="whitespace-pre-line">{t("section7.value")}</p>
           </div>
 
           <div>
             <h2 className="text-deep text-base font-semibold tracking-tight">
               {t("section8.title")}
             </h2>
-            <p>{t("section8.value")}</p>
+            <p>
+              {t("section8.value", { gisaNumber: STORE_INFO.legal.gisaNumber })}
+            </p>
           </div>
 
           <div>
@@ -123,9 +129,7 @@ export default async function ImprintPage({
               {t("section9.title")}
             </h2>
             <p>
-              {t("section9.license")}
-              <br />
-              {t("section9.issuedBy")}
+              <span className="whitespace-pre-line">{t("section9.value")}</span>
             </p>
           </div>
 
@@ -133,13 +137,14 @@ export default async function ImprintPage({
             <h2 className="text-deep text-base font-semibold tracking-tight">
               {t("section10.title")}
             </h2>
-            <p>{t("section10.value")}</p>
+            <p className="whitespace-pre-line">{t("section10.value")}</p>
           </div>
 
           <div>
             <h2 className="text-deep text-base font-semibold tracking-tight">
               {t("section11.title")}
             </h2>
+            <p className="whitespace-pre-line">{t("section11.law")}</p>
             <p>
               {t("section11.intro")}{" "}
               <a
@@ -149,7 +154,7 @@ export default async function ImprintPage({
                 className="hover:text-secondary underline"
               >
                 {t("section11.link", {
-                  applicableLaw: STORE_INFO.legal.applicableLaw,
+                  applicableLaw: `https://${STORE_INFO.legal.applicableLaw}`,
                 })}
               </a>
             </p>
@@ -175,6 +180,3 @@ export default async function ImprintPage({
     </section>
   );
 }
-
-
-

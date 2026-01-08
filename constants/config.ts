@@ -57,7 +57,7 @@ export const STORE_INFO = {
   },
 
   // Website
-  website: "https://ballon.boutique/",
+  website: "https://www.ballon.boutique",
 
   // Business Hours
   businessHours: {
@@ -110,7 +110,8 @@ export const STORE_INFO = {
     companyName: "Ballon Boutique",
     owner: "Oleksandra Sidak",
     legalForm:
-      "Einzelunternehmerin (Kleinunternehmerin gemäß § 6 Abs. 1 Z 27 UStG)",
+      "Einzelunternehmerin\n(Kleinunternehmerin gemäß § 6 Abs. 1 Z 27 UStG)",
+    gisaNumber: "39182463",
     registrationNumber: "fix", // Firmenbuchnummer (falls vorhanden): [Номер oder «не имеется»]
     vatNumber: "fix", // UID-Nummer (ATU…): [Ваш номер oder «нет номера UID»]
     competentAuthority: "Bezirkshauptmannschaft Murtal",

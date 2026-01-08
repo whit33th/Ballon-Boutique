@@ -85,6 +85,7 @@
     "company": "Unternehmen",
     "imprint": "Impressum",
     "terms": "AGB",
+    "withdrawal": "Widerrufsbelehrung",
     "privacy": "Datenschutz",
     "cancellation": "Widerruf",
     "social": "Social Media",
@@ -644,12 +645,12 @@
         "description": "Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Bestellungen, die über den Online-Shop des Verkäufers getätigt werden."
       },
       "clause1": {
-        "title": "AGB – Allgemeine Geschäftsbedingungen",
-        "body": "Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Bestellungen, die über den Online-Shop des Verkäufers getätigt werden. Abweichende Bedingungen des Kunden werden nicht anerkannt, sofern der Verkäufer ihnen nicht ausdrücklich schriftlich zustimmt. Dies gilt, bis der Verkäufer dies über WhatsApp bestätigt."
+        "title": "1. Geltungsbereich",
+        "body": "Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Bestellungen, die über den Online-Shop des Verkäufers getätigt werden. Abweichende Bedingungen des Kunden werden nicht anerkannt, sofern der Verkäufer ihnen nicht ausdrücklich schriftlich zustimmt (z. B. per E-Mail)."
       },
       "clause2": {
         "title": "2. Vertragspartner",
-        "body": "Der Kaufvertrag kommt zustande zwischen dem Kunden und:\n\n{companyName},\n\nSandgasse 3/3, Knittelfeld 8720\n\n{email} / {phone}"
+        "body": "Der Kaufvertrag kommt zustande zwischen dem Kunden und:\n{companyName}\nSandgasse 3/3, 8720 Knittelfeld, Österreich\nE-Mail: {email}\nTelefon: {phone}"
       },
       "clause3": {
         "title": "3. Angebot und Produktdarstellung",
@@ -657,31 +658,31 @@
       },
       "clause3_1": {
         "title": "3.1 Recht auf Austausch gleichwertiger Komponenten",
-        "body": "Der Verkäufer behält sich das Recht vor, einzelne Bestandteile eines Sets (z. B. Ballons oder Dekorationselemente) durch gleichwertige oder höherwertige Alternativen zu ersetzen, sofern:\n\nder Gesamtwert erhalten bleibt,\ndie Funktion nicht beeinträchtigt wird,\nkeine Preisänderung entsteht.\n\nOptische Abweichungen, die den Gesamteindruck nicht wesentlich beeinflussen, sind zulässig."
+        "body": "Der Verkäufer behält sich das Recht vor, einzelne Bestandteile eines Sets (z. B. Ballons oder Dekorationselemente) durch gleichwertige oder höherwertige Alternativen zu ersetzen, sofern:\nder Gesamtwert erhalten bleibt,\ndie Funktion nicht beeinträchtigt wird,\nkeine Preisänderung entsteht.\nOptische Abweichungen, die den Gesamteindruck nicht wesentlich beeinflussen, sind zulässig."
       },
       "clause4": {
         "title": "4. Bestellablauf und Vertragsabschluss",
-        "body": "Mit dem Absenden der Bestellung gibt der Kunde ein verbindliches Angebot zum Kauf ab.\n\nDer Kaufvertrag kommt zustande, sobald der Verkäufer die Bestellung eindeutig und schriftlich über WhatsApp bestätigt hat."
+        "body": "Mit dem Absenden der Bestellung gibt der Kunde ein verbindliches Angebot zum Kauf ab.\nDer Kaufvertrag kommt zustande, sobald der Verkäufer die Bestellung schriftlich per E-Mail bestätigt."
       },
       "clause5": {
         "title": "5. Preise und Versandkosten",
-        "body": "Alle Preise sind Endpreise ohne Umsatzsteuer, da der Verkäufer gemäß § 6 Abs. 1 Z 27 UStG keine Umsatzsteuer berechnet (Kleinunternehmerregelung).\n\nVersandkosten werden im Bestellprozess gesondert ausgewiesen."
+        "body": "Alle Preise sind Endpreise ohne Umsatzsteuer, da der Verkäufer gemäß § 6 Abs. 1 Z 27 UStG keine Umsatzsteuer berechnet (Kleinunternehmerregelung).\nVersandkosten werden im Bestellprozess gesondert ausgewiesen."
       },
       "clause6": {
         "title": "6. Lieferung",
-        "body": "Die Lieferung erfolgt nach Vereinbarung innerhalb des angegebenen Liefergebietes. Lieferzeiten können je nach Auftragslage variieren. Verzögerungen durch Versanddienstleister liegen außerhalb der Verantwortung des Verkäufers."
+        "body": "Die Lieferung erfolgt nach Vereinbarung innerhalb des angegebenen Liefergebietes. Lieferzeiten können je nach Auftragslage variieren.\nWir haften nicht für Verzögerungen, die außerhalb unseres Einflusses liegen, z. B. durch Versanddienstleister."
       },
       "clause7": {
         "title": "7. Zahlung",
-        "body": "Der Verkäufer bietet verschiedene Zahlungsmethoden an, wie z. B.:\n\nKreditkarte\n\nZahlung bei Abholung"
+        "body": "Der Verkäufer bietet verschiedene Zahlungsmethoden an, wie z. B.:\nKreditkarte\nZahlung bei Abholung"
       },
       "clause8": {
         "title": "8. Widerrufsrecht / Rücktrittsrecht (14 Tage)",
-        "body": "Kunden haben ein Widerrufsrecht von 14 Tagen gemäß dem österreichischen Fern- und Auswärtsgeschäfte-Gesetz (FAGG).\n\nVom Widerruf ausgeschlossen sind:\n\npersonalisierte Produkte,\nschnell verderbliche Waren (z. B. Heliumballons aufgrund begrenzter Schwebezeit)."
+        "body": "Kunden haben ein Widerrufsrecht von 14 Tagen gemäß dem österreichischen Fern- und Auswärtsgeschäfte-Gesetz (FAGG).\nDie genauen Bedingungen, Ausnahmen vom Widerrufsrecht sowie Informationen zur Ausübung des Widerrufs sind auf der Website im Bereich „Widerrufsrecht / Rücktrittsrecht“ beschrieben."
       },
       "clause9": {
         "title": "9. Gewährleistung und Haftung",
-        "body": "Es gelten die gesetzlichen Gewährleistungsbestimmungen (VGG).\n\nNicht gehaftet wird für Schäden durch:\n\nunsachgemäße Handhabung,\nHitze, Kälte, Feuer oder scharfe Gegenstände,\nfalsche Lagerung durch Kunden,\nnatürliche Schwankungen der Helium-Schwebezeit."
+        "body": "Es gelten die gesetzlichen Gewährleistungsbestimmungen (VGG).\nNicht gehaftet wird für Schäden durch:\nunsachgemäße Handhabung,\nHitze, Kälte, Feuer oder scharfe Gegenstände,\nfalsche Lagerung durch Kunden,\nnatürliche Schwankungen der Helium-Schwebezeit."
       },
       "clause10": {
         "title": "10. Eigentumsvorbehalt",
@@ -693,7 +694,7 @@
       },
       "clause12": {
         "title": "12. Online-Streitbeilegung (OS-Plattform)",
-        "body": "Gemäß der EU-Verordnung über Online-Streitbeilegung verweisen wir auf die Plattform der Europäischen Kommission:\n\n{euDisputeResolutionUrl}\n\nWir sind weder verpflichtet noch bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
+        "body": "Gemäß der EU-Verordnung über Online-Streitbeilegung verweisen wir auf die Plattform der Europäischen Kommission:\n{euDisputeResolutionUrl}\nWir sind weder verpflichtet noch bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen."
       },
       "clause13": {
         "title": "13. Gerichtsstand und anwendbares Recht",
@@ -707,78 +708,83 @@
     },
     "privacy": {
       "header": {
-        "title": "Datenschutz",
+        "title": "Datenschutzerklärung (Österreich / DSGVO)",
         "subtitle": "Datenschutz",
-        "description": "Verantwortlich für die Datenverarbeitung auf dieser Website ist:"
+        "description": "Verantwortlich für die Verarbeitung personenbezogener Daten auf dieser Website ist:"
       },
       "section1": {
         "title": "1. Verantwortlicher",
-        "intro": "Verantwortlich für die Datenverarbeitung auf dieser Website ist:",
+        "intro": "Verantwortlich für die Verarbeitung personenbezogener Daten auf dieser Website ist:",
         "company": "{companyName}",
-        "address": "Sandgasse 3/3, Knittelfeld 8720",
-        "email": "{email}",
-        "phone": "{phone}"
+        "address": "Sandgasse 3/3\n8720 Knittelfeld\nÖsterreich",
+        "phone": "Telefon: {phone}",
+        "email": "E-Mail: {email}"
       },
       "section2": {
         "title": "2. Erhebung und Verarbeitung personenbezogener Daten",
-        "intro": "Wir verarbeiten personenbezogene Daten, die Sie uns freiwillig zur Verfügung stellen, z. B.:",
+        "intro": "Wir verarbeiten personenbezogene Daten, die Sie uns freiwillig zur Verfügung stellen, insbesondere:",
         "dataList": [
-          "Name, Adresse, E-Mail",
+          "Name und Nachname",
+          "Adresse",
+          "E-Mail-Adresse",
           "Telefonnummer",
-          "Bestelldaten (Produkte, Menge, Datum)"
+          "Bestelldaten (z. B. Produkte, Menge, Datum)"
         ],
         "purposeIntro": "Diese Daten werden für folgende Zwecke verwendet:",
         "purposeList": [
-          "Bearbeitung von Bestellungen und Versand",
-          "Kommunikation mit Kunden (inkl. WhatsApp)",
+          "Abwicklung von Bestellungen und Lieferung",
+          "Kommunikation mit Kunden (einschließlich WhatsApp)",
           "Rechnungsstellung",
-          "Erfüllung gesetzlicher Pflichten"
+          "Erfüllung gesetzlicher Verpflichtungen"
         ]
       },
       "section3": {
         "title": "3. Rechtsgrundlage der Verarbeitung",
-        "body": "Die Verarbeitung erfolgt gemäß Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung) und lit. c (gesetzliche Verpflichtungen)."
+        "body": "Die Verarbeitung personenbezogener Daten erfolgt auf Grundlage von:\nArt. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung)\nArt. 6 Abs. 1 lit. c DSGVO (gesetzliche Verpflichtung)"
       },
       "section4": {
-        "title": "4. Speicherung",
-        "body": "Ihre Daten werden nur so lange gespeichert, wie es für die Erfüllung der Zwecke notwendig ist oder gesetzliche Aufbewahrungspflichten bestehen (z. B. steuerliche Aufbewahrungspflichten)."
+        "title": "4. Speicherdauer",
+        "body": "Personenbezogene Daten werden nur so lange gespeichert, wie dies für die jeweiligen Verarbeitungszwecke erforderlich ist oder gesetzliche Aufbewahrungspflichten bestehen (z. B. steuer- und handelsrechtliche Aufbewahrungspflichten)."
       },
       "section5": {
         "title": "5. Weitergabe an Dritte",
-        "intro": "Personenbezogene Daten werden nur an Dritte weitergegeben, soweit dies für die Abwicklung der Bestellung notwendig ist, z. B.:",
+        "intro": "Personenbezogene Daten werden nur an Dritte weitergegeben, soweit dies für die Vertragsabwicklung erforderlich ist, insbesondere an:",
         "thirdPartiesList": [
           "Versanddienstleister",
-          "Zahlungsanbieter (Kredit-/Debitkarte)"
+          "Zahlungsdienstleister (z. B. Kredit- oder Debitkartenanbieter)"
         ],
-        "conclusion": "Eine andere Weitergabe erfolgt nicht ohne Ihre ausdrückliche Zustimmung."
+        "conclusion": "Eine darüber hinausgehende Weitergabe erfolgt nicht ohne Ihre ausdrückliche Einwilligung oder sofern keine gesetzliche Verpflichtung besteht."
       },
       "section6": {
         "title": "6. Cookies",
-        "body": "Auf dieser Website werden nur notwendige Cookies verwendet, um die Funktionsfähigkeit der Website zu gewährleisten."
+        "body": "Diese Website verwendet ausschließlich technisch notwendige Cookies, die für den Betrieb und die grundlegenden Funktionen der Website erforderlich sind.\nEine Verarbeitung personenbezogener Daten zu Analyse- oder Marketingzwecken erfolgt nicht."
       },
       "section7": {
         "title": "7. Rechte der betroffenen Personen",
-        "intro": "Sie haben das Recht:",
+        "intro": "Sie haben gemäß DSGVO das Recht:",
         "rightsList": [
-          "Auskunft über Ihre gespeicherten Daten zu erhalten",
-          "Berichtigung unrichtiger Daten zu verlangen",
-          "Löschung oder Einschränkung der Verarbeitung zu verlangen",
+          "Auskunft über Ihre gespeicherten personenbezogenen Daten zu erhalten",
+          "Berichtigung unrichtiger oder unvollständiger Daten zu verlangen",
+          "Löschung Ihrer personenbezogenen Daten zu verlangen, sofern keine gesetzliche Aufbewahrungspflicht besteht",
+          "Einschränkung der Verarbeitung zu verlangen",
           "Widerspruch gegen die Verarbeitung einzulegen",
           "Datenübertragbarkeit zu verlangen",
-          "Beschwerde bei der Datenschutzbehörde einzulegen"
-        ]
+          "Eine erteilte Einwilligung jederzeit zu widerrufen",
+          "Beschwerde bei der zuständigen Datenschutzbehörde einzulegen"
+        ],
+        "outro": "Zuständige Aufsichtsbehörde in Österreich:\nÖsterreichische Datenschutzbehörde – www.dsb.gv.at"
       },
       "section8": {
         "title": "8. Kontakt",
         "intro": "Für Fragen zum Datenschutz kontaktieren Sie bitte:",
-        "whatsapp": "WhatsApp: {phone}",
-        "email": "{email}",
-        "phone": "Telefon: {phone}"
+        "phoneWhatsapp": "Telefon / WhatsApp: {phone}",
+        "email": "E-Mail: {email}",
+        "outro": "✅"
       }
     },
     "imprint": {
       "header": {
-        "title": "Impressum",
+        "title": "Impressum (Österreich)",
         "subtitle": "Impressum",
         "description": "Rechtliche Informationen und Firmenangaben gemäß österreichischem Recht."
       },
@@ -787,60 +793,100 @@
         "value": "{companyName}"
       },
       "section2": {
-        "title": "2. Rechtsform:",
+        "title": "2. Rechtsform",
         "value": "{legalForm}"
       },
       "section3": {
-        "title": "3. Geschäftsadresse:",
+        "title": "3. Geschäftsadresse",
         "street": "{street}",
         "city": "{postalCode} {city}",
         "country": "Österreich"
       },
       "section4": {
-        "title": "4. Kontaktinformationen:",
+        "title": "4. Kontaktinformationen",
         "phone": "Telefon: {phone}",
         "email": "E-Mail: {email}",
         "website": "Website: {website}"
       },
       "section5": {
-        "title": "5. Vertreten durch:",
+        "title": "5. Inhaberin / Vertretungsberechtigte",
         "value": "{owner}"
       },
       "section6": {
-        "title": "6. Firmenbuchnummer (falls vorhanden):",
-        "value": "[Номер oder «не имеется»]"
+        "title": "6. Gewerbeberechtigung",
+        "value": "Handelsgewerbe"
       },
       "section7": {
-        "title": "7. Firmenbuchgericht (falls vorhanden):",
-        "value": "[z. B. Handelsgericht Wien]"
+        "title": "7. Ausstellende Behörde",
+        "value": "Bezirkshauptmannschaft Murtal"
       },
       "section8": {
-        "title": "8. UID-Nummer (ATU…):",
-        "value": "[Ваш номер oder «нет номера UID»]"
+        "title": "8. GISA-Zahl",
+        "value": "{gisaNumber}"
       },
       "section9": {
-        "title": "9. Gewerbeberechtigung:",
-        "license": "[z. B. Handelsgewerbe]",
-        "issuedBy": "Ausgestellt von: [Behörde]"
+        "title": "9. Mitglied der Wirtschaftskammer",
+        "value": "Wirtschaftskammer Österreich (WKO)\n(konkrete Fachgruppe wird nachgereicht)"
       },
       "section10": {
-        "title": "10. Mitglied der Wirtschaftskammer (WKO):",
-        "value": "[z. B. Wirtschaftskammer Niederösterreich]"
+        "title": "10. Firmenbuch",
+        "value": "Nicht im Firmenbuch eingetragen"
       },
       "section11": {
-        "title": "11. Berufsrechtliche Vorschriften:",
-        "intro": "Anwendbare Rechtsvorschriften:",
+        "title": "11. Anwendbare Rechtsvorschriften",
+        "law": "Gewerbeordnung (GewO)",
+        "intro": "abrufbar unter:",
         "link": "{applicableLaw}"
       },
       "section12": {
-        "title": "12. Haftungsausschluss (Disclaimer):",
-        "paragraph1": "Trotz sorgfältiger Kontrolle übernehmen wir keine Haftung für Inhalte externer Links.",
-        "paragraph2": "Für den Inhalt verlinkter Seiten sind ausschließlich deren Betreiber verantwortlich."
+        "title": "12. Haftungsausschluss",
+        "paragraph1": "Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine Haftung für die Inhalte externer Links.",
+        "paragraph2": "Für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich."
       },
       "section13": {
-        "title": "13. Urheberrecht:",
-        "paragraph1": "Alle Inhalte, Bilder und Texte dieser Website unterliegen dem Urheberrecht.",
-        "paragraph2": "Eine Nutzung ohne schriftliche Genehmigung ist nicht gestattet."
+        "title": "13. Urheberrecht",
+        "paragraph1": "Die Inhalte dieser Website, einschließlich Texte, Bilder und Grafiken, unterliegen dem Urheberrecht.",
+        "paragraph2": "Eine Verwendung ohne ausdrückliche schriftliche Zustimmung ist nicht gestattet."
+      }
+    },
+    "withdrawal": {
+      "header": {
+        "title": "Widerrufsbelehrung",
+        "subtitle": "Widerrufsrecht",
+        "description": "Informationen zum Widerrufsrecht (14 Tage) und zu den Ausnahmen."
+      },
+      "section1": {
+        "title": "1. Widerrufsrecht",
+        "body": "Verbraucher haben das Recht, binnen 14 Tagen ohne Angabe von Gründen diesen Kaufvertrag zu widerrufen."
+      },
+      "section2": {
+        "title": "2. Widerrufsfrist",
+        "body": "Die Widerrufsfrist beträgt 14 Tage ab dem Tag, an dem der Kunde oder ein von ihm benannter Dritter, der nicht der Beförderer ist, die Ware erhalten hat."
+      },
+      "section3": {
+        "title": "3. Ausschluss des Widerrufsrechts",
+        "intro": "Das Widerrufsrecht besteht nicht für folgende Waren:",
+        "exclusions": [
+          "Individuell angefertigte Produkte, die nach Kundenspezifikationen hergestellt wurden, einschließlich Ballonkompositionen, individueller Sets sowie Waren mit individuell ausgewählten Farben, Formen, Beschriftungen und Dekorationselementen.",
+          "Mit Helium gefüllte Luftballons, da diese eine begrenzte Schwebezeit haben und ihre Eigenschaften mit der Zeit verlieren.",
+          "Ballonkompositionen und Dekorationen, die für einen bestimmten Termin oder eine bestimmte Veranstaltung angefertigt wurden.",
+          "Waren mit begrenzter Haltbarkeit, einschließlich Schokolade, Süßwaren, frischer Blumen sowie anderer Lebensmittel, die Bestandteil von Geschenksets sind.",
+          "Geschenksets und Geschenkboxen, sofern die Verpackung nach der Übergabe geöffnet wurde, ein Siegel entfernt wurde oder der Inhalt verändert wurde.",
+          "Waren, die nach Erhalt ganz oder teilweise benutzt wurden, insbesondere aufgeblasene Luftballons und Dekorationselemente."
+        ],
+        "damage": "Im Falle einer Beschädigung der Ware bei Lieferung bitten wir Sie, uns innerhalb von 24 Stunden nach Erhalt zu kontaktieren."
+      },
+      "section4": {
+        "title": "4. Widerrufsfolgen",
+        "body": "Im Falle eines wirksamen Widerrufs erstatten wir alle Zahlungen, die wir vom Kunden erhalten haben, einschließlich der Lieferkosten (mit Ausnahme zusätzlicher Kosten, die sich daraus ergeben, dass der Kunde eine andere Art der Lieferung als die von uns angebotene günstigste Standardlieferung gewählt hat), unverzüglich und spätestens binnen 14 Tagen ab dem Tag, an dem die Mitteilung über den Widerruf dieses Vertrags bei uns eingegangen ist.\nFür diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das der Kunde bei der ursprünglichen Transaktion eingesetzt hat, es sei denn, es wurde ausdrücklich etwas anderes vereinbart."
+      },
+      "section5": {
+        "title": "5. Widerrufserklärung",
+        "body": "Um das Widerrufsrecht auszuüben, muss der Kunde den Verkäufer mittels einer eindeutigen Erklärung über seinen Entschluss, diesen Vertrag zu widerrufen, informieren, zum Beispiel per:\nE-Mail: {email}\nWhatsApp: {phone}"
+      },
+      "section6": {
+        "title": "6. Rücksendung der Waren",
+        "body": "Der Kunde hat die Waren unverzüglich und in jedem Fall spätestens binnen 14 Tagen ab dem Tag, an dem er uns über den Widerruf dieses Vertrags unterrichtet, an uns zurückzusenden oder zu übergeben.\nDie unmittelbaren Kosten der Rücksendung der Waren trägt der Kunde, sofern nichts anderes vereinbart wurde."
       }
     }
   },

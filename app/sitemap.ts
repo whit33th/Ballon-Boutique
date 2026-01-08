@@ -23,6 +23,11 @@ const staticPages = [
   { path: "legal/terms", priority: 0.5, changeFrequency: "yearly" as const },
   { path: "legal/privacy", priority: 0.5, changeFrequency: "yearly" as const },
   { path: "legal/imprint", priority: 0.5, changeFrequency: "yearly" as const },
+  {
+    path: "legal/withdrawal",
+    priority: 0.5,
+    changeFrequency: "yearly" as const,
+  },
 ];
 
 /**

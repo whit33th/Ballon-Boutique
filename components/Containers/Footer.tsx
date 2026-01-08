@@ -86,6 +86,7 @@ const sections: FooterSection[] = [
 
 const legalLinks: InternalLink[] = [
   { labelKey: "footer.terms", href: "/legal/terms" },
+  { labelKey: "footer.withdrawal", href: "/legal/withdrawal" },
   { labelKey: "footer.privacy", href: "/legal/privacy" },
   { labelKey: "footer.imprint", href: "/legal/imprint" },
 ];

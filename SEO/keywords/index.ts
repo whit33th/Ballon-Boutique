@@ -252,7 +252,9 @@ export const SEO_KEYWORDS: KeywordsByPage = {
   },
 
   legal: {
-    de: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
+    de: (
+      pageType: "terms" | "privacy" | "imprint" | "withdrawal" | "cancellation",
+    ) => {
       const base = [
         "agb",
         "datenschutz",
@@ -276,12 +278,20 @@ export const SEO_KEYWORDS: KeywordsByPage = {
           "privacy policy",
         ],
         imprint: ["impressum", "unternehmensangaben", "firmenangaben"],
+        withdrawal: [
+          "widerrufsbelehrung",
+          "widerrufsrecht",
+          "rücktrittsrecht",
+          "fagg",
+        ],
         cancellation: ["widerrufsrecht", "rückgabe", "stornierung", "widerruf"],
       };
 
       return [...base, ...specific[pageType]];
     },
-    en: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
+    en: (
+      pageType: "terms" | "privacy" | "imprint" | "withdrawal" | "cancellation",
+    ) => {
       const base = [
         "terms",
         "privacy",
@@ -301,6 +311,12 @@ export const SEO_KEYWORDS: KeywordsByPage = {
           "privacy statement",
         ],
         imprint: ["imprint", "company information", "legal notice"],
+        withdrawal: [
+          "withdrawal policy",
+          "right of withdrawal",
+          "cancellation rights",
+          "returns",
+        ],
         cancellation: [
           "cancellation policy",
           "return policy",
@@ -311,7 +327,9 @@ export const SEO_KEYWORDS: KeywordsByPage = {
 
       return [...base, ...specific[pageType]];
     },
-    ru: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
+    ru: (
+      pageType: "terms" | "privacy" | "imprint" | "withdrawal" | "cancellation",
+    ) => {
       const base = [
         "условия",
         "конфиденциальность",
@@ -335,6 +353,12 @@ export const SEO_KEYWORDS: KeywordsByPage = {
           "конфиденциальность",
         ],
         imprint: ["импринт", "информация о компании", "юридическая информация"],
+        withdrawal: [
+          "право отказа",
+          "право на возврат",
+          "отказ от договора",
+          "возврат товара",
+        ],
         cancellation: [
           "политика возврата",
           "отмена заказа",
@@ -345,7 +369,9 @@ export const SEO_KEYWORDS: KeywordsByPage = {
 
       return [...base, ...specific[pageType]];
     },
-    uk: (pageType: "terms" | "privacy" | "imprint" | "cancellation") => {
+    uk: (
+      pageType: "terms" | "privacy" | "imprint" | "withdrawal" | "cancellation",
+    ) => {
       const base = [
         "умови",
         "конфіденційність",
@@ -365,6 +391,12 @@ export const SEO_KEYWORDS: KeywordsByPage = {
           "конфіденційність",
         ],
         imprint: ["імпринт", "інформація про компанію", "юридична інформація"],
+        withdrawal: [
+          "право відмови",
+          "право на повернення",
+          "відмова від договору",
+          "повернення товару",
+        ],
         cancellation: [
           "політика повернення",
           "скасування замовлення",

@@ -5,7 +5,12 @@ import { routing } from "@/i18n/routing";
 import { getKeywords } from "../keywords";
 import { getBaseUrl, getCanonicalUrl, getSiteName } from "../utils";
 
-type LegalPageType = "terms" | "privacy" | "imprint" | "cancellation";
+type LegalPageType =
+  | "terms"
+  | "privacy"
+  | "imprint"
+  | "withdrawal"
+  | "cancellation";
 
 export async function generateLegalMetadata(
   locale: string,
@@ -33,6 +38,7 @@ export async function generateLegalMetadata(
       terms: "Terms & Conditions",
       privacy: "Privacy Policy",
       imprint: "Imprint",
+      withdrawal: "Withdrawal Policy",
       cancellation: "Cancellation Policy",
     };
     title = `${pageTitles[pageType]} | ${siteName}`;
