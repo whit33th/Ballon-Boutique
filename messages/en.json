@@ -181,7 +181,7 @@
       "selfPickup": "Self pickup",
       "popular": "Popular",
       "courierDelivery": "Courier delivery",
-      "hours": "{start}:00-{end}:00",
+      "hours": "{start}–{end}",
       "chooseYourCity": "Choose your city",
       "deliveryDetails": "Delivery details",
       "addressPrefilled": "Address fields are prefilled from your profile so checkout stays fast.",
@@ -196,6 +196,9 @@
       "preferredDeliveryDateTime": "Preferred delivery date & time",
       "preferredPickupDate": "Preferred pickup date",
       "preferredDeliveryDate": "Preferred delivery date",
+      "selectDeliverySlot": "Select a delivery time slot",
+      "loadingSlots": "Loading available time slots…",
+      "noSlotsForDate": "No delivery slots available for this date.",
       "preorderMinimumNotice": "* Minimum {hours}h preorder",
       "daysAheadMinimum": "{count, plural, =1 {day ahead minimum} other {days ahead minimum}}",
       "days": "{count, plural, =1 {day} other {# days}}",
@@ -266,6 +269,8 @@
       "pickupDateRequired": "Date is required.",
       "pickupDateInvalid": "Enter a valid date.",
       "pickupDateTimeRequired": "Date and time is required.",
+      "deliverySlotRequired": "Select a delivery time slot.",
+      "deliverySlotInvalid": "Select a valid delivery time slot.",
       "deliveryTimeRange": "Delivery time must be between {min}:00 and {max}:00.",
       "pickupDateMinDays": "Pickup date must be at least {days} days in advance.",
       "pickupDateMaxOneYear": "Pickup date cannot be more than 1 year in advance.",
@@ -362,7 +367,8 @@
       "pending": "Pending",
       "confirmed": "Confirmed",
       "shipped": "Shipped",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "canceled": "Canceled"
     },
     "paymentMethod": {
       "full_online": "Full online",
@@ -430,6 +436,7 @@
       "details": "Details",
       "items": "{count, plural, =0 {no items} =1 {one item} other {# items}}",
       "recipient": "Recipient",
+      "phoneWithValue": "Phone: {phone}",
       "notes": "Notes",
       "color": "Color",
       "text": "Text",
@@ -438,7 +445,8 @@
         "pending": "Pending",
         "confirmed": "Confirmed",
         "shipped": "Shipped",
-        "delivered": "Delivered"
+        "delivered": "Delivered",
+        "canceled": "Canceled"
       }
     },
     "settings": {
@@ -882,7 +890,8 @@
         "pending": "Pending",
         "confirmed": "Confirmed",
         "shipped": "Shipped",
-        "delivered": "Delivered"
+        "delivered": "Delivered",
+        "canceled": "Canceled"
       },
       "tableHeaders": {
         "payment": "Payment",
@@ -904,6 +913,24 @@
     "statusFilter": {
       "placeholder": "Status",
       "all": "All statuses"
+    },
+    "ordersFilters": {
+      "searchPlaceholder": "Search by ID, name, or phone…",
+      "filtersButton": "Filters",
+      "filtersTitle": "Order Filters",
+      "clearFilters": "Clear all"
+    },
+    "productFilters": {
+      "searchPlaceholder": "Search products…",
+      "availabilityPlaceholder": "Availability",
+      "availabilityAll": "All",
+      "availabilityInStock": "In stock",
+      "availabilityOutOfStock": "Out of stock",
+      "categoryPlaceholder": "Category",
+      "categoryAll": "All categories",
+      "filtersButton": "Filters",
+      "filtersTitle": "Product Filters",
+      "clearFilters": "Clear all"
     },
     "sortPlaceholder": "Sorting",
     "productsCount": "{count, plural, =0 {no products} =1 {one product} other {# products}}",
@@ -936,6 +963,8 @@
       "uploading": "Uploading {fileName}",
       "fileUploaded": "File {fileName} uploaded",
       "allImagesUploaded": "All images uploaded",
+      "orderUpdated": "Order updated",
+      "orderUpdateFailed": "Failed to update order",
       "productUpdated": "Product updated",
       "productSaved": "Product saved",
       "imagesUploadFailed": "Failed to upload images",
@@ -1035,6 +1064,16 @@
       "address": "Address",
       "pickupTime": "Pickup time",
       "deliveryTime": "Delivery time",
+      "changeTime": "Change",
+      "rescheduleTitle": "Reschedule delivery time",
+      "rescheduleDescription": "Choose a new date and an available time slot.",
+      "selectDate": "Date",
+      "selectSlot": "Time slot",
+      "loadingSlots": "Loading slots...",
+      "noSlots": "No slots for this date.",
+      "clearTime": "Clear time",
+      "saveTime": "Save",
+      "saving": "Saving...",
       "items": "Items",
       "payment": "Payment",
       "method": "Method",

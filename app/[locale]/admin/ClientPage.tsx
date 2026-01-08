@@ -8,6 +8,7 @@ import {
   usePreloadedQuery,
 } from "convex/react";
 import { useQuery } from "convex-helpers/react/cache";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -18,6 +19,17 @@ import {
 } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import Input from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,6 +40,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CategoryGroupValue } from "@/constants/categories";
 import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
+import { STORE_INFO } from "@/constants/config";
 import { api } from "@/convex/_generated/api";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { uploadImageKitFile } from "@/lib/imagekitUploadClient";
@@ -51,6 +64,7 @@ import {
 } from "./_components";
 
 const DEFAULT_CATEGORY_GROUP = PRODUCT_CATEGORY_GROUPS[0];
+
 const getFallbackCategories = (groupValue: CategoryGroupValue): string[] => {
   const group = PRODUCT_CATEGORY_GROUPS.find(
     (candidate) => candidate.value === groupValue,
@@ -87,6 +101,7 @@ export default function AdminPageClient({
 }: AdminPageClientProps) {
   const t = useTranslations("admin.payments");
   const tAdmin = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const user = usePreloadedQuery(preloadedUser);
 
   const [activeTab, setActiveTab] = useState<
@@ -95,6 +110,8 @@ export default function AdminPageClient({
   const [formOpen, setFormOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderDateFilter, setOrderDateFilter] = useState("");
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -109,6 +126,70 @@ export default function AdminPageClient({
   >(null);
   const [isStripeLoading, setIsStripeLoading] = useState(false);
   const [stripeError, setStripeError] = useState<string | null>(null);
+
+  const [productSearch, setProductSearch] = useState("");
+  const [productAvailability, setProductAvailability] = useState<
+    "all" | "inStock" | "outOfStock"
+  >("all");
+  const [productCategory, setProductCategory] = useState<string>("all");
+  const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false);
+
+  const [isOrdersFiltersDrawerOpen, setIsOrdersFiltersDrawerOpen] =
+    useState(false);
+
+  const hasActiveFilters =
+    productAvailability !== "all" || productCategory !== "all";
+
+  const hasActiveOrdersFilters =
+    statusFilter !== "all" || sortOrder !== "newest" || orderDateFilter !== "";
+
+  const clearFilters = () => {
+    setProductAvailability("all");
+    setProductCategory("all");
+  };
+
+  const clearOrdersFilters = () => {
+    setStatusFilter("all");
+    setSortOrder("newest");
+    setOrderDateFilter("");
+  };
+
+  const categoryOptions = useMemo(() => {
+    const options: Array<{ value: string; label: string }> = [];
+    const seen = new Set<string>();
+
+    const resolveGroupLabel = (
+      groupValue: CategoryGroupValue,
+      fallback: string,
+    ) => {
+      const maybe = tAdmin(`categoryGroups.${groupValue}`);
+      return typeof maybe === "string" && !maybe.includes("categoryGroups.")
+        ? maybe
+        : fallback;
+    };
+
+    const resolveSubLabel = (value: string, fallback: string) => {
+      const maybe = tAdmin(`subcategories.${value}`);
+      return typeof maybe === "string" && !maybe.includes("subcategories.")
+        ? maybe
+        : fallback;
+    };
+
+    for (const group of PRODUCT_CATEGORY_GROUPS) {
+      const groupLabel = resolveGroupLabel(group.value, group.label);
+      for (const sub of group.subcategories) {
+        if (seen.has(sub.value)) continue;
+        seen.add(sub.value);
+        const subLabel = resolveSubLabel(sub.value, sub.label ?? sub.value);
+        options.push({
+          value: sub.value,
+          label: `${groupLabel} · ${subLabel}`,
+        });
+      }
+    }
+
+    return options;
+  }, [tAdmin]);
 
   const previewUrlsRef = useRef<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -212,8 +293,146 @@ export default function AdminPageClient({
   const products = (productsResult?.page ?? []) as ProductCardData[];
   const ordersLoading = ordersResult === undefined;
   const orders = ordersResult ?? [];
+
+  const toStoreYmd = useCallback((value: string | number | Date): string => {
+    const date = value instanceof Date ? value : new Date(value);
+    return date.toLocaleDateString("en-CA", {
+      timeZone: STORE_INFO.geo.timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  }, []);
+
+  const orderDaysWithOrders = useMemo(() => {
+    const days = new Set<string>();
+    for (const order of orders) {
+      if (typeof order.pickupDateTime === "string" && order.pickupDateTime) {
+        days.add(toStoreYmd(order.pickupDateTime));
+        continue;
+      }
+      if (typeof order._creationTime === "number") {
+        days.add(toStoreYmd(order._creationTime));
+      }
+    }
+    return days;
+  }, [orders, toStoreYmd]);
+
+  const selectedOrderDate = useMemo(() => {
+    if (!orderDateFilter) return undefined;
+    // Use midday to avoid timezone edge cases when constructing from YYYY-MM-DD.
+    return new Date(`${orderDateFilter}T12:00:00`);
+  }, [orderDateFilter]);
+
+  const handleOrderDateSelect: (date: Date | undefined) => void = useCallback(
+    (date) => {
+      setOrderDateFilter(date ? toStoreYmd(date) : "");
+    },
+    [toStoreYmd],
+  );
+
+  const OrdersCalendarDayButton = useCallback(
+    (props: React.ComponentProps<typeof CalendarDayButton>) => {
+      const ymd = toStoreYmd(props.day.date);
+      const hasOrders = orderDaysWithOrders.has(ymd);
+      const isSelected = Boolean(props.modifiers?.selected);
+
+      return (
+        <CalendarDayButton
+          {...props}
+          className={[
+            props.className,
+            "relative",
+            hasOrders && !isSelected ? "bg-accent/80" : null,
+            hasOrders ? "ring-primary/30 ring-2" : null,
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {props.children}
+          {hasOrders ? (
+            <span className="bg-primary absolute bottom-1 left-1/2 block h-1.5 w-1.5 -translate-x-1/2 translate-y-1/3 rounded-full" />
+          ) : null}
+        </CalendarDayButton>
+      );
+    },
+    [orderDaysWithOrders, toStoreYmd],
+  );
+
+  const filteredOrders = useMemo(() => {
+    const rawQuery = orderSearch.trim().toLowerCase();
+    const hasQuery = rawQuery.length > 0;
+    const query = hasQuery
+      ? rawQuery.startsWith("#")
+        ? rawQuery.slice(1)
+        : rawQuery
+      : "";
+    const queryDigits = hasQuery ? query.replace(/\D/g, "") : "";
+
+    return orders.filter((order) => {
+      if (orderDateFilter) {
+        const matchesPickupDate =
+          typeof order.pickupDateTime === "string" && order.pickupDateTime
+            ? toStoreYmd(order.pickupDateTime) === orderDateFilter
+            : false;
+        const matchesCreatedDate =
+          typeof order._creationTime === "number"
+            ? toStoreYmd(order._creationTime) === orderDateFilter
+            : false;
+
+        if (!matchesPickupDate && !matchesCreatedDate) {
+          return false;
+        }
+      }
+
+      if (!hasQuery) {
+        return true;
+      }
+
+      const id = String(order._id).toLowerCase();
+      const idNormalized = id.startsWith("#") ? id.slice(1) : id;
+      const name = String(order.customerName ?? "").toLowerCase();
+      const email = String(order.customerEmail ?? "").toLowerCase();
+      const phone = String(
+        (order as unknown as { phone?: string | null }).phone ?? "",
+      );
+      const phoneDigits = phone.replace(/\D/g, "");
+
+      if (id.includes(query) || idNormalized.includes(query)) return true;
+      if (name.includes(query)) return true;
+      if (email.includes(query)) return true;
+
+      if (queryDigits.length >= 3 && phoneDigits.includes(queryDigits))
+        return true;
+      if (phone.toLowerCase().includes(query)) return true;
+
+      return false;
+    });
+  }, [orderDateFilter, orderSearch, orders, toStoreYmd]);
   const convexPayments = paymentsResult ?? [];
   const paymentsLoading = paymentsResult === undefined;
+
+  const filteredProducts = useMemo(() => {
+    const query = productSearch.trim().toLowerCase();
+    return products.filter((product) => {
+      if (query && !product.name.toLowerCase().includes(query)) {
+        return false;
+      }
+      if (productAvailability === "inStock" && !product.inStock) {
+        return false;
+      }
+      if (productAvailability === "outOfStock" && product.inStock) {
+        return false;
+      }
+
+      const categories = product.categories ?? [];
+      if (productCategory !== "all" && !categories.includes(productCategory)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [products, productAvailability, productCategory, productSearch]);
 
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const detailsRef = useRef<HTMLDivElement | null>(null);
@@ -240,11 +459,12 @@ export default function AdminPageClient({
   }, [isAdmin, listStripePayments, tAdmin]);
 
   useEffect(() => {
-    if (!isAdmin) {
+    // Stripe fetch is expensive and requires auth; only load when Payments tab is open.
+    if (!isAdmin || activeTab !== "payments") {
       return;
     }
     void refreshStripePayments();
-  }, [isAdmin, refreshStripePayments]);
+  }, [activeTab, isAdmin, refreshStripePayments]);
 
   useEffect(() => {
     if (activeTab !== "orders") {
@@ -265,6 +485,13 @@ export default function AdminPageClient({
     );
     window.scrollTo({ top: targetY, behavior: "smooth" });
   }, [selectedOrderId]);
+
+  useEffect(() => {
+    if (!selectedOrderId) return;
+    if (!filteredOrders.some((order) => order._id === selectedOrderId)) {
+      setSelectedOrderId(null);
+    }
+  }, [filteredOrders, selectedOrderId]);
 
   const productMetrics = useMemo(() => {
     if (!products.length) {
@@ -681,7 +908,7 @@ export default function AdminPageClient({
 
   return (
     <div className="min-h-screen bg-linear-to-br">
-      <div className="mx-auto w-full max-w-7xl px-4 py-10 lg:px-8">
+      <div className="mx-auto w-full px-4 py-10 lg:px-8">
         <div className="mb-6 space-y-1">
           <h1 className="text-3xl font-semibold text-slate-900">
             {tAdmin("dashboardTitle")}
@@ -759,9 +986,140 @@ export default function AdminPageClient({
                     </h3>
                     <span className="text-sm text-slate-500">
                       {tAdmin("positionsCount", {
-                        count: productMetrics.total,
+                        count: filteredProducts.length,
                       })}
                     </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                      <Input
+                        value={productSearch}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setProductSearch(e.target.value)
+                        }
+                        placeholder={tAdmin("productFilters.searchPlaceholder")}
+                        className="w-full pl-9"
+                      />
+                    </div>
+
+                    <Drawer
+                      open={isFiltersDrawerOpen}
+                      onOpenChange={setIsFiltersDrawerOpen}
+                    >
+                      <DrawerTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="flex items-center gap-2"
+                        >
+                          <SlidersHorizontal className="h-4 w-4" />
+                          <span className="hidden sm:inline">
+                            {tAdmin("productFilters.filtersButton")}
+                          </span>
+                          {hasActiveFilters && (
+                            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[10px] font-medium text-white">
+                              {
+                                [
+                                  productAvailability !== "all",
+                                  productCategory !== "all",
+                                ].filter(Boolean).length
+                              }
+                            </span>
+                          )}
+                        </Button>
+                      </DrawerTrigger>
+                      <DrawerContent>
+                        <div className="mx-auto w-full max-w-md">
+                          <DrawerHeader>
+                            <DrawerTitle>
+                              {tAdmin("productFilters.filtersTitle")}
+                            </DrawerTitle>
+                          </DrawerHeader>
+
+                          <div className="space-y-6 p-4">
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-slate-700">
+                                {tAdmin(
+                                  "productFilters.availabilityPlaceholder",
+                                )}
+                              </p>
+                              <Select
+                                value={productAvailability}
+                                onValueChange={(value) =>
+                                  setProductAvailability(
+                                    value as "all" | "inStock" | "outOfStock",
+                                  )
+                                }
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">
+                                    {tAdmin("productFilters.availabilityAll")}
+                                  </SelectItem>
+                                  <SelectItem value="inStock">
+                                    {tAdmin(
+                                      "productFilters.availabilityInStock",
+                                    )}
+                                  </SelectItem>
+                                  <SelectItem value="outOfStock">
+                                    {tAdmin(
+                                      "productFilters.availabilityOutOfStock",
+                                    )}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium text-slate-700">
+                                {tAdmin("productFilters.categoryPlaceholder")}
+                              </p>
+                              <Select
+                                value={productCategory}
+                                onValueChange={(value) =>
+                                  setProductCategory(value)
+                                }
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">
+                                    {tAdmin("productFilters.categoryAll")}
+                                  </SelectItem>
+                                  {categoryOptions.map((option) => (
+                                    <SelectItem
+                                      key={option.value}
+                                      value={option.value}
+                                    >
+                                      {option.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <DrawerFooter className="flex-row gap-2">
+                            <Button
+                              variant="outline"
+                              className="flex-1"
+                              onClick={clearFilters}
+                            >
+                              {tAdmin("productFilters.clearFilters")}
+                            </Button>
+                            <DrawerClose asChild>
+                              <Button className="flex-1">
+                                {tCommon("close")}
+                              </Button>
+                            </DrawerClose>
+                          </DrawerFooter>
+                        </div>
+                      </DrawerContent>
+                    </Drawer>
                   </div>
 
                   {productsResult === undefined ? (
@@ -781,9 +1139,13 @@ export default function AdminPageClient({
                     <div className="rounded-2xl border border-slate-200 bg-white/70 p-10 text-center text-slate-500">
                       {tAdmin("noProductsYet")}
                     </div>
+                  ) : filteredProducts.length === 0 ? (
+                    <div className="rounded-2xl border border-slate-200 bg-white/70 p-10 text-center text-slate-500">
+                      {tAdmin("noProducts")}
+                    </div>
                   ) : (
                     <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                      {products.map((product) => (
+                      {filteredProducts.map((product) => (
                         <ProductCard
                           key={product._id}
                           product={product}
@@ -806,61 +1168,151 @@ export default function AdminPageClient({
               <OrderMetricsCards metrics={orderMetrics} />
 
               <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
-                <Select
-                  value={statusFilter}
-                  onValueChange={(value) =>
-                    setStatusFilter(value as OrderStatus | "all")
-                  }
-                >
-                  <SelectTrigger className="w-50">
-                    <SelectValue
-                      placeholder={tAdmin("statusFilter.placeholder")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">
-                      {tAdmin("statusFilter.all")}
-                    </SelectItem>
-                    <SelectItem value="pending">
-                      {t("orderStatus.pending")}
-                    </SelectItem>
-                    <SelectItem value="confirmed">
-                      {t("orderStatus.confirmed")}
-                    </SelectItem>
-                    <SelectItem value="shipped">
-                      {t("orderStatus.shipped")}
-                    </SelectItem>
-                    <SelectItem value="delivered">
-                      {t("orderStatus.delivered")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="relative flex-1">
+                  <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    value={orderSearch}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setOrderSearch(e.target.value)
+                    }
+                    placeholder={tAdmin("ordersFilters.searchPlaceholder")}
+                    className="w-full pl-9"
+                  />
+                </div>
 
-                <Select
-                  value={sortOrder}
-                  onValueChange={(value) =>
-                    setSortOrder(value as "newest" | "oldest")
-                  }
+                <Drawer
+                  open={isOrdersFiltersDrawerOpen}
+                  onOpenChange={setIsOrdersFiltersDrawerOpen}
                 >
-                  <SelectTrigger className="w-50">
-                    <SelectValue placeholder={tAdmin("sortPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">
-                      {tAdmin("sortOptions.newest")}
-                    </SelectItem>
-                    <SelectItem value="oldest">
-                      {tAdmin("sortOptions.oldest")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  <DrawerTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      <span className="hidden sm:inline">
+                        {tAdmin("ordersFilters.filtersButton")}
+                      </span>
+                      {hasActiveOrdersFilters && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[10px] font-medium text-white">
+                          {
+                            [
+                              statusFilter !== "all",
+                              sortOrder !== "newest",
+                              orderDateFilter !== "",
+                            ].filter(Boolean).length
+                          }
+                        </span>
+                      )}
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent>
+                    <div className="mx-auto w-full max-w-md">
+                      <DrawerHeader>
+                        <DrawerTitle>
+                          {tAdmin("ordersFilters.filtersTitle")}
+                        </DrawerTitle>
+                      </DrawerHeader>
+
+                      <div className="space-y-6 p-4">
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-slate-700">
+                            {tCommon("date")}
+                          </p>
+                          <Calendar
+                            className="mx-auto flex justify-center"
+                            mode="single"
+                            selected={selectedOrderDate}
+                            onSelect={handleOrderDateSelect}
+                            components={{
+                              DayButton: OrdersCalendarDayButton,
+                            }}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-slate-700">
+                            {tAdmin("statusFilter.placeholder")}
+                          </p>
+                          <Select
+                            value={statusFilter}
+                            onValueChange={(value) =>
+                              setStatusFilter(value as OrderStatus | "all")
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">
+                                {tAdmin("statusFilter.all")}
+                              </SelectItem>
+                              <SelectItem value="pending">
+                                {t("orderStatus.pending")}
+                              </SelectItem>
+                              <SelectItem value="confirmed">
+                                {t("orderStatus.confirmed")}
+                              </SelectItem>
+                              <SelectItem value="shipped">
+                                {t("orderStatus.shipped")}
+                              </SelectItem>
+                              <SelectItem value="delivered">
+                                {t("orderStatus.delivered")}
+                              </SelectItem>
+                              <SelectItem value="canceled">
+                                {t("orderStatus.canceled")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-slate-700">
+                            {tAdmin("sortPlaceholder")}
+                          </p>
+                          <Select
+                            value={sortOrder}
+                            onValueChange={(value) =>
+                              setSortOrder(value as "newest" | "oldest")
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="newest">
+                                {tAdmin("sortOptions.newest")}
+                              </SelectItem>
+                              <SelectItem value="oldest">
+                                {tAdmin("sortOptions.oldest")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <DrawerFooter className="flex-row gap-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={clearOrdersFilters}
+                        >
+                          {tAdmin("ordersFilters.clearFilters")}
+                        </Button>
+                        <DrawerClose asChild>
+                          <Button className="flex-1">{tCommon("close")}</Button>
+                        </DrawerClose>
+                      </DrawerFooter>
+                    </div>
+                  </DrawerContent>
+                </Drawer>
               </div>
 
               {/* Two-column layout: orders list + details panel */}
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
                 <div className="order-2 lg:order-1">
                   <OrdersTable
-                    orders={orders}
+                    orders={filteredOrders}
                     isLoading={ordersLoading}
                     onSelect={(id) =>
                       setSelectedOrderId((prev) => (prev === id ? null : id))
@@ -871,7 +1323,7 @@ export default function AdminPageClient({
                 <div className="order-1 lg:order-2" ref={detailsRef}>
                   {selectedOrderId ? (
                     (() => {
-                      const selected = orders.find(
+                      const selected = filteredOrders.find(
                         (o) => o._id === selectedOrderId,
                       );
                       return selected ? (

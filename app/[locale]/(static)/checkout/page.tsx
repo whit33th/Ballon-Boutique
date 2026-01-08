@@ -30,7 +30,7 @@ import {
 import type { Route } from "next";
 import { useTranslations } from "next-intl";
 import type { ChangeEvent, FocusEvent } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type Resolver, type UseFormReturn, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type Stripe from "stripe";
@@ -121,6 +121,11 @@ const toDateInputValue = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+const formatHourMinute = (hour: number, minute: number = 0): string =>
+  `${pad2(hour)}:${pad2(minute)}`;
+
 const parseDateInput = (value: string): Date | null => {
   const trimmed = (value || "").trim();
   if (!trimmed) return null;
@@ -143,11 +148,15 @@ const buildPickupDateTimeISO = (
   if (!date) return null;
 
   // Store a deterministic time even though user selects only a date.
-  // - For delivery: align to courier start hour.
   // - For pickup: use midday to avoid timezone/date shifting.
+  // - For delivery: (legacy) align to courier start time. Real delivery scheduling uses slot ISO.
   const hours =
     deliveryType === "delivery" ? STORE_INFO.delivery.minDeliveryHour : 12;
-  date.setHours(hours, 0, 0, 0);
+  const minutes =
+    deliveryType === "delivery"
+      ? (STORE_INFO.delivery.minDeliveryMinute ?? 0)
+      : 0;
+  date.setHours(hours, minutes, 0, 0);
   return date.toISOString();
 };
 
@@ -174,7 +183,9 @@ const getMinPickupDate = (deliveryType: DeliveryType): string => {
   const assumed = new Date(candidate);
   assumed.setHours(
     deliveryType === "delivery" ? STORE_INFO.delivery.minDeliveryHour : 12,
-    0,
+    deliveryType === "delivery"
+      ? (STORE_INFO.delivery.minDeliveryMinute ?? 0)
+      : 0,
     0,
     0,
   );
@@ -483,6 +494,8 @@ const createCheckoutDetailsSchema = (
         ),
       deliveryType: z.enum(["pickup", "delivery"]),
       pickupDate: z.string().optional(),
+      // For delivery: selected slot ISO string returned by server.
+      deliverySlot: z.string().optional(),
       address: z
         .object({
           streetAddress: z.string().optional(),
@@ -521,22 +534,41 @@ const createCheckoutDetailsSchema = (
         threshold.getHours() + STORE_INFO.orderPolicy.preparationTime,
       );
 
-      const assumedSelected = new Date(selectedDate);
-      assumedSelected.setHours(
-        data.deliveryType === "delivery"
-          ? STORE_INFO.delivery.minDeliveryHour
-          : 12,
-        0,
-        0,
-        0,
-      );
+      const assumedSelected = (() => {
+        if (data.deliveryType === "delivery") {
+          if (!data.deliverySlot?.trim()) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["deliverySlot"],
+              message: t("validation.deliverySlotRequired"),
+            });
+            return null;
+          }
+
+          const parsedSlot = new Date(data.deliverySlot);
+          if (Number.isNaN(parsedSlot.getTime())) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["deliverySlot"],
+              message: t("validation.deliverySlotInvalid"),
+            });
+            return null;
+          }
+
+          return parsedSlot;
+        }
+
+        const d = new Date(selectedDate);
+        d.setHours(12, 0, 0, 0);
+        return d;
+      })();
 
       // Validate maximum date (1 year from now)
       const maxDate = new Date();
       maxDate.setFullYear(maxDate.getFullYear() + 1);
 
       // Validate preorder lead time (>= preparationTime hours)
-      if (assumedSelected < threshold) {
+      if (assumedSelected && assumedSelected < threshold) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["pickupDate"],
@@ -560,7 +592,7 @@ const createCheckoutDetailsSchema = (
         return;
       }
 
-      // Time selection is disabled; we validate date only.
+      // Delivery also requires a valid slot (checked above).
 
       // For delivery, validate courier city and address
       if (!data.courierCityId) {
@@ -1101,6 +1133,7 @@ export default function CheckoutPage() {
       phone: user?.phone ?? "",
       deliveryType: "pickup",
       pickupDate: "",
+      deliverySlot: undefined,
       address: user?.address ?? createEmptyAddressFields(),
       courierCityId: null,
     } as CheckoutDetailsFormValues,
@@ -1123,6 +1156,7 @@ export default function CheckoutPage() {
   );
   const deliveryType = form.watch("deliveryType");
   const pickupDate = form.watch("pickupDate") ?? "";
+  const deliverySlotIso = form.watch("deliverySlot") ?? "";
   const selectedCourierCityId = form.watch("courierCityId") ?? null;
   const customerName = form.watch("customerName");
   const customerEmail = form.watch("customerEmail");
@@ -1142,6 +1176,37 @@ export default function CheckoutPage() {
       (city) => city.id === selectedCourierCityId,
     );
   }, [selectedCourierCityId]);
+
+  const deliverySlots = useQuery(
+    api.orders.deliverySlotsForDate,
+    deliveryType === "delivery" && parseDateInput(pickupDate)
+      ? { date: pickupDate }
+      : "skip",
+  );
+
+  const prevDeliveryTypeRef = useRef<DeliveryType>(deliveryType);
+  const prevPickupDateRef = useRef<string>(pickupDate);
+
+  useEffect(() => {
+    // When switching delivery type or date, clear selected delivery slot.
+    // Important: don't clear on slot selection itself.
+    const typeChanged = prevDeliveryTypeRef.current !== deliveryType;
+    const dateChanged = prevPickupDateRef.current !== pickupDate;
+
+    prevDeliveryTypeRef.current = deliveryType;
+    prevPickupDateRef.current = pickupDate;
+
+    if (deliveryType !== "delivery") {
+      if (deliverySlotIso) {
+        form.setValue("deliverySlot", undefined, { shouldValidate: true });
+      }
+      return;
+    }
+
+    if ((typeChanged || dateChanged) && deliverySlotIso) {
+      form.setValue("deliverySlot", undefined, { shouldValidate: true });
+    }
+  }, [deliveryType, pickupDate, deliverySlotIso, form]);
 
   useEffect(() => {
     if (!user) {
@@ -1348,6 +1413,25 @@ export default function CheckoutPage() {
       shouldDirty: true,
       shouldValidate: true,
     });
+
+    if (type === "pickup") {
+      // Pickup and delivery use different fields. When switching to pickup,
+      // clear delivery-only values so they are not submitted by accident.
+      form.setValue("courierCityId", null, {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+      form.setValue("deliverySlot", undefined, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      form.setValue("address", createEmptyAddressFields(), {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+      return;
+    }
+
     if (type === "delivery") {
       // Keep pickupDate for delivery, just trigger validation
       form.trigger("pickupDate");
@@ -1502,9 +1586,21 @@ export default function CheckoutPage() {
     const _currentPhone = (formValues.phone || "").trim();
     const currentDeliveryType = formValues.deliveryType;
     const currentPickupDate = (formValues.pickupDate || "").trim();
-    const derivedPickupDateTime = currentPickupDate
-      ? buildPickupDateTimeISO(currentPickupDate, currentDeliveryType)
-      : null;
+    const normalizedShippingAddress =
+      currentDeliveryType === "delivery"
+        ? currentShippingAddress
+        : {
+            streetAddress: "",
+            city: "",
+            postalCode: "",
+            deliveryNotes: "",
+          };
+    const derivedPickupDateTime =
+      currentDeliveryType === "delivery"
+        ? formValues.deliverySlot || null
+        : currentPickupDate
+          ? buildPickupDateTimeISO(currentPickupDate, currentDeliveryType)
+          : null;
 
     setIsCashSubmitting(true);
     try {
@@ -1514,7 +1610,7 @@ export default function CheckoutPage() {
         orderId = await createOrder({
           customerName: currentCustomerName,
           customerEmail: currentCustomerEmail,
-          shippingAddress: currentShippingAddress,
+          shippingAddress: normalizedShippingAddress,
           deliveryType: currentDeliveryType,
           paymentMethod,
           whatsappConfirmed:
@@ -1525,7 +1621,7 @@ export default function CheckoutPage() {
         orderId = await createGuestOrder({
           customerName: currentCustomerName,
           customerEmail: currentCustomerEmail,
-          shippingAddress: currentShippingAddress,
+          shippingAddress: normalizedShippingAddress,
           deliveryType: currentDeliveryType,
           paymentMethod,
           whatsappConfirmed:
@@ -1625,9 +1721,21 @@ export default function CheckoutPage() {
       const currentPhone = (formValues.phone || "").trim();
       const currentDeliveryType = formValues.deliveryType;
       const currentPickupDate = (formValues.pickupDate || "").trim();
-      const derivedPickupDateTime = currentPickupDate
-        ? buildPickupDateTimeISO(currentPickupDate, currentDeliveryType)
-        : null;
+      const normalizedShippingAddress =
+        currentDeliveryType === "delivery"
+          ? currentShippingAddress
+          : {
+              streetAddress: "",
+              city: "",
+              postalCode: "",
+              deliveryNotes: "",
+            };
+      const derivedPickupDateTime =
+        currentDeliveryType === "delivery"
+          ? formValues.deliverySlot || null
+          : currentPickupDate
+            ? buildPickupDateTimeISO(currentPickupDate, currentDeliveryType)
+            : null;
 
       // Recalculate cart signature with current form values to ensure data integrity
       const currentCartSignature = JSON.stringify({
@@ -1639,7 +1747,8 @@ export default function CheckoutPage() {
         })),
         deliveryType: currentDeliveryType,
         pickupDate: currentPickupDate,
-        address: currentShippingAddress,
+        pickupDateTime: derivedPickupDateTime,
+        address: normalizedShippingAddress,
         email: currentCustomerEmail,
         name: currentCustomerName,
         total,
@@ -1655,10 +1764,13 @@ export default function CheckoutPage() {
             phone: currentPhone || undefined,
           },
           shipping: {
-            address: currentShippingAddress,
+            address: normalizedShippingAddress,
             deliveryType: currentDeliveryType,
             pickupDateTime: derivedPickupDateTime || undefined,
-            deliveryFee: deliveryCost || undefined,
+            deliveryFee:
+              currentDeliveryType === "delivery"
+                ? deliveryCost || undefined
+                : undefined,
           },
           paymentCurrency: PAYMENT_CURRENCY,
           displayAmount: {
@@ -1883,6 +1995,8 @@ export default function CheckoutPage() {
               <StepOne
                 form={form}
                 deliveryType={deliveryType}
+                pickupDate={pickupDate}
+                deliverySlots={deliverySlots}
                 selectedCourierCity={selectedCourierCity}
                 courierCities={COURIER_DELIVERY_CITIES}
                 onCourierCitySelect={handleCourierCitySelect}
@@ -1933,6 +2047,10 @@ export default function CheckoutPage() {
 type StepOneProps = {
   form: UseFormReturn<CheckoutDetailsFormValues>;
   deliveryType: DeliveryType;
+  pickupDate: string;
+  deliverySlots:
+    | Array<{ minutes: number; label: string; iso: string; available: boolean }>
+    | undefined;
   selectedCourierCity?: CourierDeliveryCity;
   courierCities: CourierDeliveryCity[];
   onCourierCitySelect: (cityId: string) => void;
@@ -1944,6 +2062,8 @@ type StepOneProps = {
 function StepOne({
   form,
   deliveryType,
+  pickupDate,
+  deliverySlots,
   selectedCourierCity,
   courierCities,
   onCourierCitySelect,
@@ -2055,8 +2175,14 @@ function StepOne({
               title={t("delivery.courierDelivery")}
               description={(() => {
                 const hoursLabel = t("delivery.hours", {
-                  start: STORE_INFO.delivery.minDeliveryHour,
-                  end: STORE_INFO.delivery.maxDeliveryHour,
+                  start: formatHourMinute(
+                    STORE_INFO.delivery.minDeliveryHour,
+                    STORE_INFO.delivery.minDeliveryMinute ?? 0,
+                  ),
+                  end: formatHourMinute(
+                    STORE_INFO.delivery.maxDeliveryHour,
+                    STORE_INFO.delivery.maxDeliveryMinute ?? 0,
+                  ),
                 });
 
                 const priceOrPrompt = selectedCourierCity
@@ -2157,6 +2283,71 @@ function StepOne({
               );
             }}
           />
+
+          {deliveryType === "delivery" && (
+            <FormField
+              control={form.control}
+              name="deliverySlot"
+              render={({ field }) => {
+                if (!parseDateInput(pickupDate)) {
+                  return <div></div>;
+                }
+
+                const slots = deliverySlots;
+
+                return (
+                  <FormItem className="mt-4 flex flex-col gap-2">
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      {t("delivery.selectDeliverySlot")}
+                    </FormLabel>
+                    <FormControl>
+                      {slots === undefined ? (
+                        <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+                          {t("delivery.loadingSlots")}
+                        </div>
+                      ) : slots.length === 0 ? (
+                        <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+                          {t("delivery.noSlotsForDate")}
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                          {slots.map((slot) => {
+                            const selected = field.value === slot.iso;
+                            const disabled = !slot.available;
+
+                            return (
+                              <button
+                                key={slot.iso}
+                                type="button"
+                                disabled={disabled}
+                                onClick={() => {
+                                  field.onChange(slot.iso);
+                                  setTimeout(() => {
+                                    form.trigger(["deliverySlot"]);
+                                  }, 0);
+                                }}
+                                className={
+                                  "rounded-xl border px-3 py-2 text-sm font-medium transition-colors " +
+                                  (selected
+                                    ? "border-secondary bg-secondary/10 text-secondary"
+                                    : disabled
+                                      ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
+                                      : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50")
+                                }
+                              >
+                                {slot.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+          )}
         </div>
 
         {deliveryType === "delivery" && (

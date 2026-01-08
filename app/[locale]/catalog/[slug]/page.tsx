@@ -84,7 +84,19 @@ export default async function ProductDetailPage({
   // Only require color selection if there are multiple colors to choose from
   const requiresColorSelection = (product.availableColors?.length ?? 0) > 0;
 
-  console.log(product.availableColors);
+  const miniSetPrices =
+    product.miniSetSizes
+      ?.map((s) => s.price)
+      .filter((value) => typeof value === "number" && Number.isFinite(value)) ??
+    [];
+
+  const priceRange =
+    miniSetPrices.length > 0
+      ? {
+          min: Math.min(...miniSetPrices),
+          max: Math.max(...miniSetPrices),
+        }
+      : undefined;
   return (
     <>
       <ProductJsonLd product={product} locale={locale} slug={slug} />
@@ -108,7 +120,7 @@ export default async function ProductDetailPage({
                 description={product.description}
                 price={product.price}
                 inStock={product.inStock}
-                hidePrice={(product.miniSetSizes?.length ?? 0) > 0}
+                priceRange={priceRange}
               />
 
               {/* Client Component - Interactive Add to Cart */}

@@ -5,6 +5,11 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 import { ensureAdmin } from "./helpers/admin";
 import { requireUser } from "./helpers/auth";
+import {
+  assertDeliverySlotIsValidAndAvailable,
+  buildDeliverySlotsForDate,
+  markDeliverySlotAvailability,
+} from "./helpers/deliverySlots";
 import { addressValidator } from "./validators/address";
 import { orderItemValidator, orderStatusValidator } from "./validators/order";
 
@@ -28,6 +33,8 @@ const orderValidator = v.object({
   status: orderStatusValidator,
   customerEmail: v.string(),
   customerName: v.string(),
+  // Optional enrichment for admin UI (populated from the user record).
+  phone: v.optional(v.string()),
   shippingAddress: addressValidator,
   deliveryType: v.optional(v.union(v.literal("pickup"), v.literal("delivery"))),
   paymentMethod: v.optional(
@@ -110,6 +117,26 @@ export const createGuest = mutation({
       if (selectedDate > maxDate) {
         throw new Error("Pickup date cannot be more than 1 year in advance");
       }
+    }
+
+    if (args.deliveryType === "delivery") {
+      if (!args.pickupDateTime) {
+        throw new Error("Delivery requires a delivery time slot");
+      }
+      await assertDeliverySlotIsValidAndAvailable({
+        db: ctx.db,
+        slotIso: args.pickupDateTime,
+      });
+    }
+
+    if (args.deliveryType === "delivery") {
+      if (!args.pickupDateTime) {
+        throw new Error("Delivery requires a delivery time slot");
+      }
+      await assertDeliverySlotIsValidAndAvailable({
+        db: ctx.db,
+        slotIso: args.pickupDateTime,
+      });
     }
 
     if (args.items.length === 0) {
@@ -219,6 +246,41 @@ export const createGuest = mutation({
     }
 
     return orderId;
+  },
+});
+
+export const deliverySlotsForDate = query({
+  args: {
+    date: v.string(), // YYYY-MM-DD
+    ignoreOrderId: v.optional(v.id("orders")),
+  },
+  returns: v.array(
+    v.object({
+      minutes: v.number(),
+      label: v.string(),
+      iso: v.string(),
+      available: v.boolean(),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const slots = buildDeliverySlotsForDate(args.date);
+    if (slots.length === 0) return [];
+
+    // Simple approach: read recent orders and filter in-memory.
+    // For larger volumes, add an index on (deliveryType, pickupDateTime) and query by range.
+    const recentOrders = await ctx.db.query("orders").order("desc").take(500);
+    const existingDeliveryIsos = recentOrders
+      .filter((o) => (o.deliveryType ?? "pickup") === "delivery")
+      .filter((o) => (args.ignoreOrderId ? o._id !== args.ignoreOrderId : true))
+      .map((o) => o.pickupDateTime)
+      .filter(
+        (iso): iso is string => typeof iso === "string" && iso.length > 0,
+      );
+
+    return markDeliverySlotAvailability({
+      slots,
+      existingDeliveryOrderIsos: existingDeliveryIsos,
+    });
   },
 });
 
@@ -443,7 +505,24 @@ export const listAll = query({
       return b._creationTime - a._creationTime;
     });
 
-    return orders;
+    // Enrich with user phone so admin can search by phone.
+    const uniqueUserIds = Array.from(
+      new Set(orders.map((order) => order.userId)),
+    );
+    const phoneByUserId = new Map<string, string>();
+
+    for (const userId of uniqueUserIds) {
+      const user = await ctx.db.get(userId);
+      const phone = user?.phone;
+      if (typeof phone === "string" && phone.trim().length > 0) {
+        phoneByUserId.set(userId, phone.trim());
+      }
+    }
+
+    return orders.map((order) => ({
+      ...order,
+      phone: phoneByUserId.get(order.userId),
+    }));
   },
 });
 
@@ -495,6 +574,64 @@ export const updateStatus = mutation({
 
     await ctx.db.patch(args.orderId, {
       status: args.status,
+    });
+
+    return null;
+  },
+});
+
+// Admin-only: update scheduled pickup/delivery datetime.
+// For delivery orders, enforces the configured slot rules and availability.
+export const updatePickupDateTimeAdmin = mutation({
+  args: {
+    orderId: v.id("orders"),
+    // Use empty string to clear (schema keeps it as optional string).
+    pickupDateTime: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    await ensureAdmin(ctx);
+
+    const order = await ctx.db.get(args.orderId);
+    if (!order) {
+      throw new Error("Order not found");
+    }
+
+    const nextPickupDateTime = args.pickupDateTime.trim();
+
+    // Validate date rules if a value is set.
+    if (nextPickupDateTime.length > 0) {
+      const selectedDate = new Date(nextPickupDateTime);
+      if (Number.isNaN(selectedDate.getTime())) {
+        throw new Error("Invalid pickup/delivery datetime");
+      }
+
+      const now = new Date();
+
+      // Maximum: 1 year from now
+      const maxDate = new Date();
+      maxDate.setFullYear(now.getFullYear() + 1);
+
+      // Admin rescheduling: allow within 72 hours, but disallow past times.
+      if (selectedDate < now) {
+        throw new Error("Pickup/delivery datetime must be in the future");
+      }
+
+      if (selectedDate > maxDate) {
+        throw new Error("Pickup date cannot be more than 1 year in advance");
+      }
+
+      if ((order.deliveryType ?? "pickup") === "delivery") {
+        await assertDeliverySlotIsValidAndAvailable({
+          db: ctx.db,
+          slotIso: nextPickupDateTime,
+          ignoreOrderId: order._id,
+        });
+      }
+    }
+
+    await ctx.db.patch(args.orderId, {
+      pickupDateTime: nextPickupDateTime,
     });
 
     return null;

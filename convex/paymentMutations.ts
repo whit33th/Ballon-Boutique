@@ -7,6 +7,7 @@ import {
   internalQuery,
   type MutationCtx,
 } from "./_generated/server";
+import { assertDeliverySlotIsValidAndAvailable } from "./helpers/deliverySlots";
 import { addressValidator } from "./validators/address";
 import { orderItemValidator } from "./validators/order";
 
@@ -106,6 +107,16 @@ export const preparePaymentDraft = internalMutation({
       args.customer.email,
       args.customer.name,
     );
+
+    if (args.shipping.deliveryType === "delivery") {
+      if (!args.shipping.pickupDateTime) {
+        throw new Error("Delivery requires a delivery time slot");
+      }
+      await assertDeliverySlotIsValidAndAvailable({
+        db: ctx.db,
+        slotIso: args.shipping.pickupDateTime,
+      });
+    }
 
     return { userId, items: resolvedItems, normalizedAmount, amountMinor };
   },
@@ -262,6 +273,17 @@ export const finalizePaymentFromIntent = internalMutation({
 
     if (!payment) {
       return null;
+    }
+
+    if ((payment.shipping.deliveryType ?? "pickup") === "delivery") {
+      if (!payment.shipping.pickupDateTime) {
+        throw new Error("Delivery requires a delivery time slot");
+      }
+      await assertDeliverySlotIsValidAndAvailable({
+        db: ctx.db,
+        slotIso: payment.shipping.pickupDateTime,
+        ignoreOrderId: payment.orderId ?? undefined,
+      });
     }
 
     if (payment.orderId) {

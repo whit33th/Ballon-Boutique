@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { STORE_INFO } from "@/constants/config";
 import type { Doc } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { ORDER_STATUS_META } from "./types";
@@ -79,6 +80,29 @@ export function OrdersTable({
                     <div className="text-xs font-normal text-slate-400">
                       {formatDateTime(order._creationTime)}
                     </div>
+                    {order.pickupDateTime ? (
+                      <div className="mt-1 text-xs font-normal text-slate-500">
+                        {order.deliveryType === "delivery"
+                          ? tOrders("deliveryTime")
+                          : tOrders("pickupTime")}{" "}
+                        {order.deliveryType === "delivery"
+                          ? new Date(order.pickupDateTime).toLocaleString(
+                              undefined,
+                              {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                                timeZone: STORE_INFO.geo.timezone,
+                              },
+                            )
+                          : new Date(order.pickupDateTime).toLocaleDateString(
+                              undefined,
+                              {
+                                dateStyle: "medium",
+                                timeZone: STORE_INFO.geo.timezone,
+                              },
+                            )}
+                      </div>
+                    ) : null}
                   </td>
                   <td className="max-w-55 px-6 py-4">
                     <div className="font-medium">{order.customerName}</div>
@@ -278,14 +302,22 @@ export function OrdersTable({
                             : tOrders("pickupTime")}
                         </div>
                         <div className="text-sm text-slate-700">
-                          {new Date(order.pickupDateTime).toLocaleDateString(
-                            undefined,
-                            {
-                              year: "numeric",
-                              month: "numeric",
-                              day: "numeric",
-                            },
-                          )}
+                          {order.deliveryType === "delivery"
+                            ? new Date(order.pickupDateTime).toLocaleString(
+                                undefined,
+                                {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                  timeZone: STORE_INFO.geo.timezone,
+                                },
+                              )
+                            : new Date(order.pickupDateTime).toLocaleDateString(
+                                undefined,
+                                {
+                                  dateStyle: "medium",
+                                  timeZone: STORE_INFO.geo.timezone,
+                                },
+                              )}
                         </div>
                       </div>
                     )}

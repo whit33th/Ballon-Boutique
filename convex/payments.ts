@@ -1,9 +1,10 @@
 "use node";
 
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type Stripe from "stripe";
 import { internal } from "./_generated/api.js";
-import { action, } from "./_generated/server";
+import { action } from "./_generated/server";
 import { getStripeClient } from "./helpers/stripeClient";
 import { type PaymentStatus, paymentStatusValidator } from "./paymentMutations";
 
@@ -64,7 +65,14 @@ export const listStripePayments = action({
     }),
   ),
   handler: async (ctx, args) => {
-    await ctx.runQuery(internal.paymentsAdmin.assertAdminAccess, {});
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    await ctx.runQuery(internal.paymentsAdmin.assertAdminAccessForUser, {
+      userId,
+    });
 
     const stripe = getStripeClient();
     const limit = Math.min(Math.max(args.limit ?? 20, 1), 100);

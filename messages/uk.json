@@ -182,7 +182,7 @@
       "selfPickup": "Самовивіз",
       "popular": "Популярно",
       "courierDelivery": "Кур'єрська доставка",
-      "hours": "з {start}:00 до {end}:00",
+      "hours": "з {start} до {end}",
       "chooseYourCity": "Виберіть ваше місто",
       "deliveryDetails": "Деталі доставки",
       "addressPrefilled": "Поля адреси заповнюються з вашого профілю, щоб оформлення замовлення було швидким.",
@@ -197,6 +197,9 @@
       "preferredDeliveryDateTime": "Бажана дата та час доставки",
       "preferredPickupDate": "Бажана дата самовивозу",
       "preferredDeliveryDate": "Бажана дата доставки",
+      "selectDeliverySlot": "Оберіть час доставки",
+      "loadingSlots": "Завантажуємо доступний час…",
+      "noSlotsForDate": "На цю дату немає доступних слотів доставки.",
       "preorderMinimumNotice": "* мінімум за {hours} год",
       "daysAheadMinimum": "{count, plural, =1 {день заздалегідь мінімум} one {# день заздалегідь мінімум} few {# дні заздалегідь мінімум} many {# днів заздалегідь мінімум} other {# днів заздалегідь мінімум}}",
       "days": "{count, plural, =1 {день} one {# день} few {# дні} many {# днів} other {# днів}}",
@@ -267,6 +270,8 @@
       "pickupDateRequired": "Дата обов'язкова.",
       "pickupDateInvalid": "Введіть коректну дату.",
       "pickupDateTimeRequired": "Дата та час обов'язкові.",
+      "deliverySlotRequired": "Оберіть час доставки.",
+      "deliverySlotInvalid": "Оберіть коректний час доставки.",
       "deliveryTimeRange": "Час доставки має бути між {min}:00 та {max}:00.",
       "pickupDateMinDays": "Дата самовивозу повинна бути принаймні за {days} днів.",
       "pickupDateMaxOneYear": "Дата самовивозу не може бути більше ніж на 1 рік вперед.",
@@ -362,6 +367,7 @@
     "orderStatus": {
       "pending": "В обробці",
       "confirmed": "Підтверджено",
+      "canceled": "Скасовано",
       "shipped": "Відправлено",
       "delivered": "Доставлено"
     },
@@ -431,12 +437,14 @@
       "details": "Деталі",
       "items": "{count, plural, =0 {немає товарів} one {# товар} few {# товари} many {# товарів} other {# товарів}}",
       "recipient": "Отримувач",
+      "phoneWithValue": "Телефон: {phone}",
       "color": "Колір",
       "text": "Текст",
       "number": "Номер",
       "status": {
         "pending": "В обробці",
         "confirmed": "Підтверджено",
+        "canceled": "Скасовано",
         "shipped": "Відправлено",
         "delivered": "Доставлено"
       }
@@ -905,6 +913,7 @@
       "orderStatus": {
         "pending": "В обробці",
         "confirmed": "Підтверджено",
+        "canceled": "Скасовано",
         "shipped": "Відправлено",
         "delivered": "Доставлено"
       },
@@ -928,6 +937,24 @@
     "statusFilter": {
       "placeholder": "Статус",
       "all": "Всі статуси"
+    },
+    "ordersFilters": {
+      "searchPlaceholder": "Пошук за ID, ім’ям або телефоном…",
+      "filtersButton": "Фільтри",
+      "filtersTitle": "Фільтри замовлень",
+      "clearFilters": "Очистити"
+    },
+    "productFilters": {
+      "searchPlaceholder": "Пошук товарів…",
+      "availabilityPlaceholder": "Наявність",
+      "availabilityAll": "Усі",
+      "availabilityInStock": "В наявності",
+      "availabilityOutOfStock": "Немає в наявності",
+      "categoryPlaceholder": "Категорія",
+      "categoryAll": "Усі категорії",
+      "filtersButton": "Фільтри",
+      "filtersTitle": "Фільтри товарів",
+      "clearFilters": "Скинути все"
     },
     "sortPlaceholder": "Сортування",
     "productsCount": "{count, plural, =0 {немає товарів} one {# товар} few {# товари} many {# товарів} other {# товарів}}",
@@ -960,6 +987,8 @@
       "uploading": "Завантаження {fileName}",
       "fileUploaded": "Файл {fileName} завантажено",
       "allImagesUploaded": "Всі зображення завантажено",
+      "orderUpdated": "Замовлення оновлено",
+      "orderUpdateFailed": "Не вдалося оновити замовлення",
       "productUpdated": "Товар оновлено",
       "productSaved": "Товар збережено",
       "imagesUploadFailed": "Не вдалося завантажити зображення",
@@ -1059,6 +1088,16 @@
       "address": "Адреса",
       "pickupTime": "Час самовивозу",
       "deliveryTime": "Час доставки",
+      "changeTime": "Змінити",
+      "rescheduleTitle": "Перенести час доставки",
+      "rescheduleDescription": "Оберіть нову дату та доступний часовий слот.",
+      "selectDate": "Дата",
+      "selectSlot": "Часовий слот",
+      "loadingSlots": "Завантаження слотів...",
+      "noSlots": "На цю дату немає слотів.",
+      "clearTime": "Очистити час",
+      "saveTime": "Зберегти",
+      "saving": "Збереження...",
       "items": "Товари",
       "payment": "Оплата",
       "method": "Метод",

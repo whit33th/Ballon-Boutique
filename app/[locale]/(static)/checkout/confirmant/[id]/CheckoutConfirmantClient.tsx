@@ -29,12 +29,23 @@ const formatCurrency = (value: number, currency = "EUR") =>
     maximumFractionDigits: 2,
   }).format(value);
 
-const formatDateOnly = (dateString: string): string =>
-  new Date(dateString).toLocaleDateString("de-AT", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+const formatPickupOrDeliveryDate = (args: {
+  dateString: string;
+  deliveryType: Doc<"orders">["deliveryType"] | undefined;
+}): string => {
+  const showTime = args.deliveryType === "delivery";
+  const date = new Date(args.dateString);
+  return showTime
+    ? date.toLocaleString("de-AT", {
+        dateStyle: "long",
+        timeStyle: "short",
+        timeZone: STORE_INFO.geo.timezone,
+      })
+    : date.toLocaleDateString("de-AT", {
+        dateStyle: "long",
+        timeZone: STORE_INFO.geo.timezone,
+      });
+};
 
 type OrderWithPhoneFields = Doc<"orders"> & {
   phone?: string | null;
@@ -122,7 +133,11 @@ export default function CheckoutConfirmantClient({
               {order.deliveryType === "delivery"
                 ? t("deliveryWindow")
                 : t("pickupWindow")}
-              : {formatDateOnly(order.pickupDateTime)}
+              :{" "}
+              {formatPickupOrDeliveryDate({
+                dateString: order.pickupDateTime,
+                deliveryType: order.deliveryType,
+              })}
             </span>
           </p>
         ) : null
@@ -357,7 +372,10 @@ export default function CheckoutConfirmantClient({
                   ? composeAddress(order.shippingAddress)
                   : "—";
             const pickupWindowForPrint = order.pickupDateTime
-              ? formatDateOnly(order.pickupDateTime)
+              ? formatPickupOrDeliveryDate({
+                  dateString: order.pickupDateTime,
+                  deliveryType: order.deliveryType,
+                })
               : "";
 
             const lines = order.items

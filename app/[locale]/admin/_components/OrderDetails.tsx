@@ -3,7 +3,7 @@
 import { Image } from "@imagekit/next";
 import { useMutation, useQuery } from "convex/react";
 import { useLocale, useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -13,6 +13,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { STORE_INFO } from "@/constants/config";
 import { api } from "@/convex/_generated/api";
 // removed per-item queries to comply with Rules of Hooks
 import type { Doc, Id } from "@/convex/_generated/dataModel";
@@ -54,12 +62,61 @@ export function OrderDetails({ order }: Props) {
   const tOrderDetails = useTranslations("admin.orderDetails");
   const tOrdersTable = useTranslations("admin.ordersTable");
   const tAdmin = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const _currency = order.currency ?? "EUR";
   const updateStatus = useMutation(api.orders.updateStatus);
+  const updatePickupDateTimeAdmin = useMutation(
+    api.orders.updatePickupDateTimeAdmin,
+  );
   const [isUpdating, setIsUpdating] = useState(false);
   const [localStatus, setLocalStatus] = useState(order.status);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [localPickupDateTime, setLocalPickupDateTime] = useState(
+    order.pickupDateTime ?? "",
+  );
+
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState<string>("");
+  const [selectedSlotIso, setSelectedSlotIso] = useState<string>("");
+  const [isSavingPickupDateTime, setIsSavingPickupDateTime] = useState(false);
+
+  // When switching between orders in the admin UI, reset local UI state.
+  useEffect(() => {
+    setIsUpdating(false);
+    setPendingStatus(null);
+    setIsDialogOpen(false);
+    setLocalStatus(order.status);
+
+    setIsSavingPickupDateTime(false);
+    setIsRescheduleOpen(false);
+    setRescheduleDate("");
+    setSelectedSlotIso("");
+    setLocalPickupDateTime(order.pickupDateTime ?? "");
+  }, [order.pickupDateTime, order.status]);
+
+  const isoToStoreYmd = useCallback((iso: string): string => {
+    return new Date(iso).toLocaleDateString("en-CA", {
+      timeZone: STORE_INFO.geo.timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  }, []);
+
+  const minRescheduleYmd = new Date().toLocaleDateString("en-CA", {
+    timeZone: STORE_INFO.geo.timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const rescheduleSlots = useQuery(
+    api.orders.deliverySlotsForDate,
+    order.deliveryType === "delivery" && isRescheduleOpen && rescheduleDate
+      ? { date: rescheduleDate, ignoreOrderId: order._id }
+      : "skip",
+  );
 
   // Prepare fallback images for items that lack `productImageUrl`.
   const missingIds: Array<Id<"products">> = Array.from(
@@ -94,7 +151,7 @@ export function OrderDetails({ order }: Props) {
       await updateStatus({ orderId: order._id, status: pendingStatus });
       setLocalStatus(pendingStatus);
       setPendingStatus(null);
-      toast.success(tAdmin("toasts.productUpdated"));
+      toast.success(tAdmin("toasts.orderUpdated"));
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : tOrderDetails("statusUpdateError");
@@ -104,15 +161,77 @@ export function OrderDetails({ order }: Props) {
     }
   }, [pendingStatus, updateStatus, order._id, tOrderDetails, tAdmin]);
 
+  const openReschedule = useCallback(() => {
+    const existing =
+      typeof localPickupDateTime === "string" ? localPickupDateTime : "";
+    const existingYmd =
+      existing.trim().length > 0 ? isoToStoreYmd(existing) : "";
+    const initialDate =
+      existingYmd && existingYmd >= minRescheduleYmd
+        ? existingYmd
+        : minRescheduleYmd;
+    setRescheduleDate(initialDate);
+    setSelectedSlotIso(
+      existingYmd === initialDate && existing.trim().length > 0 ? existing : "",
+    );
+    setIsRescheduleOpen(true);
+  }, [isoToStoreYmd, localPickupDateTime, minRescheduleYmd]);
+
+  const saveReschedule = useCallback(async () => {
+    if (order.deliveryType !== "delivery") return;
+    if (!selectedSlotIso) return;
+    setIsSavingPickupDateTime(true);
+    try {
+      await updatePickupDateTimeAdmin({
+        orderId: order._id,
+        pickupDateTime: selectedSlotIso,
+      });
+      setLocalPickupDateTime(selectedSlotIso);
+      toast.success(tAdmin("toasts.orderUpdated"));
+      setIsRescheduleOpen(false);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : tAdmin("toasts.orderUpdateFailed");
+      toast.error(msg);
+    } finally {
+      setIsSavingPickupDateTime(false);
+    }
+  }, [
+    order._id,
+    order.deliveryType,
+    selectedSlotIso,
+    tAdmin,
+    updatePickupDateTimeAdmin,
+  ]);
+
+  const clearReschedule = useCallback(async () => {
+    setIsSavingPickupDateTime(true);
+    try {
+      await updatePickupDateTimeAdmin({
+        orderId: order._id,
+        pickupDateTime: "",
+      });
+      setLocalPickupDateTime("");
+      toast.success(tAdmin("toasts.orderUpdated"));
+      setIsRescheduleOpen(false);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : tAdmin("toasts.orderUpdateFailed");
+      toast.error(msg);
+    } finally {
+      setIsSavingPickupDateTime(false);
+    }
+  }, [order._id, tAdmin, updatePickupDateTimeAdmin]);
+
   return (
     <aside className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm">
       <div>
-        <div className="flex items-start justify-between">
-          <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
             <div className="text-xs text-slate-500">
               {tOrdersTable("order")}
             </div>
-            <div className="font-mono font-semibold text-slate-900">
+            <div className="font-mono text-sm font-semibold break-all text-slate-900 sm:text-base">
               #{order._id}
             </div>
             <div className="text-xs text-slate-400">
@@ -120,17 +239,16 @@ export function OrderDetails({ order }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="ml-1 flex w-full max-w-xs items-center gap-2">
-              <span className="hidden text-xs text-slate-500 sm:inline">
+          <div className="flex items-center gap-3 sm:shrink-0">
+            <div className="flex w-full items-center gap-2 sm:w-56">
+              <span className="text-xs text-slate-500">
                 {tOrdersTable("status")}:
               </span>
               <div className="flex-1">
-                <select
-                  aria-label={tOrdersTable("status")}
+                <Select
                   value={pendingStatus ?? localStatus}
-                  onChange={(e) => {
-                    const next = e.target.value as OrderStatus;
+                  onValueChange={(value) => {
+                    const next = value as OrderStatus;
                     if (next === localStatus) {
                       setPendingStatus(null);
                       return;
@@ -140,14 +258,18 @@ export function OrderDetails({ order }: Props) {
                     setIsDialogOpen(true);
                   }}
                   disabled={isUpdating}
-                  className="w-full rounded-md border px-3 py-2 text-sm"
                 >
-                  {Object.keys(ORDER_STATUS_META).map((key) => (
-                    <option key={key} value={key}>
-                      {t(`orderStatus.${key}`)}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-9 w-full bg-white/50">
+                    <SelectValue placeholder={tOrdersTable("status")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(ORDER_STATUS_META).map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {t(`orderStatus.${key}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Confirmation controls — only show when a new status is selected */}
@@ -178,7 +300,7 @@ export function OrderDetails({ order }: Props) {
                       }}
                       type="button"
                     >
-                      {tAdmin("productForm.cancel")}
+                      {tCommon("cancel")}
                     </button>
                     <button
                       className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white"
@@ -189,7 +311,7 @@ export function OrderDetails({ order }: Props) {
                       disabled={isUpdating}
                       type="button"
                     >
-                      {tAdmin("productForm.confirmDelete")}
+                      {tCommon("confirm")}
                     </button>
                   </DialogFooter>
                 </DialogContent>
@@ -235,7 +357,7 @@ export function OrderDetails({ order }: Props) {
         <h3 className="text-sm font-semibold text-slate-900">
           {tOrderDetails("delivery")}
         </h3>
-        <div className="mt-2 text-sm text-slate-700">
+        <div className="mt-2 rounded-sm bg-amber-100/50 p-2 text-sm text-slate-700">
           {order.deliveryType === "delivery" ? (
             <div className="space-y-1">
               <div>
@@ -244,21 +366,42 @@ export function OrderDetails({ order }: Props) {
                 </span>
                 <span>{tOrderDetails("deliveryType")}</span>
               </div>
-              {order.pickupDateTime && (
+              {localPickupDateTime && (
                 <div>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="text-xs font-semibold text-slate-500">
+                      {tOrderDetails("deliveryTime")}:{" "}
+                    </span>
+                    <span className="text-sm text-slate-700">
+                      {new Date(localPickupDateTime).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                        timeZone: STORE_INFO.geo.timezone,
+                      })}
+                    </span>
+                    <button
+                      className="rounded-md bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-700"
+                      onClick={openReschedule}
+                      type="button"
+                    >
+                      {tOrderDetails("changeTime")}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {!localPickupDateTime && (
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="text-xs font-semibold text-slate-500">
                     {tOrderDetails("deliveryTime")}:{" "}
                   </span>
-                  <span className="text-sm text-slate-700">
-                    {new Date(order.pickupDateTime).toLocaleDateString(
-                      undefined,
-                      {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                      },
-                    )}
-                  </span>
+                  <span className="text-sm text-slate-700">—</span>
+                  <button
+                    className="rounded-md bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-700"
+                    onClick={openReschedule}
+                    type="button"
+                  >
+                    {tOrderDetails("changeTime")}
+                  </button>
                 </div>
               )}
               <div>
@@ -282,18 +425,17 @@ export function OrderDetails({ order }: Props) {
                 </span>
                 <span>{tOrderDetails("pickupType")}</span>
               </div>
-              {order.pickupDateTime && (
+              {localPickupDateTime && (
                 <div>
                   <span className="text-xs font-semibold text-slate-500">
                     {tOrderDetails("pickupTime")}:{" "}
                   </span>
                   <span className="text-sm text-slate-700">
-                    {new Date(order.pickupDateTime).toLocaleDateString(
+                    {new Date(localPickupDateTime).toLocaleDateString(
                       undefined,
                       {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
+                        dateStyle: "medium",
+                        timeZone: STORE_INFO.geo.timezone,
                       },
                     )}
                   </span>
@@ -303,6 +445,109 @@ export function OrderDetails({ order }: Props) {
           )}
         </div>
       </section>
+
+      {/* Reschedule dialog (delivery only) */}
+      <Dialog
+        open={isRescheduleOpen}
+        onOpenChange={(open) => {
+          setIsRescheduleOpen(open);
+          if (!open) {
+            setSelectedSlotIso("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tOrderDetails("rescheduleTitle")}</DialogTitle>
+            <DialogDescription>
+              {tOrderDetails("rescheduleDescription")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <label className="block">
+              <div className="mb-1 text-xs font-semibold text-slate-500">
+                {tOrderDetails("selectDate")}
+              </div>
+              <input
+                className="h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+                type="date"
+                value={rescheduleDate}
+                min={minRescheduleYmd}
+                onChange={(e) => {
+                  setRescheduleDate(e.target.value);
+                  setSelectedSlotIso("");
+                }}
+              />
+            </label>
+
+            <div>
+              <div className="mb-2 text-xs font-semibold text-slate-500">
+                {tOrderDetails("selectSlot")}
+              </div>
+
+              {!Array.isArray(rescheduleSlots) ? (
+                <div className="text-sm text-slate-500">
+                  {tOrderDetails("loadingSlots")}
+                </div>
+              ) : rescheduleSlots.length === 0 ? (
+                <div className="text-sm text-slate-500">
+                  {tOrderDetails("noSlots")}
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {rescheduleSlots.map((slot) => {
+                    const selected = selectedSlotIso === slot.iso;
+                    return (
+                      <button
+                        key={slot.iso}
+                        type="button"
+                        disabled={!slot.available}
+                        onClick={() => setSelectedSlotIso(slot.iso)}
+                        className={
+                          "rounded-md border px-2 py-2 text-sm font-semibold transition " +
+                          (selected
+                            ? "border-emerald-600 bg-emerald-50 text-emerald-800"
+                            : slot.available
+                              ? "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                              : "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400")
+                        }
+                      >
+                        {slot.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <button
+              className="rounded-md bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
+              onClick={async () => {
+                await clearReschedule();
+              }}
+              disabled={isSavingPickupDateTime}
+              type="button"
+            >
+              {tOrderDetails("clearTime")}
+            </button>
+            <button
+              className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white"
+              onClick={async () => {
+                await saveReschedule();
+              }}
+              disabled={isSavingPickupDateTime || !selectedSlotIso}
+              type="button"
+            >
+              {isSavingPickupDateTime
+                ? tOrderDetails("saving")
+                : tOrderDetails("saveTime")}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <section>
         <h3 className="text-sm font-semibold text-slate-900">
@@ -368,8 +613,9 @@ export function OrderDetails({ order }: Props) {
                     {item.personalization.color && (
                       <div>
                         {tOrderDetails("color")}:{" "}
-                        {tAdmin(`colors.${item.personalization.color}`) ||
-                          item.personalization.color}
+                        {tAdmin.has(`colors.${item.personalization.color}`)
+                          ? tAdmin(`colors.${item.personalization.color}`)
+                          : item.personalization.color}
                       </div>
                     )}
                     {item.personalization.text && (

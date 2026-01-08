@@ -181,7 +181,7 @@
       "selfPickup": "Selbstabholung",
       "popular": "Beliebt",
       "courierDelivery": "Kurierlieferung",
-      "hours": "von {start}:00 bis {end}:00 Uhr",
+      "hours": "von {start} bis {end} Uhr",
       "chooseYourCity": "Wählen Sie Ihre Stadt",
       "deliveryDetails": "Lieferdetails",
       "addressPrefilled": "Adressfelder werden aus Ihrem Profil vorausgefüllt, damit der Checkout schnell bleibt.",
@@ -196,6 +196,9 @@
       "preferredDeliveryDateTime": "Bevorzugtes Lieferdatum & Uhrzeit",
       "preferredPickupDate": "Bevorzugtes Abholdatum",
       "preferredDeliveryDate": "Bevorzugtes Lieferdatum",
+      "selectDeliverySlot": "Lieferzeitfenster auswählen",
+      "loadingSlots": "Verfügbare Zeitfenster werden geladen…",
+      "noSlotsForDate": "Für dieses Datum sind keine Lieferzeitfenster verfügbar.",
       "preorderMinimumNotice": "* Mindestens {hours} Std. Vorbestellung",
       "daysAheadMinimum": "{count, plural, =1 {Tag im Voraus mindestens} other {Tage im Voraus mindestens}}",
       "days": "{count, plural, =1 {Tag} other {# Tage}}",
@@ -266,6 +269,8 @@
       "pickupDateRequired": "Datum ist erforderlich.",
       "pickupDateInvalid": "Geben Sie ein gültiges Datum ein.",
       "pickupDateTimeRequired": "Datum und Uhrzeit sind erforderlich.",
+      "deliverySlotRequired": "Wählen Sie ein Lieferzeitfenster aus.",
+      "deliverySlotInvalid": "Wählen Sie ein gültiges Lieferzeitfenster aus.",
       "deliveryTimeRange": "Die Lieferzeit muss zwischen {min}:00 und {max}:00 Uhr liegen.",
       "pickupDateMinDays": "Das Abholdatum muss mindestens {days} Tage im Voraus sein.",
       "pickupDateMaxOneYear": "Das Abholdatum kann nicht mehr als 1 Jahr im Voraus liegen.",
@@ -361,6 +366,7 @@
     "orderStatus": {
       "pending": "Ausstehend",
       "confirmed": "Bestätigt",
+      "canceled": "Storniert",
       "shipped": "Versandt",
       "delivered": "Geliefert"
     },
@@ -430,6 +436,7 @@
       "details": "Details",
       "items": "{count, plural, =0 {keine Artikel} =1 {ein Artikel} other {# Artikel}}",
       "recipient": "Empfänger",
+      "phoneWithValue": "Telefon: {phone}",
       "notes": "Notizen",
       "color": "Farbe",
       "text": "Text",
@@ -437,6 +444,7 @@
       "status": {
         "pending": "Ausstehend",
         "confirmed": "Bestätigt",
+        "canceled": "Storniert",
         "shipped": "Versandt",
         "delivered": "Geliefert"
       }
@@ -881,6 +889,7 @@
       "orderStatus": {
         "pending": "Ausstehend",
         "confirmed": "Bestätigt",
+        "canceled": "Storniert",
         "shipped": "Versandt",
         "delivered": "Geliefert"
       },
@@ -904,6 +913,24 @@
     "statusFilter": {
       "placeholder": "Status",
       "all": "Alle Status"
+    },
+    "ordersFilters": {
+      "searchPlaceholder": "Suche nach ID, Name oder Telefon…",
+      "filtersButton": "Filter",
+      "filtersTitle": "Bestellfilter",
+      "clearFilters": "Alle löschen"
+    },
+    "productFilters": {
+      "searchPlaceholder": "Produkte suchen…",
+      "availabilityPlaceholder": "Verfügbarkeit",
+      "availabilityAll": "Alle",
+      "availabilityInStock": "Auf Lager",
+      "availabilityOutOfStock": "Nicht auf Lager",
+      "categoryPlaceholder": "Kategorie",
+      "categoryAll": "Alle Kategorien",
+      "filtersButton": "Filter",
+      "filtersTitle": "Produktfilter",
+      "clearFilters": "Alle löschen"
     },
     "sortPlaceholder": "Sortierung",
     "productsCount": "{count, plural, =0 {keine Produkte} =1 {ein Produkt} other {# Produkte}}",
@@ -936,6 +963,8 @@
       "uploading": "Lade {fileName} hoch",
       "fileUploaded": "Datei {fileName} hochgeladen",
       "allImagesUploaded": "Alle Bilder wurden hochgeladen",
+      "orderUpdated": "Bestellung aktualisiert",
+      "orderUpdateFailed": "Bestellung konnte nicht aktualisiert werden",
       "productUpdated": "Produkt aktualisiert",
       "productSaved": "Produkt gespeichert",
       "imagesUploadFailed": "Bilder konnten nicht hochgeladen werden",
@@ -1035,6 +1064,16 @@
       "address": "Adresse",
       "pickupTime": "Abholzeit",
       "deliveryTime": "Lieferzeit",
+      "changeTime": "Ändern",
+      "rescheduleTitle": "Lieferzeit verschieben",
+      "rescheduleDescription": "Wähle ein neues Datum und ein verfügbares Zeitfenster.",
+      "selectDate": "Datum",
+      "selectSlot": "Zeitfenster",
+      "loadingSlots": "Zeitfenster werden geladen...",
+      "noSlots": "Keine Zeitfenster für dieses Datum.",
+      "clearTime": "Zeit löschen",
+      "saveTime": "Speichern",
+      "saving": "Speichern...",
       "items": "Artikel",
       "payment": "Zahlung",
       "method": "Methode",

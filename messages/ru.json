@@ -182,7 +182,7 @@
       "selfPickup": "Самовывоз",
       "popular": "Популярно",
       "courierDelivery": "Курьерская доставка",
-      "hours": "с {start}:00 до {end}:00",
+      "hours": "с {start} до {end}",
       "chooseYourCity": "Выберите ваш город",
       "deliveryDetails": "Детали доставки",
       "addressPrefilled": "Поля адресы заполняются из вашего профиля, чтобы оформление заказа было быстрым.",
@@ -197,6 +197,9 @@
       "preferredDeliveryDateTime": "Предпочтительная дата и время доставки",
       "preferredPickupDate": "Предпочтительная дата самовывоза",
       "preferredDeliveryDate": "Предпочтительная дата доставки",
+      "selectDeliverySlot": "Выберите время доставки",
+      "loadingSlots": "Загружаем доступное время…",
+      "noSlotsForDate": "На эту дату нет доступных слотов доставки.",
       "preorderMinimumNotice": "* минимум за {hours} ч",
       "daysAheadMinimum": "{count, plural, =1 {день заранее минимум} one {# день заранее минимум} few {# дня заранее минимум} many {# дней заранее минимум} other {# дней заранее минимум}}",
       "days": "{count, plural, =1 {день} one {# день} few {# дня} many {# дней} other {# дней}}",
@@ -267,6 +270,8 @@
       "pickupDateRequired": "Дата обязательна.",
       "pickupDateInvalid": "Введите корректную дату.",
       "pickupDateTimeRequired": "Дата и время обязательны.",
+      "deliverySlotRequired": "Выберите время доставки.",
+      "deliverySlotInvalid": "Выберите корректное время доставки.",
       "deliveryTimeRange": "Время доставки должно быть между {min}:00 и {max}:00.",
       "pickupDateMinDays": "Дата самовывоза должна быть по крайней мере за {days} дней.",
       "pickupDateMaxOneYear": "Дата самовывоза не может быть более чем на 1 год вперёд.",
@@ -362,6 +367,7 @@
     "orderStatus": {
       "pending": "В обработке",
       "confirmed": "Подтвержден",
+      "canceled": "Отменен",
       "shipped": "Отправлен",
       "delivered": "Доставлен"
     },
@@ -431,6 +437,7 @@
       "details": "Детали",
       "items": "{count, plural, =0 {нет товаров} one {# товар} few {# товара} many {# товаров} other {# товаров}}",
       "recipient": "Получатель",
+      "phoneWithValue": "Телефон: {phone}",
       "notes": "Примечания",
       "color": "Цвет",
       "text": "Текст",
@@ -438,6 +445,7 @@
       "status": {
         "pending": "В обработке",
         "confirmed": "Подтвержден",
+        "canceled": "Отменен",
         "shipped": "Отправлен",
         "delivered": "Доставлен"
       }
@@ -882,6 +890,7 @@
       "orderStatus": {
         "pending": "В обработке",
         "confirmed": "Подтвержден",
+        "canceled": "Отменен",
         "shipped": "Отправлен",
         "delivered": "Доставлен"
       },
@@ -905,6 +914,24 @@
     "statusFilter": {
       "placeholder": "Статус",
       "all": "Все статусы"
+    },
+    "ordersFilters": {
+      "searchPlaceholder": "Поиск по ID, имени или телефону…",
+      "filtersButton": "Фильтры",
+      "filtersTitle": "Фильтры заказов",
+      "clearFilters": "Сбросить"
+    },
+    "productFilters": {
+      "searchPlaceholder": "Поиск товаров…",
+      "availabilityPlaceholder": "Наличие",
+      "availabilityAll": "Все",
+      "availabilityInStock": "В наличии",
+      "availabilityOutOfStock": "Нет в наличии",
+      "categoryPlaceholder": "Категория",
+      "categoryAll": "Все категории",
+      "filtersButton": "Фильтры",
+      "filtersTitle": "Фильтры товаров",
+      "clearFilters": "Сбросить всё"
     },
     "sortPlaceholder": "Сортировка",
     "productsCount": "{count, plural, =0 {нет товаров} one {# товар} few {# товара} many {# товаров} other {# товаров}}",
@@ -937,6 +964,8 @@
       "uploading": "Загружаем {fileName}",
       "fileUploaded": "Файл {fileName} загружен",
       "allImagesUploaded": "Все изображения загружены",
+      "orderUpdated": "Заказ обновлён",
+      "orderUpdateFailed": "Не удалось обновить заказ",
       "productUpdated": "Товар обновлён",
       "productSaved": "Товар сохранён",
       "imagesUploadFailed": "Не удалось загрузить изображения",
@@ -1036,6 +1065,16 @@
       "address": "Адрес",
       "pickupTime": "Время самовывоза",
       "deliveryTime": "Время доставки",
+      "changeTime": "Изменить",
+      "rescheduleTitle": "Перенести время доставки",
+      "rescheduleDescription": "Выберите новую дату и доступный слот времени.",
+      "selectDate": "Дата",
+      "selectSlot": "Слот времени",
+      "loadingSlots": "Загрузка слотов...",
+      "noSlots": "На эту дату нет слотов.",
+      "clearTime": "Очистить время",
+      "saveTime": "Сохранить",
+      "saving": "Сохранение...",
       "items": "Товары",
       "payment": "Оплата",
       "method": "Метод",

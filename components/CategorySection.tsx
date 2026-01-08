@@ -66,7 +66,7 @@ export async function CategorySection() {
                     className="object-cover"
                     sizes="(max-width: 768px) 50vw, 25vw"
                     priority
-                    fetchPriority="high"
+                    fetchPriority="low"
                   />
                 </div>
 
@@ -102,7 +102,7 @@ export async function CategorySection() {
                 className="object-cover"
                 sizes="(max-width: 768px) 50vw, 25vw"
                 priority
-                fetchPriority="high"
+                fetchPriority="low"
               />
             </div>
 

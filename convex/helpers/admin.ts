@@ -1,5 +1,25 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import type { MutationCtx, QueryCtx } from "../_generated/server";
+import type { Id } from "../_generated/dataModel";
+import type {
+  DatabaseReader,
+  MutationCtx,
+  QueryCtx,
+} from "../_generated/server";
+
+export async function assertAdminByUserId(
+  db: DatabaseReader,
+  userId: Id<"users">,
+) {
+  const user = await db.get(userId);
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+  if (!user.isAdmin) {
+    throw new Error("Unauthorized: Admin access required");
+  }
+
+  return user;
+}
 
 /**
  * Проверяет, что пользователь аутентифицирован и является администратором
@@ -20,12 +40,7 @@ export async function ensureAdmin(ctx: QueryCtx | MutationCtx) {
     throw new Error("Not authenticated");
   }
 
-  const user = await ctx.db.get(userId);
-  if (!user?.isAdmin) {
-    throw new Error("Unauthorized: Admin access required");
-  }
-
-  return user;
+  return assertAdminByUserId(ctx.db, userId);
 }
 
 /**

@@ -4,7 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { type Preloaded, useMutation, usePreloadedQuery } from "convex/react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -26,8 +34,8 @@ import { useRouter } from "@/i18n/routing";
 import { createEmptyAddressFields } from "@/lib/address";
 import { AvatarPanel } from "./_components/AvatarPanel";
 import { InfoTile } from "./_components/InfoTile";
-import { OrdersPanel } from "./_components/OrdersPanel";
-
+import { ProfileTabPanel } from "./_components/ProfileTabPanel";
+import { ProfileTabsNav } from "./_components/ProfileTabsNav";
 import {
   fieldInputClass,
   fieldLabelClass,
@@ -139,20 +147,25 @@ type ProfileFormData = z.input<ReturnType<typeof createProfileDetailsSchema>>;
 
 interface IProfilePage {
   preloadedUser: Preloaded<typeof api.auth.loggedInUser>;
-  preloadedOrders: Preloaded<typeof api.orders.list>;
 }
 
-export default function ProfilePageClient({
-  preloadedUser,
-  preloadedOrders,
-}: IProfilePage) {
+export default function ProfilePageClient({ preloadedUser }: IProfilePage) {
   const t = useTranslations("profile");
+  const tCommon = useTranslations("common");
   const user = usePreloadedQuery(preloadedUser);
-
-  const orders = usePreloadedQuery(preloadedOrders);
   const updateProfile = useMutation(api.users.updateProfile);
   const updateAvatar = useMutation(api.users.updateAvatar);
   const deleteAccount = useMutation(api.users.deleteAccount);
+
+  const LazyOrdersTab = useMemo(
+    () =>
+      lazy(() =>
+        import("./_components/ProfileOrdersTab").then((module) => ({
+          default: module.ProfileOrdersTab,
+        })),
+      ),
+    [],
+  );
 
   const tabs: Array<{ id: TabId; label: string; hint: string }> = [
     { id: "profile", label: t("tabs.profile"), hint: t("hints.profile") },
@@ -313,7 +326,7 @@ export default function ProfilePageClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
-  const formattedOrders = useMemo(() => orders ?? [], [orders]);
+  const formattedOrdersCount = 0;
 
   if (user === undefined) {
     return (
@@ -357,7 +370,7 @@ export default function ProfilePageClient({
       >
         <AvatarPanel
           user={user}
-          formattedOrdersCount={formattedOrders.length}
+          formattedOrdersCount={formattedOrdersCount}
           isUploadingAvatar={isUploadingAvatar}
           avatarInputRef={avatarInputRef}
           onAvatarFileChange={handleAvatarFileChange}
@@ -365,422 +378,346 @@ export default function ProfilePageClient({
         />
       </motion.section>
 
-      <motion.nav
+      <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.1 }}
-        className="mt-10 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3"
-        role="tablist"
-        aria-label={t("settings.profileSections")}
       >
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              type="button"
-              role="tab"
-              id={tabButtonId(tab.id)}
-              key={tab.id}
-              aria-selected={isActive}
-              aria-controls={tabPanelId(tab.id)}
-              tabIndex={isActive ? 0 : -1}
-              onClick={() => {
-                setActiveTab(tab.id);
-                // Update the URL so the active tab is preserved in history
-                // and shareable. If the 'profile' tab is selected, remove
-                // the query param entirely.
-                // Use window.history to avoid triggering re-renders from useSearchParams
-                try {
-                  const newUrl =
-                    tab.id === "profile"
-                      ? "/profile"
-                      : `/profile?tab=${tab.id}`;
-                  window.history.pushState({}, "", newUrl);
-                } catch (_e) {
-                  // Fallback to router if window.history fails
-                  if (tab.id === "profile") {
-                    void router.replace("/profile");
-                  } else {
-                    void router.replace(`?tab=${tab.id}`);
-                  }
-                }
-              }}
-              onKeyDown={(event) => {
-                if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") {
-                  return;
-                }
-                event.preventDefault();
-                const offset = event.key === "ArrowRight" ? 1 : -1;
-                const currentIndex = tabs.findIndex(
-                  (candidate) => candidate.id === tab.id,
-                );
-                if (currentIndex === -1) {
-                  return;
-                }
-                const nextIndex =
-                  (currentIndex + offset + tabs.length) % tabs.length;
-                setActiveTab(tabs[nextIndex].id);
-              }}
-              className={`focus-visible:outline-accent flex flex-col rounded-3xl border bg-white px-6 py-5 text-left focus-visible:outline focus-visible:outline-offset-2 ${
-                isActive
-                  ? "border-secondary/90"
-                  : `${palette.softBorder} hover:border-secondary/40`
-              }`}
-            >
-              <span
-                className={`text-xs tracking-[0.3rem] uppercase ${palette.subtleText}`}
-              >
-                {tab.hint}
-              </span>
-              <span className="text-deep text-lg font-semibold">
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
-      </motion.nav>
+        <ProfileTabsNav
+          tabs={tabs}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          router={router}
+          tabButtonId={tabButtonId}
+          tabPanelId={tabPanelId}
+          ariaLabel={t("settings.profileSections")}
+          palette={palette}
+        />
+      </motion.div>
 
       <section className="mt-10 space-y-8">
-        {activeTab === "profile" ? (
-          <motion.div
-            key="profile"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className={`grid gap-6 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
-            role="tabpanel"
-            id={tabPanelId("profile")}
-            aria-labelledby={tabButtonId("profile")}
-            tabIndex={0}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-deep text-2xl font-semibold">
-                  {t("personalDetails.title")}
-                </h2>
-                <p className={`text-sm ${palette.mutedText}`}>
-                  {t("personalDetails.description")}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (isEditing) {
-                    resetFormFromUser();
-                    setIsEditing(false);
-                  } else {
-                    resetFormFromUser();
-                    setIsEditing(true);
-                  }
-                }}
-                className={`rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase transition ${
-                  isEditing
-                    ? `border ${palette.softBorder} text-deep hover:bg-[rgba(var(--primary-rgb),0.7)]`
-                    : "btn-secondary border-none shadow-md hover:brightness-95"
-                }`}
-              >
-                {isEditing
-                  ? t("personalDetails.cancel")
-                  : t("personalDetails.edit")}
-              </button>
-            </div>
-
-            {isEditing ? (
-              <form
-                onSubmit={handleUpdateProfile}
-                className="grid gap-5 md:grid-cols-2"
-              >
-                <label className={fieldLabelClass}>
-                  {t("personalDetails.fullName")}
-                  <input
-                    {...form.register("name")}
-                    className={fieldInputClass}
-                    placeholder={t("common.exampleName")}
-                    maxLength={100}
-                  />
-                  {form.formState.errors.name && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {form.formState.errors.name.message}
-                    </p>
-                  )}
-                </label>
-                <label className={fieldLabelClass}>
-                  {t("personalDetails.emailAddress")}
-                  <input
-                    type="email"
-                    {...form.register("email")}
-                    readOnly
-                    className={`${fieldInputClass} cursor-not-allowed opacity-60`}
-                    placeholder="you@example.com"
-                    maxLength={100}
-                  />
-                  {form.formState.errors.email && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {form.formState.errors.email.message}
-                    </p>
-                  )}
-                </label>
-                <label className={fieldLabelClass}>
-                  {t("personalDetails.phoneNumber")}
-                  <input
-                    {...form.register("phone")}
-                    className={fieldInputClass}
-                    placeholder={t("personalDetails.includeCountryCode")}
-                    maxLength={30}
-                  />
-                  {form.formState.errors.phone && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {form.formState.errors.phone.message}
-                    </p>
-                  )}
-                </label>
-                <label className={`${fieldLabelClass} md:col-span-2`}>
-                  {t("personalDetails.streetHouseNumber")}
-                  <input
-                    {...form.register("address.streetAddress")}
-                    className={fieldInputClass}
-                    placeholder={t("exampleAddress")}
-                    maxLength={200}
-                  />
-                  {form.formState.errors.address?.streetAddress && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {form.formState.errors.address.streetAddress.message}
-                    </p>
-                  )}
-                </label>
-                <label className={fieldLabelClass}>
-                  {t("personalDetails.city")}
-                  <div className="mt-2 flex flex-wrap gap-2.5">
-                    {COURIER_DELIVERY_CITIES.map((city) => {
-                      const selected = form.watch("address.city") === city.name;
-                      return (
-                        <button
-                          key={city.id}
-                          type="button"
-                          onClick={() =>
-                            form.setValue("address.city", city.name)
-                          }
-                          className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${
-                            selected
-                              ? "border-accent bg-[rgba(var(--accent-rgb),0.08)]"
-                              : `${palette.softBorder} hover:border-accent/40`
-                          }`}
-                        >
-                          {city.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <input
-                    maxLength={100}
-                    className="sr-only"
-                    {...form.register("address.city")}
-                  />
-                  {form.formState.errors.address?.city && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {form.formState.errors.address.city.message}
-                    </p>
-                  )}
-                </label>
-                <label className={fieldLabelClass}>
-                  {t("personalDetails.postalCode")}
-                  <input
-                    {...form.register("address.postalCode")}
-                    className={fieldInputClass}
-                    placeholder={STORE_INFO.address.postalCode}
-                    maxLength={10}
-                  />
-                  {form.formState.errors.address?.postalCode && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {form.formState.errors.address.postalCode.message}
-                    </p>
-                  )}
-                </label>
-                <label className={`${fieldLabelClass} md:col-span-2`}>
-                  {t("personalDetails.deliveryNotes")}
-                  <textarea
-                    {...form.register("address.deliveryNotes")}
-                    rows={3}
-                    className={fieldTextareaClass}
-                    placeholder={t("personalDetails.deliveryNotesPlaceholder")}
-                    maxLength={500}
-                  />
-                  {form.formState.errors.address?.deliveryNotes && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {form.formState.errors.address.deliveryNotes.message}
-                    </p>
-                  )}
-                </label>
-                <div className="flex flex-wrap items-center gap-3 md:col-span-2">
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    type="submit"
-                    className="bg-accent text-on-accent inline-flex h-12 items-center justify-center rounded-full px-6 text-xs font-semibold tracking-widest uppercase transition hover:brightness-95"
-                  >
-                    {t("personalDetails.saveChanges")}
-                  </motion.button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      resetFormFromUser();
-                      setIsEditing(false);
-                    }}
-                    className={`text-deep inline-flex h-12 items-center justify-center rounded-full border px-6 text-xs font-semibold tracking-widest uppercase transition hover:bg-[rgba(var(--primary-rgb),0.8)] ${palette.softBorder}`}
-                  >
-                    {t("personalDetails.discard")}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="grid gap-6 md:grid-cols-2">
-                <InfoTile
-                  label={t("personalDetails.fullName")}
-                  value={user.name?.trim() || t("personalDetails.notSet")}
-                />
-                <InfoTile
-                  label={t("personalDetails.emailAddress")}
-                  value={user.email?.trim() || t("personalDetails.notSet")}
-                />
-                <InfoTile
-                  label={t("personalDetails.phoneNumber")}
-                  value={user.phone?.trim() || t("personalDetails.notSet")}
-                />
-                <InfoTile
-                  label={t("personalDetails.streetHouseNumber")}
-                  value={
-                    form.watch("address.streetAddress")?.trim() ||
-                    t("personalDetails.notSet")
-                  }
-                />
-                <InfoTile
-                  label={t("personalDetails.city")}
-                  value={
-                    form.watch("address.city")?.trim() ||
-                    t("personalDetails.notSet")
-                  }
-                />
-                <InfoTile
-                  label={t("personalDetails.postalCode")}
-                  value={
-                    form.watch("address.postalCode")?.trim() ||
-                    t("personalDetails.notSet")
-                  }
-                />
-                <InfoTile
-                  label={t("personalDetails.deliveryNotes")}
-                  value={
-                    form.watch("address.deliveryNotes")?.trim() ||
-                    t("personalDetails.notSet")
-                  }
-                  fullWidth
-                />
-              </div>
-            )}
-          </motion.div>
-        ) : null}
-
-        {activeTab === "orders" ? (
-          <motion.div
-            key="orders"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className={`grid gap-5 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
-            role="tabpanel"
-            id={tabPanelId("orders")}
-            aria-labelledby={tabButtonId("orders")}
-            tabIndex={0}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <ProfileTabPanel
+          isActive={activeTab === "profile"}
+          panelId={tabPanelId("profile")}
+          labelledById={tabButtonId("profile")}
+          className={`grid gap-6 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
               <h2 className="text-deep text-2xl font-semibold">
-                {t("orders.title")}
+                {t("personalDetails.title")}
               </h2>
               <p className={`text-sm ${palette.mutedText}`}>
-                {t("orders.placedOrders", { count: formattedOrders.length })}
+                {t("personalDetails.description")}
               </p>
             </div>
-            <OrdersPanel orders={orders} />
-          </motion.div>
-        ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                if (isEditing) {
+                  resetFormFromUser();
+                  setIsEditing(false);
+                } else {
+                  resetFormFromUser();
+                  setIsEditing(true);
+                }
+              }}
+              className={`rounded-full px-5 py-2 text-xs font-semibold tracking-widest uppercase transition ${
+                isEditing
+                  ? `border ${palette.softBorder} text-deep hover:bg-[rgba(var(--primary-rgb),0.7)]`
+                  : "btn-secondary border-none shadow-md hover:brightness-95"
+              }`}
+            >
+              {isEditing
+                ? t("personalDetails.cancel")
+                : t("personalDetails.edit")}
+            </button>
+          </div>
 
-        {activeTab === "settings" ? (
-          <motion.div
-            key="settings"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className={`grid gap-6 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
-            role="tabpanel"
-            id={tabPanelId("settings")}
-            aria-labelledby={tabButtonId("settings")}
-            tabIndex={0}
+          {isEditing ? (
+            <form
+              onSubmit={handleUpdateProfile}
+              className="grid gap-5 md:grid-cols-2"
+            >
+              <label className={fieldLabelClass}>
+                {t("personalDetails.fullName")}
+                <input
+                  {...form.register("name")}
+                  className={fieldInputClass}
+                  placeholder={tCommon("exampleName")}
+                  maxLength={100}
+                />
+                {form.formState.errors.name && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {form.formState.errors.name.message}
+                  </p>
+                )}
+              </label>
+              <label className={fieldLabelClass}>
+                {t("personalDetails.emailAddress")}
+                <input
+                  type="email"
+                  {...form.register("email")}
+                  readOnly
+                  className={`${fieldInputClass} cursor-not-allowed opacity-60`}
+                  placeholder="you@example.com"
+                  maxLength={100}
+                />
+                {form.formState.errors.email && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {form.formState.errors.email.message}
+                  </p>
+                )}
+              </label>
+              <label className={fieldLabelClass}>
+                {t("personalDetails.phoneNumber")}
+                <input
+                  {...form.register("phone")}
+                  className={fieldInputClass}
+                  placeholder={t("personalDetails.includeCountryCode")}
+                  maxLength={30}
+                />
+                {form.formState.errors.phone && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {form.formState.errors.phone.message}
+                  </p>
+                )}
+              </label>
+              <label className={`${fieldLabelClass} md:col-span-2`}>
+                {t("personalDetails.streetHouseNumber")}
+                <input
+                  {...form.register("address.streetAddress")}
+                  className={fieldInputClass}
+                  placeholder={tCommon("exampleAddress")}
+                  maxLength={200}
+                />
+                {form.formState.errors.address?.streetAddress && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {form.formState.errors.address.streetAddress.message}
+                  </p>
+                )}
+              </label>
+              <label className={fieldLabelClass}>
+                {t("personalDetails.city")}
+                <div className="mt-2 flex flex-wrap gap-2.5">
+                  {COURIER_DELIVERY_CITIES.map((city) => {
+                    const selected = form.watch("address.city") === city.name;
+                    return (
+                      <button
+                        key={city.id}
+                        type="button"
+                        onClick={() => form.setValue("address.city", city.name)}
+                        className={`focus:outline-accent flex items-center justify-center rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                          selected
+                            ? "border-accent bg-[rgba(var(--accent-rgb),0.08)]"
+                            : `${palette.softBorder} hover:border-accent/40`
+                        }`}
+                      >
+                        {city.name}
+                      </button>
+                    );
+                  })}
+                </div>
+                <input
+                  maxLength={100}
+                  className="sr-only"
+                  {...form.register("address.city")}
+                />
+                {form.formState.errors.address?.city && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {form.formState.errors.address.city.message}
+                  </p>
+                )}
+              </label>
+              <label className={fieldLabelClass}>
+                {t("personalDetails.postalCode")}
+                <input
+                  {...form.register("address.postalCode")}
+                  className={fieldInputClass}
+                  placeholder={STORE_INFO.address.postalCode}
+                  maxLength={10}
+                />
+                {form.formState.errors.address?.postalCode && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {form.formState.errors.address.postalCode.message}
+                  </p>
+                )}
+              </label>
+              <label className={`${fieldLabelClass} md:col-span-2`}>
+                {t("personalDetails.deliveryNotes")}
+                <textarea
+                  {...form.register("address.deliveryNotes")}
+                  rows={3}
+                  className={fieldTextareaClass}
+                  placeholder={t("personalDetails.deliveryNotesPlaceholder")}
+                  maxLength={500}
+                />
+                {form.formState.errors.address?.deliveryNotes && (
+                  <p className="mt-1 text-xs text-red-600">
+                    {form.formState.errors.address.deliveryNotes.message}
+                  </p>
+                )}
+              </label>
+              <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  type="submit"
+                  className="bg-accent text-on-accent inline-flex h-12 items-center justify-center rounded-full px-6 text-xs font-semibold tracking-widest uppercase transition hover:brightness-95"
+                >
+                  {t("personalDetails.saveChanges")}
+                </motion.button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetFormFromUser();
+                    setIsEditing(false);
+                  }}
+                  className={`text-deep inline-flex h-12 items-center justify-center rounded-full border px-6 text-xs font-semibold tracking-widest uppercase transition hover:bg-[rgba(var(--primary-rgb),0.8)] ${palette.softBorder}`}
+                >
+                  {t("personalDetails.discard")}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              <InfoTile
+                label={t("personalDetails.fullName")}
+                value={user.name?.trim() || t("personalDetails.notSet")}
+              />
+              <InfoTile
+                label={t("personalDetails.emailAddress")}
+                value={user.email?.trim() || t("personalDetails.notSet")}
+              />
+              <InfoTile
+                label={t("personalDetails.phoneNumber")}
+                value={user.phone?.trim() || t("personalDetails.notSet")}
+              />
+              <InfoTile
+                label={t("personalDetails.streetHouseNumber")}
+                value={
+                  form.watch("address.streetAddress")?.trim() ||
+                  t("personalDetails.notSet")
+                }
+              />
+              <InfoTile
+                label={t("personalDetails.city")}
+                value={
+                  form.watch("address.city")?.trim() ||
+                  t("personalDetails.notSet")
+                }
+              />
+              <InfoTile
+                label={t("personalDetails.postalCode")}
+                value={
+                  form.watch("address.postalCode")?.trim() ||
+                  t("personalDetails.notSet")
+                }
+              />
+              <InfoTile
+                label={t("personalDetails.deliveryNotes")}
+                value={
+                  form.watch("address.deliveryNotes")?.trim() ||
+                  t("personalDetails.notSet")
+                }
+                fullWidth
+              />
+            </div>
+          )}
+        </ProfileTabPanel>
+
+        <ProfileTabPanel
+          isActive={activeTab === "orders"}
+          panelId={tabPanelId("orders")}
+          labelledById={tabButtonId("orders")}
+          className={`grid gap-5 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
+        >
+          <Suspense
+            fallback={
+              <div className="grid gap-4 sm:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={`orders-tab-skeleton-${index}`}
+                    className="h-32 animate-pulse rounded-3xl bg-[rgba(var(--primary-rgb),0.06)]"
+                  />
+                ))}
+              </div>
+            }
           >
-            {/* Danger Zone */}
-            <div>
-              <h3 className="text-deep mb-4 text-lg font-semibold">
-                {t("settings.dangerZone.title")}
-              </h3>
-              <p className={`mb-4 text-sm ${palette.mutedText}`}>
-                {t("settings.dangerZone.description")}
-              </p>
-              <Dialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
-              >
-                <DialogTrigger asChild>
+            <LazyOrdersTab userPhone={user?.phone} />
+          </Suspense>
+        </ProfileTabPanel>
+
+        <ProfileTabPanel
+          isActive={activeTab === "settings"}
+          panelId={tabPanelId("settings")}
+          labelledById={tabButtonId("settings")}
+          className={`grid gap-6 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
+        >
+          {/* Danger Zone */}
+          <div>
+            <h3 className="text-deep mb-4 text-lg font-semibold">
+              {t("settings.dangerZone.title")}
+            </h3>
+            <p className={`mb-4 text-sm ${palette.mutedText}`}>
+              {t("settings.dangerZone.description")}
+            </p>
+            <Dialog
+              open={isDeleteDialogOpen}
+              onOpenChange={setIsDeleteDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {t("settings.dangerZone.deleteAccount")}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader className="space-y-2">
+                  <DialogTitle>
+                    {t("settings.dangerZone.deleteAccountTitle")}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {t("settings.dangerZone.deleteAccountDescription")}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDeleteDialogOpen(false)}
+                    disabled={isDeletingAccount}
+                  >
+                    {t("personalDetails.cancel")}
+                  </Button>
                   <Button
                     variant="destructive"
+                    onClick={async () => {
+                      setIsDeletingAccount(true);
+                      try {
+                        await deleteAccount({});
+                        window.location.replace("/auth");
+                      } catch (error) {
+                        console.error("Failed to delete account:", error);
+                        toast.error(t("settings.dangerZone.failedToDelete"));
+                        setIsDeletingAccount(false);
+                      } finally {
+                        // Refresh in case of any issues
+                        window.location.reload();
+                      }
+                    }}
+                    disabled={isDeletingAccount}
                     className="bg-red-600 hover:bg-red-700"
                   >
-                    {t("settings.dangerZone.deleteAccount")}
+                    {isDeletingAccount
+                      ? t("settings.dangerZone.deleting")
+                      : t("settings.dangerZone.deleteAccount")}
                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader className="space-y-2">
-                    <DialogTitle>
-                      {t("settings.dangerZone.deleteAccountTitle")}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {t("settings.dangerZone.deleteAccountDescription")}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsDeleteDialogOpen(false)}
-                      disabled={isDeletingAccount}
-                    >
-                      {t("personalDetails.cancel")}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={async () => {
-                        setIsDeletingAccount(true);
-                        try {
-                          await deleteAccount({});
-                          window.location.replace("/auth");
-                        } catch (error) {
-                          console.error("Failed to delete account:", error);
-                          toast.error(t("settings.dangerZone.failedToDelete"));
-                          setIsDeletingAccount(false);
-                        } finally {
-                          // Refresh in case of any issues
-                          window.location.reload();
-                        }
-                      }}
-                      disabled={isDeletingAccount}
-                      className="bg-red-600 hover:bg-red-700"
-                    >
-                      {isDeletingAccount
-                        ? t("settings.dangerZone.deleting")
-                        : t("settings.dangerZone.deleteAccount")}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </motion.div>
-        ) : null}
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </ProfileTabPanel>
       </section>
     </section>
   );

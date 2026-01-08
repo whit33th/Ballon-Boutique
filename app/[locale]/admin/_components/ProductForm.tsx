@@ -40,6 +40,7 @@ import type { CategoryGroupValue } from "@/constants/categories";
 import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "./utils";
 import { ImageUpload } from "./ImageUpload";
 import type { PendingImage, UploadProgressState } from "./types";
 
@@ -214,32 +215,32 @@ export function ProductForm({
 
   const sizesEnabled = categoryGroup === "mini-sets" && miniSetSizes.length > 0;
 
-  useEffect(() => {
-    if (categoryGroup !== "mini-sets") {
-      if (miniSetSizes.length > 0) {
-        form.setValue("miniSetSizes", [], { shouldDirty: true });
-      }
-      return;
-    }
+  const miniSetPriceRange = useMemo(() => {
+    if (!sizesEnabled) return null;
 
-    if (!sizesEnabled) {
-      return;
-    }
-
-    const numericPrices = miniSetSizes
+    const prices = miniSetSizes
       .map((entry) => Number(String(entry.price ?? "").replace(",", ".")))
       .filter((value) => Number.isFinite(value) && value >= 0);
-    if (numericPrices.length === 0) {
-      return;
-    }
-    const min = Math.min(...numericPrices);
+
+    if (prices.length === 0) return null;
+
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return { min, max };
+  }, [miniSetSizes, sizesEnabled]);
+
+  useEffect(() => {
+    if (!miniSetPriceRange) return;
+
     const current = Number(
       String(form.getValues("price") ?? "").replace(",", "."),
     );
-    if (!Number.isFinite(current) || current !== min) {
-      form.setValue("price", String(min), { shouldDirty: true });
+    if (!Number.isFinite(current) || current !== miniSetPriceRange.min) {
+      form.setValue("price", String(miniSetPriceRange.min), {
+        shouldDirty: true,
+      });
     }
-  }, [categoryGroup, form, miniSetSizes, sizesEnabled]);
+  }, [form, miniSetPriceRange]);
 
   const sizeRows = useMemo(() => miniSetSizes, [miniSetSizes]);
 
@@ -330,13 +331,20 @@ export function ProductForm({
                       className="px-2.5"
                       type="number"
                       inputMode="decimal"
-                      step="0.1"
+                      step="0.01"
                       min="0"
                       placeholder="6.50"
                       disabled={sizesEnabled}
                       aria-invalid={fieldState.invalid}
                     />
                   </FormControl>
+                  {miniSetPriceRange ? (
+                    <p className="text-muted-foreground text-xs">
+                      {miniSetPriceRange.min === miniSetPriceRange.max
+                        ? formatCurrency(miniSetPriceRange.min)
+                        : `${formatCurrency(miniSetPriceRange.min)}–${formatCurrency(miniSetPriceRange.max)}`}
+                    </p>
+                  ) : null}
                   <FormMessage />
                 </FormItem>
               )}
@@ -752,7 +760,9 @@ export function ProductForm({
                                 ...getColorStyle(color.name, color.hex),
                               }}
                             />
-                            {tAdmin(`colors.${color.name}`)}
+                            {tAdmin.has(`colors.${color.name}`)
+                              ? tAdmin(`colors.${color.name}`)
+                              : color.name}
                           </button>
                         );
                       })}

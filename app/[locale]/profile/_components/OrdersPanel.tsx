@@ -23,9 +23,10 @@ import { palette } from "./palette";
 
 type OrdersPanelProps = {
   orders?: Doc<"orders">[];
+  userPhone?: string;
 };
 
-export function OrdersPanel({ orders }: OrdersPanelProps) {
+export function OrdersPanel({ orders, userPhone }: OrdersPanelProps) {
   const t = useTranslations("profile.orders");
   const tCommon = useTranslations("common");
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
@@ -77,6 +78,7 @@ export function OrdersPanel({ orders }: OrdersPanelProps) {
         <OrderCard
           key={order._id}
           order={order}
+          userPhone={userPhone}
           isExpanded={expandedOrderId === order._id}
           onToggle={() =>
             setExpandedOrderId((prev) =>
@@ -91,11 +93,12 @@ export function OrdersPanel({ orders }: OrdersPanelProps) {
 
 type OrderCardProps = {
   order: Doc<"orders">;
+  userPhone?: string;
   isExpanded: boolean;
   onToggle: () => void;
 };
 
-function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
+function OrderCard({ order, userPhone, isExpanded, onToggle }: OrderCardProps) {
   const t = useTranslations("profile.orders");
   const tCheckout = useTranslations("checkout.orderSummary");
   const [copiedId, setCopiedId] = useState(false);
@@ -118,70 +121,78 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
       className={`group overflow-hidden rounded-3xl border transition-all duration-300 ${palette.softBorder} bg-primary hover:shadow-sm`}
     >
       {/* Header Section - Always Visible */}
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full cursor-pointer px-4 py-4 transition-colors hover:bg-[rgba(var(--surface-rgb),0.02)] sm:px-6 sm:py-5"
-      >
-        <div className="flex w-full flex-col items-center justify-between gap-3 sm:flex-row sm:gap-4">
-          <div className="flex min-w-0 flex-1 flex-col items-start gap-1 text-left">
-            <div className="mb-1 flex flex-wrap items-center gap-2">
-              <span className="text-secondary inline-block rounded-full bg-[rgba(var(--secondary-rgb),0.15)] px-2.5 py-0.5 text-[10px] font-bold tracking-widest uppercase">
-                {t(`status.${order.status}`)}
-              </span>
-              <span className={`text-xs ${palette.mutedText}`}>
-                {order.pickupDateTime
-                  ? new Date(order.pickupDateTime).toLocaleDateString()
-                  : new Date(order._creationTime).toLocaleDateString()}
-              </span>
-            </div>
+      <div className="w-full px-4 py-4 transition-colors hover:bg-[rgba(var(--surface-rgb),0.02)] sm:px-6 sm:py-5">
+        <div className="flex w-full flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={isExpanded}
+            aria-controls={`order-items-${order._id}`}
+            className="w-full min-w-0 flex-1 cursor-pointer text-left"
+          >
+            <div className="flex w-full flex-col items-center justify-between gap-3 sm:flex-row sm:gap-4">
+              <div className="flex min-w-0 flex-1 flex-col items-start gap-1 text-left">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <span className="text-secondary inline-block rounded-full bg-[rgba(var(--secondary-rgb),0.15)] px-2.5 py-0.5 text-[10px] font-bold tracking-widest uppercase">
+                    {t(`status.${order.status}`)}
+                  </span>
+                  <span className={`text-xs ${palette.mutedText}`}>
+                    {order.pickupDateTime
+                      ? new Date(order.pickupDateTime).toLocaleDateString()
+                      : new Date(order._creationTime).toLocaleDateString()}
+                  </span>
+                </div>
 
-            <p className="text-deep w-full text-base leading-tight font-bold wrap-break-word sm:text-lg">
-              {order.customerName}
-            </p>
+                <p className="text-deep w-full text-base leading-tight font-bold wrap-break-word sm:text-lg">
+                  {order.customerName}
+                </p>
 
-            <div
-              className={`mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${palette.mutedText}`}
-            >
-              <span>{t("items", { count: order.items.length })}</span>
-              <span className="opacity-30">•</span>
-              <button
-                type="button"
-                onClick={handleCopyId}
-                className="group/copy text-deep flex max-w-30 items-center gap-1 rounded px-2 py-1 font-mono text-[11px] font-semibold transition-colors hover:bg-[rgba(var(--deep-rgb),0.05)] sm:max-w-none"
-                title="Click to copy order ID"
-              >
-                <span className="truncate">#{order._id}</span>
-                <span className="opacity-0 transition-opacity group-hover/copy:opacity-100">
-                  {copiedId ? (
-                    <Check size={12} className="text-emerald-600" />
-                  ) : (
-                    <Copy size={12} />
-                  )}
-                </span>
-              </button>
-            </div>
-          </div>
+                <div
+                  className={`mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${palette.mutedText}`}
+                >
+                  <span>{t("items", { count: order.items.length })}</span>
+                </div>
+              </div>
 
-          <div className="flex shrink-0 items-center gap-3 sm:gap-6">
-            <p className="text-accent text-lg font-bold tracking-tight sm:text-xl">
-              €{order.totalAmount.toFixed(2)}
-            </p>
-            <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-transform duration-300 ${palette.softBorder} ${
-                isExpanded
-                  ? "-rotate-180 bg-[rgba(var(--surface-rgb),0.05)]"
-                  : "rotate-0"
-              }`}
-            >
-              <ChevronDown
-                size={16}
-                className={`text-deep transition-colors ${isExpanded ? "text-accent" : ""}`}
-              />
+              <div className="flex shrink-0 items-center gap-3 sm:gap-6">
+                <p className="text-accent text-lg font-bold tracking-tight sm:text-xl">
+                  €{order.totalAmount.toFixed(2)}
+                </p>
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-transform duration-300 ${palette.softBorder} ${
+                    isExpanded
+                      ? "-rotate-180 bg-[rgba(var(--surface-rgb),0.05)]"
+                      : "rotate-0"
+                  }`}
+                >
+                  <ChevronDown
+                    size={16}
+                    className={`text-deep transition-colors ${isExpanded ? "text-accent" : ""}`}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCopyId}
+            className="group/copy text-deep flex items-center gap-1 rounded px-2 py-1 font-mono text-[11px] font-semibold transition-colors hover:bg-[rgba(var(--deep-rgb),0.05)]"
+            title="Click to copy order ID"
+          >
+            <span className="max-w-30 truncate sm:max-w-none">
+              #{order._id}
+            </span>
+            <span className="opacity-0 transition-opacity group-hover/copy:opacity-100">
+              {copiedId ? (
+                <Check size={12} className="text-emerald-600" />
+              ) : (
+                <Copy size={12} />
+              )}
+            </span>
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* Expanded Content */}
       <div
@@ -212,6 +223,11 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                     <p className={`text-xs ${palette.mutedText}`}>
                       {order.customerEmail}
                     </p>
+                    {userPhone ? (
+                      <p className={`text-xs ${palette.mutedText}`}>
+                        {t("phoneWithValue", { phone: userPhone })}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </div>

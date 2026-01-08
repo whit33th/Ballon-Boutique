@@ -134,7 +134,13 @@ export const STORE_INFO = {
   delivery: {
     // Delivery hours when couriers work (source of truth)
     minDeliveryHour: 16, // minimum hour for delivery selection (24-hour format)
-    maxDeliveryHour: 22, // maximum hour for delivery selection (24-hour format)
+    minDeliveryMinute: 30, // minimum minute for delivery selection
+    maxDeliveryHour: 23, // maximum hour for delivery selection (24-hour format)
+    maxDeliveryMinute: 0, // maximum minute for delivery selection
+
+    // Delivery slot configuration
+    slotMinutes: 30,
+    slotBufferMinutes: 90, // block +/- this many minutes around a booked slot
     cost: 16, // in EUR
   },
 

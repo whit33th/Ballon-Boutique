@@ -18,7 +18,11 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
   const categoryLabel = product.categories?.length
     ? product.categories
         .slice(0, 2)
-        .map((cat) => tAdmin(`subcategories.${cat}`) || cat)
+        .map((cat) =>
+          tAdmin.has(`subcategories.${cat}`)
+            ? tAdmin(`subcategories.${cat}`)
+            : cat,
+        )
         .join(" · ")
     : t("noCategory");
   return (
@@ -77,7 +81,9 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
               key={`${product._id}-${color}`}
               className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600"
             >
-              {tAdmin(`colors.${color}`) || color}
+              {tAdmin.has(`colors.${color}`)
+                ? tAdmin(`colors.${color}`)
+                : color}
             </span>
           ))}
         </div>

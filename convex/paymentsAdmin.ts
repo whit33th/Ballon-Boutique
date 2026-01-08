@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalQuery, query } from "./_generated/server";
-import { ensureAdmin } from "./helpers/admin";
+import { assertAdminByUserId, ensureAdmin } from "./helpers/admin";
 import {
   customerValidator,
   type PaymentStatus,
@@ -66,11 +66,13 @@ type AdminPaymentRow = {
   };
 };
 
-export const assertAdminAccess = internalQuery({
-  args: {},
+export const assertAdminAccessForUser = internalQuery({
+  args: {
+    userId: v.id("users"),
+  },
   returns: v.literal(true),
-  handler: async (ctx) => {
-    await ensureAdmin(ctx);
+  handler: async (ctx, args) => {
+    await assertAdminByUserId(ctx.db, args.userId);
     return true as const;
   },
 });

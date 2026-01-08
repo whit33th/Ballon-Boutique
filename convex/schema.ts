@@ -121,6 +121,7 @@ const applicationTables = {
       v.literal("confirmed"),
       v.literal("shipped"),
       v.literal("delivered"),
+      v.literal("canceled"),
     ),
     customerEmail: v.string(),
     customerName: v.string(),

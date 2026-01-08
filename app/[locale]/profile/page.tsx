@@ -15,12 +15,5 @@ export default async function ProfilePage() {
     { token },
   );
 
-  const preloadedOrders = await preloadQuery(api.orders.list, {}, { token });
-
-  return (
-    <ProfilePageClient
-      preloadedUser={preloadedUser}
-      preloadedOrders={preloadedOrders}
-    />
-  );
+  return <ProfilePageClient preloadedUser={preloadedUser} />;
 }

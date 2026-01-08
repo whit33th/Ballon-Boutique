@@ -25,4 +25,5 @@ export const orderStatusValidator = v.union(
   v.literal("confirmed"),
   v.literal("shipped"),
   v.literal("delivered"),
+  v.literal("canceled"),
 );

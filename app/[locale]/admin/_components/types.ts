@@ -77,6 +77,10 @@ export const ORDER_STATUS_META: Record<
     label: "Доставлен",
     tone: "bg-emerald-100 text-emerald-900",
   },
+  canceled: {
+    label: "Отменён",
+    tone: "bg-rose-100 text-rose-900",
+  },
 };
 
 export const ORDER_STATUS_FILTERS: Array<{
@@ -88,6 +92,7 @@ export const ORDER_STATUS_FILTERS: Array<{
   { value: "confirmed", label: "Подтверждён" },
   { value: "shipped", label: "Отправлен" },
   { value: "delivered", label: "Доставлен" },
+  { value: "canceled", label: "Отменён" },
 ];
 
 export const PAYMENT_METHOD_LABELS: Record<

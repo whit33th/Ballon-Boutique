@@ -23,7 +23,6 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
 
-  // Enable static rendering
   setRequestLocale(locale);
 
   const t = await getTranslations({ locale, namespace: "home" });
@@ -32,20 +31,16 @@ export default async function HomePage({
     <>
       <OrganizationJsonLd locale={locale} />
       <section className="flex min-h-screen flex-col">
-        {/* Static content - pre-rendered at build time */}
         <Hero />
 
         <div className="flex flex-col gap-6">
-          {/* CategorySection as Server Component - static, pre-rendered */}
           <CategorySection />
 
-          {/* Product Carousels - Dynamic content wrapped in Suspense for streaming */}
           <Suspense fallback={<ProductCarouselsFallback />}>
             <ProductCarouselsWrapper />
           </Suspense>
         </div>
 
-        {/* Rainbow Text - Client Component with static text */}
         <RainbowArcText
           className="py-5 text-[10vw] sm:text-[8vw]"
           text={t("rainbowText")}
