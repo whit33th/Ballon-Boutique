@@ -45,7 +45,6 @@ const orderValidator = v.object({
     ),
   ),
   paymentIntentId: v.optional(v.string()),
-  whatsappConfirmed: v.optional(v.boolean()),
   pickupDateTime: v.optional(v.string()),
   currency: v.optional(v.string()),
   deliveryFee: v.optional(v.number()),
@@ -67,7 +66,6 @@ export const createGuest = mutation({
       v.literal("partial_online"),
       v.literal("cash"),
     ),
-    whatsappConfirmed: v.optional(v.boolean()),
     pickupDateTime: v.optional(v.string()),
     items: v.array(
       v.object({
@@ -90,11 +88,6 @@ export const createGuest = mutation({
   },
   returns: v.id("orders"),
   handler: async (ctx, args) => {
-    // Validate cash payment requires WhatsApp confirmation
-    if (args.paymentMethod === "cash" && !args.whatsappConfirmed) {
-      throw new Error("Cash payment requires WhatsApp confirmation");
-    }
-
     // Validate pickupDateTime if provided
     if (args.pickupDateTime) {
       const selectedDate = new Date(args.pickupDateTime);
@@ -231,7 +224,6 @@ export const createGuest = mutation({
       shippingAddress: args.shippingAddress,
       deliveryType: args.deliveryType,
       paymentMethod: args.paymentMethod,
-      whatsappConfirmed: args.whatsappConfirmed,
       pickupDateTime: args.pickupDateTime,
     });
 
@@ -295,17 +287,11 @@ export const create = mutation({
       v.literal("partial_online"),
       v.literal("cash"),
     ),
-    whatsappConfirmed: v.optional(v.boolean()),
     pickupDateTime: v.optional(v.string()),
   },
   returns: v.id("orders"),
   handler: async (ctx, args) => {
     const { userId } = await requireUser(ctx);
-
-    // Validate cash payment requires WhatsApp confirmation
-    if (args.paymentMethod === "cash" && !args.whatsappConfirmed) {
-      throw new Error("Cash payment requires WhatsApp confirmation");
-    }
 
     // Validate pickupDateTime if provided
     if (args.pickupDateTime) {
@@ -420,7 +406,6 @@ export const create = mutation({
       shippingAddress: args.shippingAddress,
       deliveryType: args.deliveryType,
       paymentMethod: args.paymentMethod,
-      whatsappConfirmed: args.whatsappConfirmed,
       pickupDateTime: args.pickupDateTime,
     });
 

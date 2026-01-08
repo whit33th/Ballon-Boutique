@@ -190,70 +190,7 @@ export { PRIMARY_CATEGORY_CARDS as CATEGORIES } from "./categories";
 /**
  * WhatsApp message templates
  */
-export const WHATSAPP_MESSAGES = {
-  orderConfirmation: (
-    customerName: string,
-    customerEmail: string,
-    customerPhone: string,
-    shippingAddress: string,
-    deliveryType: string,
-    pickupDateTime?: string,
-    items?: Array<{
-      name: string;
-      quantity: number;
-      size?: string | null;
-      unitPrice?: number | null;
-      personalization?: {
-        text?: string;
-        color?: string;
-        number?: string;
-      } | null;
-    }> | null,
-    total?: number,
-  ) => {
-    const deliveryText = deliveryType === "pickup" ? "Abholung" : "Lieferung";
-    const dateTime = pickupDateTime || "nicht angegeben";
-    const phoneText = customerPhone?.trim()
-      ? customerPhone.trim()
-      : "nicht angegeben";
-
-    let itemsText = "";
-    if (items?.length) {
-      itemsText =
-        "\n\nProdukte:\n" +
-        items
-          .map((it) => {
-            const parts = [
-              `- ${it.name}${it.size ? ` (Größe: ${it.size})` : ""} x${it.quantity}`,
-            ];
-            if (typeof it.unitPrice === "number") {
-              parts.push(`Preis: ${it.unitPrice} EUR`);
-            }
-            if (it.personalization) {
-              const p = it.personalization;
-              if (p.color) parts.push(`Farbe: ${p.color}`);
-              if (p.text) parts.push(`Text: "${p.text}"`);
-              if (p.number) parts.push(`Nummer: ${p.number}`);
-            }
-            return parts.join(", ");
-          })
-          .join("\n");
-    }
-
-    const totalText =
-      typeof total === "number" ? `\n\nGesamt: ${total} EUR` : "";
-
-    return `Guten Tag! Ich möchte meine Bestellung bestätigen.\n\nName: ${customerName}\nEmail: ${customerEmail}\nTelefon: ${phoneText}\nAdresse: ${shippingAddress}\nLieferart: ${deliveryText}\nDatum und Uhrzeit: ${dateTime}${itemsText}${totalText}`;
-  },
-};
-
-/**
- * Helper function to get WhatsApp link
- */
-export function getWhatsAppLink(message: string): string {
-  const encodedMessage = encodeURIComponent(message);
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-}
+// NOTE: WhatsApp templates and link helpers were removed.
 
 /**
  * Helper function to format address

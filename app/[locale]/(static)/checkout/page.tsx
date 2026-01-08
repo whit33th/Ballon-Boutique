@@ -45,11 +45,7 @@ import {
 } from "@/components/ui/form";
 import Input from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  getWhatsAppLink,
-  STORE_INFO,
-  WHATSAPP_MESSAGES,
-} from "@/constants/config";
+import { STORE_INFO } from "@/constants/config";
 import {
   COURIER_DELIVERY_CITIES,
   type CourierDeliveryCity,
@@ -60,7 +56,6 @@ import type { ProductWithImage } from "@/convex/helpers/products";
 import { useRouter } from "@/i18n/routing";
 import {
   type AddressFields,
-  composeAddress,
   createAddressSchema,
   createEmptyAddressFields,
   parseAddress,
@@ -1086,10 +1081,8 @@ function OrderSummary({
         <p className="font-semibold text-gray-900">
           {t("orderSummary.goodToKnow")}
         </p>
-        <p className="mt-1">• {t("orderSummary.reserveAfterPayment")}</p>
-        <p>• {t("orderSummary.productionUpTo72Hours")}</p>
+        <p className="mt-1">• {t("orderSummary.productionUpTo72Hours")}</p>
         <p>• {t("orderSummary.cancellations48Hours")}</p>
-        <p>• {t("orderSummary.coordinateViaWhatsApp")}</p>
       </div>
     </aside>
   );
@@ -1140,7 +1133,6 @@ export default function CheckoutPage() {
   });
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("full_online");
-  const [whatsappConfirmed, setWhatsappConfirmed] = useState(false);
   const [isCashSubmitting, setIsCashSubmitting] = useState(false);
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -1468,52 +1460,6 @@ export default function CheckoutPage() {
 
   const handlePaymentMethodChange = (method: PaymentMethod) => {
     setPaymentMethod(method);
-    if (method === "cash") {
-      setWhatsappConfirmed(false);
-    }
-  };
-
-  const handleWhatsAppConfirm = () => {
-    // Get all current values from form to ensure we use the latest input
-    const formValues = form.getValues();
-    const currentAddress = formValues.address ?? createEmptyAddressFields();
-    const currentShippingAddress = {
-      streetAddress: (currentAddress.streetAddress || "").trim(),
-      city: (currentAddress.city || "").trim(),
-      postalCode: (currentAddress.postalCode || "").trim(),
-      deliveryNotes: (currentAddress.deliveryNotes || "").trim(),
-    };
-    const currentCustomerName = (formValues.customerName || "").trim();
-    const currentCustomerEmail = (formValues.customerEmail || "").trim();
-    const currentCustomerPhone = (formValues.phone || "").trim();
-    const currentDeliveryType = formValues.deliveryType;
-    const currentPickupDate = (formValues.pickupDate || "").trim();
-
-    const itemsList = (itemsToDisplay ?? []).map((item) => {
-      const name = item.product.name;
-      const quantity = item.quantity;
-      const size = item.variant?.size ?? null;
-      const unitPrice =
-        (isServerCartItem(item)
-          ? item.variant?.unitPrice
-          : item.variant?.unitPrice) ?? item.product.price;
-      const personalization = item.personalization ?? null;
-      return { name, quantity, size, unitPrice, personalization };
-    });
-
-    const message = WHATSAPP_MESSAGES.orderConfirmation(
-      currentCustomerName,
-      currentCustomerEmail,
-      currentCustomerPhone,
-      composeAddress(currentShippingAddress),
-      currentDeliveryType,
-      currentPickupDate,
-      itemsList,
-      Math.round(total * 100) / 100,
-    );
-    const whatsappLink = getWhatsAppLink(message);
-    window.open(whatsappLink, "_blank");
-    setWhatsappConfirmed(true);
   };
 
   useEffect(() => {
@@ -1559,11 +1505,6 @@ export default function CheckoutPage() {
     const isReady = await form.trigger();
     if (!isReady) {
       toast.error(t("validation.addContactDetailsFirst"));
-      return;
-    }
-
-    if (paymentMethod === "cash" && !whatsappConfirmed) {
-      toast.error(t("validation.confirmWhatsAppFirst"));
       return;
     }
 
@@ -1613,8 +1554,6 @@ export default function CheckoutPage() {
           shippingAddress: normalizedShippingAddress,
           deliveryType: currentDeliveryType,
           paymentMethod,
-          whatsappConfirmed:
-            paymentMethod === "cash" ? whatsappConfirmed : undefined,
           pickupDateTime: derivedPickupDateTime || undefined,
         });
       } else {
@@ -1624,8 +1563,6 @@ export default function CheckoutPage() {
           shippingAddress: normalizedShippingAddress,
           deliveryType: currentDeliveryType,
           paymentMethod,
-          whatsappConfirmed:
-            paymentMethod === "cash" ? whatsappConfirmed : undefined,
           pickupDateTime: derivedPickupDateTime || undefined,
           items: guestItems.map((item) => ({
             productId: item.productId as Id<"products">,
@@ -1655,7 +1592,6 @@ export default function CheckoutPage() {
   }, [
     form,
     paymentMethod,
-    whatsappConfirmed,
     itemsToDisplay,
     isAuthenticated,
     createOrder,
@@ -2008,11 +1944,9 @@ export default function CheckoutPage() {
               <StepTwo
                 paymentMethod={paymentMethod}
                 deliveryType={deliveryType}
-                whatsappConfirmed={whatsappConfirmed}
                 isFormValid={isFormValid}
                 isCashSubmitting={isCashSubmitting}
                 setPaymentMethod={handlePaymentMethodChange}
-                handleWhatsAppConfirm={handleWhatsAppConfirm}
                 handleCashCheckout={handleCashCheckout}
                 returnToDetailsStep={returnToDetailsStep}
                 customer={{
@@ -2493,11 +2427,9 @@ function StepOne({
 type StepTwoProps = {
   paymentMethod: PaymentMethod;
   deliveryType: DeliveryType;
-  whatsappConfirmed: boolean;
   isFormValid: boolean;
   isCashSubmitting: boolean;
   setPaymentMethod: (method: PaymentMethod) => void;
-  handleWhatsAppConfirm: () => void;
   handleCashCheckout: () => Promise<void> | void;
   returnToDetailsStep: () => void;
   customer: { name: string; email: string; phone: string };
@@ -2512,11 +2444,9 @@ type StepTwoProps = {
 function StepTwo({
   paymentMethod,
   deliveryType,
-  whatsappConfirmed,
   isFormValid,
   isCashSubmitting,
   setPaymentMethod,
-  handleWhatsAppConfirm,
   handleCashCheckout,
   returnToDetailsStep,
   customer,
@@ -2545,7 +2475,7 @@ function StepTwo({
           <OptionCard
             icon={<DollarSign className="text-secondary h-5 w-5" />}
             title={t("payment.payDuringPickup")}
-            description={t("payment.confirmWhatsApp")}
+            description={t("payment.textBeforeVisiting")}
             selected={paymentMethod === "cash"}
             onSelect={() => setPaymentMethod("cash")}
             disabled={deliveryType !== "pickup"}
@@ -2583,44 +2513,16 @@ function StepTwo({
       {paymentMethod === "cash" && (
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <h3 className="text-base font-semibold text-gray-900">
-            {t("payment.confirmViaWhatsApp")}
+            {t("payment.payDuringPickup")}
           </h3>
           <div className="mt-4 space-y-4">
             <div className="border-secondary/40 bg-secondary/5 rounded-2xl border border-dashed p-4 text-sm text-gray-700">
-              <p>{t("payment.sendWhatsAppMessage")}</p>
-              <p className="mt-1">{t("payment.textBeforeVisiting")}</p>
+              <p>{t("payment.textBeforeVisiting")}</p>
             </div>
             <button
               type="button"
-              onClick={handleWhatsAppConfirm}
-              disabled={!isFormValid}
-              className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#111B21] px-4 py-2 text-[#FCF5EB] shadow-md transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <span className="flex size-10 items-center justify-center rounded-lg bg-[#25D366]">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="h-5 w-5 fill-[#FCF5EB]"
-                  role="img"
-                  aria-labelledby="whatsapp-icon-title"
-                >
-                  <title id="whatsapp-icon-title">WhatsApp icon</title>
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" />
-                </svg>
-              </span>
-              <span className="text-left text-base font-semibold">
-                {t("payment.messageUsOnWhatsApp")}
-              </span>
-            </button>
-            {whatsappConfirmed && (
-              <p className="text-secondary text-sm font-medium">
-                {t("payment.messageSent")}
-              </p>
-            )}
-            <button
-              type="button"
               onClick={handleCashCheckout}
-              disabled={!whatsappConfirmed || isCashSubmitting}
+              disabled={!isFormValid || isCashSubmitting}
               className="btn-accent w-full rounded-2xl py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isCashSubmitting

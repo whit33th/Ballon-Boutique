@@ -2,7 +2,7 @@
 
 import { Facebook, Instagram } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { STORE_INFO, WHATSAPP_NUMBER } from "@/constants/config";
+import { STORE_INFO } from "@/constants/config";
 import { Link } from "@/i18n/routing";
 
 type InternalLink = {
@@ -34,11 +34,6 @@ const sections: FooterSection[] = [
   {
     titleKey: "footer.customerCare",
     links: [
-      {
-        labelKey: "footer.whatsapp",
-        href: `https://wa.me/${WHATSAPP_NUMBER}`,
-        external: true,
-      },
       {
         labelKey: "footer.email",
         href: `mailto:${STORE_INFO.contact.email}`,

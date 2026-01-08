@@ -40,9 +40,9 @@ import type { CategoryGroupValue } from "@/constants/categories";
 import { PRODUCT_CATEGORY_GROUPS } from "@/constants/categories";
 import { BALLOON_COLORS, getColorStyle } from "@/constants/colors";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "./utils";
 import { ImageUpload } from "./ImageUpload";
 import type { PendingImage, UploadProgressState } from "./types";
+import { formatCurrency } from "./utils";
 
 export function createProductFormSchema(t: (key: string) => string) {
   return z

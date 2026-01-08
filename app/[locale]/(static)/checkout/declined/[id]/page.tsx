@@ -4,7 +4,7 @@ import { useQuery } from "convex-helpers/react/cache";
 import { AlertTriangle, ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { getWhatsAppLink } from "@/constants/config";
+import { STORE_INFO } from "@/constants/config";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "@/i18n/routing";
 import {
@@ -24,8 +24,12 @@ export default function CheckoutDeclinedPage() {
 
   const handleRetry = () => router.push("/checkout");
   const handleSupport = () => {
-    const message = `Hi! My payment with intent ${intentId} was declined. Can you help me finish the order?`;
-    window.open(getWhatsAppLink(message), "_blank");
+    const subject = `Payment declined: ${intentId}`;
+    const body = `Hi! My payment with intent ${intentId} was declined. Can you help me finish the order?`;
+    const mailto = `mailto:${STORE_INFO.contact.email}?subject=${encodeURIComponent(
+      subject,
+    )}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailto;
   };
 
   if (lookup === undefined) {
@@ -106,10 +110,6 @@ export default function CheckoutDeclinedPage() {
             <li className="flex items-start gap-2">
               <AlertTriangle className="text-secondary mt-0.5 h-4 w-4" />
               {t("confirmBillingDetails")}
-            </li>
-            <li className="flex items-start gap-2">
-              <AlertTriangle className="text-secondary mt-0.5 h-4 w-4" />
-              {t("messageUsWhatsApp")}
             </li>
           </ul>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">

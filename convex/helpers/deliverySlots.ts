@@ -104,7 +104,7 @@ export const buildDeliverySlotsForDate = (
   const slots: Array<Omit<DeliverySlot, "available">> = [];
   for (
     let minutes = startMinutes;
-    minutes + slotMinutes <= endMinutes;
+    minutes <= endMinutes;
     minutes += slotMinutes
   ) {
     const hour = Math.floor(minutes / 60);

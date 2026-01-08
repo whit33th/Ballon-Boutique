@@ -139,7 +139,6 @@ const applicationTables = {
       ),
     ),
     paymentIntentId: v.optional(v.string()),
-    whatsappConfirmed: v.optional(v.boolean()),
     pickupDateTime: v.optional(v.string()),
     confirmationEmailSendingAt: v.optional(v.number()),
     confirmationEmailSentAt: v.optional(v.number()),

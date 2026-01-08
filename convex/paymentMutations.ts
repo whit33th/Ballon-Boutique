@@ -326,7 +326,6 @@ export const finalizePaymentFromIntent = internalMutation({
       shippingAddress: payment.shipping.address,
       deliveryType: payment.shipping.deliveryType,
       paymentMethod: "full_online",
-      whatsappConfirmed: false,
       pickupDateTime: payment.shipping.pickupDateTime,
       currency: payment.displayAmount?.currency ?? payment.currency,
       deliveryFee: payment.shipping.deliveryFee,
