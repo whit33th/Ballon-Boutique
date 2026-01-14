@@ -20,7 +20,7 @@ export const STORE_INFO = {
 
   // SEO & Branding
   logo: "/logo.png",
-  favicon: "/favicon.ico",
+  favicon: "/favicon.png",
   appleIcon: "/apple-icon.png",
   webAppManifest: "/web-app-manifest-512x512.png",
   backgroundColor: "#ffdfc6",

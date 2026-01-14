@@ -112,6 +112,8 @@ export const ProductPersonalization = forwardRef<
                 key={color.name}
                 type="button"
                 onClick={() => handleColorChange(color.name)}
+                data-testid="color-option"
+                data-color={color.name}
                 className={`flex flex-col items-center gap-2 rounded-xl border-2 p-3 transition-all ${
                   selectedColor === color.name
                     ? "border-accent/60 bg-accent/10 shadow-md"
@@ -149,12 +151,13 @@ export const ProductPersonalization = forwardRef<
               {t("ageOrSpecialNumber")}
             </span>
           </div>
-          <input
+            <input
             ref={numberInputRef}
             id="personalization-number"
             type="number"
             value={number}
             onChange={(e) => handleNumberChange(e.target.value)}
+              data-testid="personalization-number"
             placeholder={t("numberPlaceholder")}
             min="0"
             max="99"
@@ -187,6 +190,7 @@ export const ProductPersonalization = forwardRef<
             type="text"
             value={text}
             onChange={(e) => handleTextChange(e.target.value)}
+            data-testid="personalization-text"
             placeholder={t("textPlaceholder")}
             maxLength={50}
             className="text-deep focus:border-accent focus:ring-accent/30 h-11 w-full rounded-xl border-2 border-black/20 bg-white px-4 font-semibold transition-colors outline-none focus:ring-2"

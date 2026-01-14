@@ -1,0 +1,94 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - img "Premium Balloons Collection"
+    - navigation [ref=e3]:
+      - link "Logo Ballon Boutique" [ref=e4] [cursor=pointer]:
+        - /url: /de
+        - img "Logo" [ref=e5]
+        - text: Ballon Boutique
+    - generic [ref=e6]:
+      - button "Switch language" [ref=e7]:
+        - img "Austria Flag" [ref=e9]
+      - link "Anmelden" [ref=e12] [cursor=pointer]:
+        - /url: /de/auth
+        - generic [ref=e13]: Anmelden
+      - link "Warenkorb öffnen" [ref=e14] [cursor=pointer]:
+        - /url: /de/cart
+        - button "Warenkorb öffnen" [ref=e15]:
+          - img [ref=e16]
+  - main [ref=e19]:
+    - generic [ref=e21]:
+      - img [ref=e22]
+      - heading "Ihr Warenkorb ist leer" [level=2] [ref=e25]
+      - paragraph [ref=e26]: Fügen Sie schöne Ballons hinzu, um zu beginnen!
+      - button "Weiter einkaufen" [ref=e27]
+  - contentinfo [ref=e28]:
+    - generic [ref=e29]:
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - link "Ballon Boutique" [ref=e32] [cursor=pointer]:
+            - /url: /de
+          - paragraph [ref=e33]: Maßgeschneiderte Ballondekorationen, gestaltet für Momente, die lange nach dem letzten Gast bleiben.
+          - generic [ref=e34]:
+            - link "Instagram profile" [ref=e35] [cursor=pointer]:
+              - /url: https://www.instagram.com/ballonboutique.at
+              - img [ref=e36]
+            - link "Facebook profile" [ref=e39] [cursor=pointer]:
+              - /url: https://www.facebook.com/share/1JrBrLkJ1M/
+              - img [ref=e40]
+            - link "Email" [ref=e42] [cursor=pointer]:
+              - /url: mailto:ballonboutique.at@gmail.com
+              - text: ballonboutique.at@gmail.com
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: Shop
+            - list [ref=e46]:
+              - listitem [ref=e47]:
+                - link "Startseite" [ref=e48] [cursor=pointer]:
+                  - /url: /de
+              - listitem [ref=e49]:
+                - link "Katalog" [ref=e50] [cursor=pointer]:
+                  - /url: /de/catalog
+              - listitem [ref=e51]:
+                - link "Warenkorb" [ref=e52] [cursor=pointer]:
+                  - /url: /de/cart
+              - listitem [ref=e53]:
+                - link "Zur Kasse" [ref=e54] [cursor=pointer]:
+                  - /url: /de/checkout
+          - generic [ref=e55]:
+            - paragraph [ref=e56]: Kundenservice
+            - list [ref=e57]:
+              - listitem [ref=e58]:
+                - link "E-Mail" [ref=e59] [cursor=pointer]:
+                  - /url: mailto:ballonboutique.at@gmail.com
+              - listitem [ref=e60]:
+                - link "Telefon" [ref=e61] [cursor=pointer]:
+                  - /url: tel:+43 690 200 84085
+          - generic [ref=e62]:
+            - paragraph [ref=e63]: Social Media
+            - list [ref=e64]:
+              - listitem [ref=e65]:
+                - link "Instagram" [ref=e66] [cursor=pointer]:
+                  - /url: https://www.instagram.com/ballonboutique.at
+              - listitem [ref=e67]:
+                - link "Facebook" [ref=e68] [cursor=pointer]:
+                  - /url: https://www.facebook.com/share/1JrBrLkJ1M/
+      - generic [ref=e70]:
+        - paragraph [ref=e71]: © 2026 Ballon Boutique. Alle Rechte vorbehalten.
+        - navigation [ref=e72]:
+          - link "AGB" [ref=e73] [cursor=pointer]:
+            - /url: /de/legal/terms
+          - link "Widerrufsbelehrung" [ref=e74] [cursor=pointer]:
+            - /url: /de/legal/withdrawal
+          - link "Datenschutz" [ref=e75] [cursor=pointer]:
+            - /url: /de/legal/privacy
+          - link "Impressum" [ref=e76] [cursor=pointer]:
+            - /url: /de/legal/imprint
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e82] [cursor=pointer]:
+    - img [ref=e83]
+  - alert [ref=e88]
+```

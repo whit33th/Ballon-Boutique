@@ -137,7 +137,10 @@ export default function CartPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[calc(100vh-56px)] w-screen items-center justify-center text-center">
+      <div
+        className="flex min-h-[calc(100vh-56px)] w-screen items-center justify-center text-center"
+        data-testid="cart-page"
+      >
         <div className="">
           <ShoppingBag className="mx-auto mb-4 size-16" />
           <h2 className="text-deep mb-2 text-2xl font-bold">
@@ -158,7 +161,10 @@ export default function CartPage() {
 
   if (itemsToDisplay.length === 0) {
     return (
-      <div className="flex min-h-[calc(100vh-56px)] w-screen items-center justify-center text-center">
+      <div
+        className="flex min-h-[calc(100vh-56px)] w-screen items-center justify-center text-center"
+        data-testid="cart-page"
+      >
         <div className="">
           <ShoppingBag className="mx-auto mb-4 size-16" />
           <h2 className="text-deep mb-2 text-2xl font-bold">{t("empty")}</h2>
@@ -176,7 +182,10 @@ export default function CartPage() {
   }
 
   return (
-    <section className="container mx-auto min-h-[calc(100vh-56px)] px-4 py-8">
+    <section
+      className="container mx-auto min-h-[calc(100vh-56px)] px-4 py-8"
+      data-testid="cart-page"
+    >
       <div className="mx-auto max-w-4xl">
         <div className="overflow-hidden rounded-xl bg-white shadow-sm">
           <div className="border-b p-4 sm:p-6">
@@ -190,6 +199,7 @@ export default function CartPage() {
           <div className="bg-secondary/5 w-full border-t p-4 sm:p-6">
             <Link
               href="/checkout"
+              data-testid="cart-checkout"
               className="btn-accent block w-full rounded-lg px-2 py-3 text-center font-semibold transition-opacity hover:opacity-90"
             >
               {t("checkout")}
@@ -199,7 +209,10 @@ export default function CartPage() {
               <span className="text-deep text-lg font-semibold sm:text-xl">
                 {tCommon("total")}:
               </span>
-              <span className="text-accent text-xl font-bold tabular-nums sm:text-2xl">
+              <span
+                className="text-accent text-xl font-bold tabular-nums sm:text-2xl"
+                data-testid="cart-total"
+              >
                 €{totals.total.toFixed(2)}
               </span>
             </div>
@@ -209,6 +222,8 @@ export default function CartPage() {
               <div
                 key={item._id}
                 className="flex flex-col items-start gap-4 p-4 sm:flex-row sm:items-center sm:p-6"
+                data-testid="cart-item"
+                data-product-name={item.product.name}
               >
                 <div className="bg-secondary/10 relative flex h-20 w-20 shrink-0 items-center justify-center rounded-lg">
                   {item.product.primaryImageUrl ? (
@@ -278,6 +293,7 @@ export default function CartPage() {
                         void handleQuantityChange(item, item.quantity - 1)
                       }
                       className="bg-secondary/20 text-deep hover:bg-secondary/30 flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+                      data-testid="cart-decrement"
                     >
                       -
                     </button>
@@ -290,6 +306,7 @@ export default function CartPage() {
                         void handleQuantityChange(item, item.quantity + 1)
                       }
                       className="bg-secondary/20 text-deep hover:bg-secondary/30 flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+                      data-testid="cart-increment"
                     >
                       +
                     </button>
@@ -303,6 +320,7 @@ export default function CartPage() {
                       type="button"
                       onClick={() => void handleRemoveItem(item)}
                       className="text-terracotta hover:text-terracotta/80 text-xs transition-colors sm:text-sm"
+                      data-testid="cart-remove"
                     >
                       {tCommon("remove")}
                     </button>

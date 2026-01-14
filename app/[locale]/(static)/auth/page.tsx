@@ -150,7 +150,11 @@ export default function AuthPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
+              data-testid="auth-form"
+            >
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label
@@ -167,6 +171,7 @@ export default function AuthPage() {
                     required
                     // keep only spacing overrides — visual styling comes from Input component
                     className="px-4"
+                    data-testid="auth-email"
                   />
                 </div>
 
@@ -195,7 +200,8 @@ export default function AuthPage() {
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       required
-                      className="px-4 pr-10"
+                    className="px-4 pr-10"
+                    data-testid="auth-password"
                     />
                     <button
                       type="button"
@@ -217,6 +223,7 @@ export default function AuthPage() {
                 variant="default"
                 className="h-12 w-full rounded-lg text-sm font-medium shadow-sm transition-all"
                 disabled={submitting}
+                data-testid="auth-submit"
               >
                 {submitting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

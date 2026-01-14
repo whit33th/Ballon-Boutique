@@ -5,6 +5,7 @@ import type {
   WithContext,
 } from "schema-dts";
 import { STORE_INFO } from "@/constants/config";
+import { routing } from "@/i18n/routing";
 import { getBaseUrl } from "../utils";
 
 interface OrganizationJsonLdProps {
@@ -12,7 +13,9 @@ interface OrganizationJsonLdProps {
 }
 
 export function OrganizationJsonLd({ locale }: OrganizationJsonLdProps = {}) {
-  const baseUrl = getBaseUrl(locale);
+  const siteBaseUrl = getBaseUrl();
+  const localeForAssets = locale ?? routing.defaultLocale;
+  const pageUrl = locale ? `${siteBaseUrl}/${locale}` : siteBaseUrl;
 
   const address: PostalAddress = {
     "@type": "PostalAddress",
@@ -35,15 +38,13 @@ export function OrganizationJsonLd({ locale }: OrganizationJsonLdProps = {}) {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: STORE_INFO.name,
-    url: baseUrl,
-    logo: `${baseUrl}/logo.png`,
+    url: pageUrl,
+    logo: `${siteBaseUrl}${STORE_INFO.logo}`,
+    image: `${siteBaseUrl}/${localeForAssets}/opengraph-image`,
     description: STORE_INFO.slogan,
     address,
     contactPoint,
-    sameAs: [
-      STORE_INFO.social.instagram,
-      STORE_INFO.social.facebook,
-    ],
+    sameAs: [STORE_INFO.social.instagram, STORE_INFO.social.facebook],
   };
 
   return (
@@ -53,4 +54,3 @@ export function OrganizationJsonLd({ locale }: OrganizationJsonLdProps = {}) {
     />
   );
 }
-

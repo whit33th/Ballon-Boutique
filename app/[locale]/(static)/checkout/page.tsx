@@ -869,6 +869,7 @@ type OptionCardProps = {
   onSelect: () => void;
   disabled?: boolean;
   badge?: string;
+  "data-testid"?: string;
 };
 
 function OptionCard({
@@ -879,12 +880,14 @@ function OptionCard({
   onSelect,
   disabled,
   badge,
+  "data-testid": testId,
 }: OptionCardProps) {
   return (
     <button
       type="button"
       onClick={onSelect}
       disabled={disabled}
+      data-testid={testId}
       className={`hover:border-secondary flex w-full items-center gap-3 rounded-2xl border p-4 text-left transition ${
         selected
           ? "border-secondary bg-secondary/5"
@@ -932,6 +935,8 @@ function CourierCityCard({ city, selected, onSelect }: CourierCityCardProps) {
     <button
       type="button"
       onClick={onSelect}
+      data-testid={`checkout-city-${city.id}`}
+      data-city-id={city.id}
       className={`w-full rounded-2xl border p-4 text-left transition ${
         selected
           ? "border-secondary bg-secondary/5 shadow-sm"
@@ -1001,7 +1006,7 @@ function OrderSummary({
   };
 
   return (
-    <aside className="space-y-4">
+    <aside className="space-y-4" data-testid="checkout-order-summary">
       <div className="rounded-3xl bg-white/90 p-6 shadow-lg ring-1 ring-black/5">
         <h3 className="mb-4 text-lg font-semibold text-gray-900">
           {t("orderSummary.title")}
@@ -1054,26 +1059,26 @@ function OrderSummary({
           })}
         </div>
         <div className="mt-5 space-y-2 text-sm text-gray-700">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between" data-testid="checkout-subtotal">
             <span>{t("orderSummary.itemsSubtotal")}</span>
-            <span className="font-semibold">
+            <span className="font-semibold" data-testid="checkout-subtotal-amount">
               {formatCurrency(cartOnlyTotal)}
             </span>
           </div>
           {deliveryType === "delivery" && (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" data-testid="checkout-delivery-cost">
               <span>
                 {t("orderSummary.delivery")}
                 {selectedCourierCity ? ` (${selectedCourierCity.name})` : ""}
               </span>
-              <span className="font-semibold">
+              <span className="font-semibold" data-testid="checkout-delivery-cost-amount">
                 {formatCurrency(deliveryCost)}
               </span>
             </div>
           )}
-          <div className="flex items-center justify-between border-t pt-2 text-base font-bold text-gray-900">
+          <div className="flex items-center justify-between border-t pt-2 text-base font-bold text-gray-900" data-testid="checkout-total">
             <span>{t("orderSummary.total")}</span>
-            <span>{formatCurrency(total)}</span>
+            <span data-testid="checkout-total-amount">{formatCurrency(total)}</span>
           </div>
         </div>
       </div>
@@ -1884,7 +1889,7 @@ export default function CheckoutPage() {
 
   if (!itemsToDisplay || itemsToDisplay.length === 0) {
     return (
-      <div className="bg-primary min-h-screen">
+      <div data-testid="checkout-page" className="bg-primary min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="mx-auto max-w-3xl rounded-3xl bg-white/90 p-8 text-center shadow-lg">
             <h2 className="text-2xl font-bold text-gray-900">
@@ -1905,7 +1910,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section className="container mx-auto min-h-screen px-4 py-6 sm:py-10">
+    <section data-testid="checkout-page" className="container mx-auto min-h-screen px-4 py-6 sm:py-10">
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/20 bg-white/70 p-4 shadow-sm backdrop-blur">
           <button
@@ -2033,6 +2038,7 @@ function StepOne({
                       autoComplete="name"
                       className="rounded-xl border-gray-200 px-4 py-3 text-base"
                       maxLength={100}
+                      data-testid="checkout-customer-name"
                     />
                   </FormControl>
                   <FormMessage />
@@ -2059,6 +2065,7 @@ function StepOne({
                         isEmailReadOnly ? "bg-gray-50 text-gray-500" : ""
                       }`}
                       maxLength={100}
+                      data-testid="checkout-customer-email"
                     />
                   </FormControl>
 
@@ -2083,6 +2090,7 @@ function StepOne({
                       autoComplete="tel"
                       className="rounded-xl border-gray-200 px-4 py-3 text-base"
                       maxLength={30}
+                      data-testid="checkout-customer-phone"
                     />
                   </FormControl>
                   <FormMessage />
@@ -2103,6 +2111,7 @@ function StepOne({
               description={`${STORE_INFO.address.street}, ${STORE_INFO.address.city}`}
               selected={deliveryType === "pickup"}
               onSelect={() => handleDeliveryTypeChange("pickup")}
+              data-testid="checkout-delivery-pickup"
             />
             <OptionCard
               icon={<Truck className="text-secondary h-5 w-5" />}
@@ -2127,6 +2136,7 @@ function StepOne({
               })()}
               selected={deliveryType === "delivery"}
               onSelect={() => handleDeliveryTypeChange("delivery")}
+              data-testid="checkout-delivery-courier"
             />
           </div>
           <FormField
@@ -2205,6 +2215,7 @@ function StepOne({
                       onChange={handleChange}
                       onBlur={handleBlur}
                       className="rounded-xl border-gray-200 px-4 py-3 text-base"
+                      data-testid="checkout-pickup-date"
                     />
                   </FormControl>
                   <p className="text-xs text-gray-500">
@@ -2345,6 +2356,7 @@ function StepOne({
                         autoComplete="address-line1"
                         className="rounded-xl border-gray-200 px-4 py-3 text-base"
                         maxLength={200}
+                        data-testid="checkout-address-street"
                       />
                     </FormControl>
                     <FormMessage />
@@ -2367,6 +2379,7 @@ function StepOne({
                         autoComplete="postal-code"
                         className="rounded-xl border-gray-200 px-4 py-3 text-base"
                         maxLength={10}
+                        data-testid="checkout-address-postal"
                       />
                     </FormControl>
                     <FormMessage />
@@ -2390,6 +2403,7 @@ function StepOne({
                         autoComplete="address-line2"
                         className="rounded-2xl border-gray-200 px-4 py-3 text-sm"
                         maxLength={500}
+                        data-testid="checkout-address-notes"
                       />
                     </FormControl>
                     <FormMessage />
@@ -2415,6 +2429,7 @@ function StepOne({
               void proceedToPaymentStep();
             }}
             className="btn-accent rounded-full px-6 py-3 text-sm font-semibold"
+            data-testid="checkout-proceed-to-payment"
           >
             {t("stepIndicator.goToPayment")}
           </button>
@@ -2471,6 +2486,7 @@ function StepTwo({
             description={t("payment.viaCardOrLink")}
             selected={paymentMethod === "full_online"}
             onSelect={() => setPaymentMethod("full_online")}
+            data-testid="checkout-payment-online"
           />
           <OptionCard
             icon={<DollarSign className="text-secondary h-5 w-5" />}
@@ -2482,6 +2498,7 @@ function StepTwo({
             badge={
               deliveryType === "pickup" ? undefined : t("payment.pickupOnly")
             }
+            data-testid="checkout-payment-cash"
           />
         </div>
       </div>

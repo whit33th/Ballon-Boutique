@@ -907,7 +907,7 @@ export default function AdminPageClient({
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br">
+    <div className="min-h-screen bg-linear-to-br" data-testid="admin-dashboard">
       <div className="mx-auto w-full px-4 py-10 lg:px-8">
         <div className="mb-6 space-y-1">
           <h1 className="text-3xl font-semibold text-slate-900">

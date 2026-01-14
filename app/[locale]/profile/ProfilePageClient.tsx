@@ -357,7 +357,10 @@ export default function ProfilePageClient({ preloadedUser }: IProfilePage) {
   }
 
   return (
-    <section className="bg-primary text-deep mx-auto min-h-screen w-full max-w-6xl px-4 pt-12 pb-16">
+    <section
+      className="bg-primary text-deep mx-auto min-h-screen w-full max-w-6xl px-4 pt-12 pb-16"
+      data-testid="profile-page"
+    >
       <motion.section
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -401,6 +404,7 @@ export default function ProfilePageClient({ preloadedUser }: IProfilePage) {
           panelId={tabPanelId("profile")}
           labelledById={tabButtonId("profile")}
           className={`grid gap-6 rounded-3xl border p-8 shadow-[0_28px_70px_-40px_rgba(52,137,152,0.45)] ${palette.softBorder} ${palette.elevatedSurface}`}
+          data-testid="profile-details-panel"
         >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>

@@ -72,7 +72,10 @@ export function Header() {
   ]);
 
   return (
-    <header className="bg-primary/95 group sticky top-0 z-50 flex w-full grid-cols-3 justify-between border-b py-2 backdrop-blur-sm">
+    <header
+      className="bg-primary/95 group sticky top-0 z-50 flex w-full grid-cols-3 justify-between border-b py-2 backdrop-blur-sm"
+      data-testid="site-header"
+    >
       <Image
         unoptimized
         src="/imgs/gif/header-hover-compressed.webp"
@@ -86,6 +89,7 @@ export function Header() {
       <nav className="flex items-center gap-2 justify-self-start px-4 sm:px-8">
         <Link
           href="/"
+          data-testid="nav-home"
           className="text-deep text-md flex items-center gap-3 font-semibold tracking-tight sm:text-xl"
         >
           <Image
@@ -105,12 +109,12 @@ export function Header() {
       <div className="flex items-center gap-0.5 justify-self-end px-1 sm:gap-3 sm:px-3">
         <LanguageSwitcher />
         {user?.isAdmin ? (
-          <Link href="/admin">
+          <Link href="/admin" data-testid="nav-admin">
             <IconButton Icon={ShieldCheck} ariaLabel="Admin" />
           </Link>
         ) : null}
         <AuthAction />
-        <Link href="/cart" className="relative">
+        <Link href="/cart" className="relative" data-testid="nav-cart">
           <IconButton Icon={ShoppingBag} ariaLabel={t("openCart")} />
           {badgeCount > 0 && (
             <span className="bg-accent text-on-accent absolute top-0 right-2.5 flex min-h-[1.2rem] min-w-[1.2rem] translate-x-1/2 items-center justify-center rounded-full px-1 py-0.5 text-[0.7rem] md:right-1.5">
@@ -136,6 +140,7 @@ function AuthAction() {
       <Unauthenticated>
         <Link
           href="/auth"
+          data-testid="nav-auth"
           className="text-deep flex gap-1 text-sm font-medium transition-colors hover:opacity-70"
         >
           <button

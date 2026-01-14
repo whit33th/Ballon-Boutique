@@ -9,7 +9,12 @@
     "start": "bun --bun next start",
     "lint": "bun --bun biome check",
     "format": "bun --bun prettier --write .",
-    "format:check": "bun --bun prettier --check ."
+    "format:check": "bun --bun prettier --check .",
+    "typecheck": "bun --bun tsc --noEmit",
+    "playwright:install": "bunx playwright install --with-deps",
+    "test:e2e": "bunx playwright test",
+    "test:e2e:ci": "bunx playwright test",
+    "test:e2e:ui": "bunx playwright test --ui"
   },
   "dependencies": {
     "@auth/core": "0.37.0",
@@ -58,15 +63,18 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
+    "@playwright/test": "^1.57.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^20.19.27",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "1.0.0",
+    "dotenv": "^17.2.3",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.3"
   },
   "trustedDependencies": [
     "sharp"

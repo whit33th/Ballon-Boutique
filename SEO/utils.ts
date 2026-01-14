@@ -1,4 +1,5 @@
 import { STORE_INFO } from "@/constants/config";
+import { COURIER_DELIVERY_CITIES } from "@/constants/delivery";
 import { routing } from "@/i18n/routing";
 
 /**
@@ -46,13 +47,25 @@ export function getSiteName(): string {
  * Get the default description
  */
 export function getDefaultDescription(locale: string): string {
-  const descriptions: Record<string, string> = {
+  const baseSlogans: Record<string, string> = {
     de: "Ballons für jeden Anlass. Wenn Momente zu Emotionen werden.",
     en: "Balloons for every occasion. When moments become memories.",
     ru: "Шары на любой случай. Когда мгновения становятся воспоминаниями.",
     uk: "Кульки на будь-яку нагоду. Коли миті стають спогадами.",
   };
-  return descriptions[locale] || descriptions.en;
+
+  const cities = COURIER_DELIVERY_CITIES.map((c) => c.name);
+  const cityList = cities.join(", ");
+
+  const deliveryText: Record<string, string> = {
+    de: ` Lieferung in Knittelfeld: ${cityList}.`,
+    en: ` Delivery in Knittelfeld: ${cityList}.`,
+    ru: ` Доставка в Knittelfeld: ${cityList}.`,
+    uk: ` Доставка в Knittelfeld: ${cityList}.`,
+  };
+
+  const base = baseSlogans[locale] || baseSlogans.en;
+  return `${base}${deliveryText[locale] || deliveryText.en}`;
 }
 
 /**

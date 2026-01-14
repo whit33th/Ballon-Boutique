@@ -11,15 +11,15 @@ export const Hero = async () => {
         alt="Hero Image"
         sizes="100vw"
         fill
-        className="absolute inset-0 -z-10 h-full w-full object-cover "
+        className="absolute inset-0 -z-10 h-full w-full object-cover"
         priority
         fetchPriority="high"
         loading="eager"
       />
 
       <div className="absolute inset-0 -z-10 bg-linear-to-t from-[#4a0a18]/35 to-[#4a0a18]/15" />
-      <div className="absolute left-0 top-0 -z-10 h-full w-26 bg-linear-to-r from-background/15 to-transparent" />
-      <div className="absolute right-0 top-0 -z-10 h-full w-26 bg-linear-to-l from-background/15 to-transparent" />
+      <div className="from-background/15 absolute top-0 left-0 -z-10 h-full w-26 bg-linear-to-r to-transparent" />
+      <div className="from-background/15 absolute top-0 right-0 -z-10 h-full w-26 bg-linear-to-l to-transparent" />
 
       <h1 className="mb-3 font-serif text-3xl font-normal tracking-tight text-balance [text-shadow:1.5px_1.5px_0_#4a0a18] md:text-4xl lg:text-5xl">
         {t("heroTitle")}

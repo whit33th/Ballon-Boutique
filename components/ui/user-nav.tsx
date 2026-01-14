@@ -53,6 +53,7 @@ export function UserNav({ user }: UserNavProps) {
         <button
           type="button"
           aria-label="Account menu"
+          data-testid="user-nav-trigger"
           className="text-deep flex h-10 w-10 items-center justify-center rounded-full bg-transparent outline-black/5 backdrop-blur-xs transition-colors hover:bg-black/10 hover:opacity-80 hover:outline"
         >
           <User className="h-5 w-5 text-current" />

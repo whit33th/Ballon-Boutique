@@ -88,6 +88,8 @@ export default function ProductCard({
   return (
     <Link
       href={productHref}
+      data-testid="product-card"
+      data-product-name={product.name}
       className="focus-visible:ring-accent focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       <div className="border-foreground flex h-full flex-col border-r border-b">

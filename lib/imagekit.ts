@@ -58,17 +58,17 @@ export const buildPlaceholderUrl = (
 };
 
 export const DEFAULT_PRODUCT_IMAGE_TRANSFORMATION = [
-  { width: 480, quality: 70, format: "auto" as const, progressive: true },
+  { width: 480, quality: 85, format: "auto" as const, progressive: true },
 ];
 
 export const PRODUCT_DETAIL_IMAGE_TRANSFORMATION = [
-  { width: 1024, quality: 75, format: "auto" as const, progressive: false },
+  { width: 1024, quality: 85, format: "auto" as const, progressive: false },
 ];
 
 export const ADMIN_PRODUCT_IMAGE_TRANSFORMATION = [
-  { width: 360, quality: 55, format: "auto" as const, progressive: false },
+  { width: 360, quality: 60, format: "auto" as const, progressive: false },
 ];
 
 export const ADMIN_PREVIEW_IMAGE_TRANSFORMATION = [
-  { width: 320, quality: 50, format: "auto" as const, progressive: false },
+  { width: 320, quality: 55, format: "auto" as const, progressive: false },
 ];

@@ -19,9 +19,9 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["shopping", "lifestyle", "party"],
     icons: [
       {
-        src: "/favicon.ico",
-        sizes: "any",
-        type: "image/x-icon",
+        src: "/favicon.png",
+        sizes: "512x512",
+        type: "image/png",
       },
       {
         src: "/logo.png",

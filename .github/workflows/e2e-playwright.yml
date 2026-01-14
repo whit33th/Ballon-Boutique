@@ -1,0 +1,186 @@
+name: E2E Playwright
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: "Playwright grep pattern"
+        required: false
+        default: ""
+      project:
+        description: "Playwright project filter"
+        required: false
+        default: ""
+      baseUrl:
+        description: "Override E2E_BASE_URL"
+        required: false
+        default: "http://localhost:3000/de"
+
+permissions:
+  contents: read
+
+env:
+  E2E_BASE_URL: ${{ github.event.inputs.baseUrl || 'http://localhost:3000/en' }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bun
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bun
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run typecheck
+
+  unit:
+    # ВРЕМЕННО: unit-тесты не запускаем в CI автоматически (только вручную)
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Unit tests placeholder
+        run: echo "No unit tests configured"
+
+  e2e:
+    # ВРЕМЕННО: E2E не запускаем в CI автоматически (только вручную)
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, unit]
+    timeout-minutes: 35
+    env:
+      E2E_BASE_URL: ${{ github.event.inputs.baseUrl || 'http://localhost:3000/de' }}
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL || 'noadmintest@gmail.com' }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD || 'noadmintest@gmail.com' }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL || 'admintest@gmail.com' }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD || 'admintest@gmail.com' }}
+      NEXT_PUBLIC_CONVEX_URL: ${{ secrets.NEXT_PUBLIC_CONVEX_URL || 'http://localhost:3030' }}
+      CONVEX_SITE_URL: ${{ secrets.CONVEX_SITE_URL || 'http://localhost:3030' }}
+      NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000' }}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder' }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY || 'sk_test_placeholder' }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET || 'whsec_placeholder' }}
+      IMAGEKIT_PUBLIC_KEY: ${{ secrets.IMAGEKIT_PUBLIC_KEY || 'ik_public_placeholder' }}
+      IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY || 'ik_private_placeholder' }}
+      NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT: ${{ secrets.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || 'https://ik.imgkit.example' }}
+      INTERNAL_EMAIL_WEBHOOK_SECRET: ${{ secrets.INTERNAL_EMAIL_WEBHOOK_SECRET || 'internal-placeholder' }}
+      GMAIL_USER: ${{ secrets.GMAIL_USER || 'test@example.com' }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD || 'app-password-placeholder' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Cache bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/bun
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('bun.lock') }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: bun run playwright:install
+
+      - name: Build app
+        run: bun run build
+
+      - name: Run Playwright tests
+        env:
+          INPUT_PROJECT: ${{ github.event.inputs.project }}
+          INPUT_GREP: ${{ github.event.inputs.grep }}
+        run: |
+          ARGS=()
+          if [ -n "$INPUT_PROJECT" ]; then
+            ARGS+=("--project" "$INPUT_PROJECT")
+          fi
+          if [ -n "$INPUT_GREP" ]; then
+            ARGS+=("--grep" "$INPUT_GREP")
+          fi
+          bun run test:e2e:ci -- "${ARGS[@]}"
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+
+      - name: Upload Playwright traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results
+          retention-days: 7
+
+      - name: Job summary
+        if: always()
+        run: |
+          PROJECT="${{ github.event.inputs.project || 'all' }}"
+          GREP="${{ github.event.inputs.grep || 'none' }}"
+          {
+            echo "## Playwright E2E"
+            echo ""
+            echo "- Base URL: ${E2E_BASE_URL}"
+            echo "- Projects: ${PROJECT}"
+            echo "- Grep: ${GREP}"
+            echo "- Report: artifact **playwright-report**"
+            echo "- Traces/screenshots/videos: artifact **playwright-traces**"
+          } >> "$GITHUB_STEP_SUMMARY"

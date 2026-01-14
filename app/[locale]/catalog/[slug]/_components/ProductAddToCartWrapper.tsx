@@ -167,6 +167,7 @@ export function ProductAddToCartWrapper({
               <label className="text-deep flex flex-col gap-2 text-sm font-medium lg:flex-row lg:items-center lg:gap-3">
                 <span className="tracking-wider uppercase">{t("size")}:</span>
                 <select
+                  data-testid="size-select"
                   value={selectedSize ?? ""}
                   onChange={(e) => setSelectedSize(e.target.value || null)}
                   disabled={!product.inStock}
@@ -187,6 +188,7 @@ export function ProductAddToCartWrapper({
             <label className="text-deep flex flex-col gap-2 text-sm font-medium lg:flex-row lg:items-center lg:gap-3">
               <span className="tracking-wider uppercase">{t("quantity")}:</span>
               <select
+                data-testid="quantity-select"
                 value={quantity}
                 onChange={handleQuantityChange}
                 disabled={!product.inStock}
@@ -208,6 +210,7 @@ export function ProductAddToCartWrapper({
               whileTap={{ scale: 0.97 }}
               onClick={() => void handleAddToCart()}
               disabled={!product.inStock || (hasSizeVariants && !selectedSize)}
+              data-testid="add-to-cart"
               className="focus-visible:border-ring focus-visible:ring-ring/50 bg-accent text-on-accent inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-6 text-sm font-medium whitespace-nowrap transition-[background-color,color,border-color,opacity,filter,transform] duration-200 outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-red-600 aria-invalid:ring-red-600/20 lg:w-auto dark:aria-invalid:ring-red-600/40 pointer-coarse:active:scale-[0.99] pointer-coarse:active:brightness-95 pointer-fine:hover:brightness-95 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
             >
               {!product.inStock ? t("soldOut") : t("addToCart")}
