@@ -18,14 +18,6 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     categories: ["shopping", "lifestyle", "party"],
     icons: [
-      // Desktop/launcher helpers (не обязательно, но убирает часть предупреждений)
-      {
-        src: "/android-chrome-96x96.png",
-        sizes: "96x96",
-        type: "image/png",
-        purpose: "any",
-      },
-
       {
         src: "/android-chrome-192x192.png",
         sizes: "192x192",
