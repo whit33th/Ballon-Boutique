@@ -20,9 +20,11 @@ export const STORE_INFO = {
 
   // SEO & Branding
   logo: "/logo.png",
-  favicon: "/favicon.png",
-  appleIcon: "/apple-icon.png",
-  webAppManifest: "/web-app-manifest-512x512.png",
+  // Google Search uses the favicon (not the PWA icons). Prefer SVG to satisfy Google's
+  // requirements (PNG must be a multiple of 48px).
+  favicon: "/favicon.svg",
+  appleIcon: "/apple-touch-icon.png",
+  webAppManifest: "/manifest.webmanifest",
   backgroundColor: "#ffdfc6",
 
   // Business Information

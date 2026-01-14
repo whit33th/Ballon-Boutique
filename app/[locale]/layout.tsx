@@ -50,8 +50,28 @@ export async function generateMetadata({
     },
     description,
     metadataBase: new URL(baseUrl),
-    other: {
-      "apple-mobile-web-app-title": "Ballon Boutique",
+    applicationName: siteName,
+    manifest: "/manifest.webmanifest",
+    icons: {
+      // Prefer SVG for Google Search favicon requirements; keep ICO/PNG fallbacks.
+      icon: [
+        { url: "/favicon.svg", sizes: "any", type: "image/svg+xml" },
+        { url: "/favicon.ico" },
+        { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+        { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      ],
+      apple: [
+        {
+          url: "/apple-touch-icon.png",
+          sizes: "180x180",
+          type: "image/png",
+        },
+      ],
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: siteName,
     },
   };
 }

@@ -67,14 +67,6 @@ export async function generateProductMetadata(
 
     metadataBase: new URL(baseUrl),
 
-    // Icons
-    icons: {
-      icon: [{ url: STORE_INFO.favicon, sizes: "any" }],
-      apple: [
-        { url: STORE_INFO.appleIcon, sizes: "180x180", type: "image/png" },
-      ],
-    },
-
     // Format detection
     formatDetection: {
       telephone: true,
