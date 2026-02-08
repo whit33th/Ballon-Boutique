@@ -61,6 +61,13 @@
       "region": "Россия"
     }
   },
+  "discountsBanner": {
+    "titleCategory": "Скидка {percent}% на {group} в категории {category}",
+    "titleGroup": "Скидка {percent}% на {group}",
+    "titleProduct": "Скидка {percent}% на {product}",
+    "titleGeneric": "Скидка {percent}%",
+    "cta": "Смотреть"
+  },
   "userNav": {
     "account": "Аккаунт",
     "profile": "Профиль",
@@ -109,6 +116,7 @@
     "browseSets": "Просмотреть наборы",
     "pickSubcollection": "Выберите подколлекцию, чтобы перейти прямо в каталог.",
     "viewAll": "Посмотреть все",
+    "discounts": "Скидки",
     "bestselling": "Бестселлеры",
     "products": "Товары",
     "new": "Новые",
@@ -491,6 +499,7 @@
     "selectPreferredFilters": "Выберите ваши предпочтительные фильтры для шаров",
     "availability": "Доступность",
     "inStock": "В наличии",
+    "onSale": "Со скидкой",
     "balloonColor": "Цвет шара",
     "priceRange": "Диапазон цен",
     "upTo": "До",
@@ -984,6 +993,7 @@
     "positionsCount": "{count, plural, =0 {нет позиций} one {# позиция} few {# позиции} many {# позиций} other {# позиций}}",
     "tabs": {
       "products": "Товары",
+      "discounts": "Скидки",
       "orders": "Заказы",
       "payments": "Платежи",
       "insights": "Аналитика"
@@ -1039,6 +1049,7 @@
       "collapse": "Свернуть",
       "name": "Название",
       "price": "Цена (€)",
+      "discount": "Скидка (%)",
       "group": "Группа",
       "selectGroup": "Выберите группу",
       "categories": "Категории",
@@ -1075,6 +1086,7 @@
         "descriptionMin10": "Добавьте более детальное описание",
         "priceRequired": "Укажите цену",
         "priceInvalid": "Некорректная цена",
+        "discountInvalid": "Некорректная скидка",
         "sizeLabelRequired": "Укажите размер",
         "sizePriceRequired": "Укажите цену для размера",
         "sizePriceInvalid": "Некорректная цена",
@@ -1082,6 +1094,53 @@
         "categoriesRequired": "Добавьте хотя бы одну категорию",
         "sizesOnlyForMiniSets": "Размеры доступны только для мини-сетов"
       }
+    },
+    "discounts": {
+      "title": "Скидки",
+      "description": "Управляйте скидками по категориям, группам и товарам.",
+      "defaults": {
+        "name": "Скидка"
+      },
+      "form": {
+        "name": "Название",
+        "namePlaceholder": "Love -15%",
+        "percentage": "Скидка (%)",
+        "scope": "Область",
+        "product": "Товар",
+        "productPlaceholder": "Выберите товар",
+        "group": "Группа",
+        "groupPlaceholder": "Выберите группу",
+        "category": "Категория",
+        "categoryPlaceholder": "Выберите категорию",
+        "startsAt": "Начало",
+        "endsAt": "Конец",
+        "active": "Активна"
+      },
+      "actions": {
+        "create": "Создать скидку",
+        "update": "Обновить скидку",
+        "createLove": "Создать Love -15%",
+        "cancelEdit": "Отменить редактирование",
+        "pause": "Пауза",
+        "activate": "Активировать"
+      },
+      "labels": {
+        "percentage": "-{value}%",
+        "scope": "Область",
+        "product": "Товар",
+        "group": "Группа",
+        "category": "Категория",
+        "window": "Период:",
+        "windowNone": "Без ограничений",
+        "active": "Активна",
+        "paused": "Пауза"
+      },
+      "scope": {
+        "product": "Товар",
+        "group": "Группа",
+        "category": "Категория"
+      },
+      "empty": "Пока нет скидок."
     },
     "imageUpload": {
       "title": "Фотографии товара",

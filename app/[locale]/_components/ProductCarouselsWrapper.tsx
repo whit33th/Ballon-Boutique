@@ -21,11 +21,18 @@ export async function ProductCarouselsWrapper() {
     },
   });
 
+  const preloadedDiscounted = await preloadQuery(api.products.listDiscounted, {
+    paginationOpts: {
+      cursor: null,
+      numItems: 8,
+    },
+  });
+
   return (
     <ProductCarousels
+      preloadedDiscounted={preloadedDiscounted}
       preloadedBestsellers={preloadedBestsellers}
       preloadedNewArrivals={preloadedNewArrivals}
     />
   );
 }
-

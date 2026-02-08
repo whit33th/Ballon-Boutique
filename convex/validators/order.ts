@@ -11,6 +11,9 @@ export const orderItemValidator = v.object({
   productName: v.string(),
   quantity: v.number(),
   price: v.number(),
+  originalPrice: v.optional(v.number()),
+  discountPct: v.optional(v.number()),
+  discountId: v.optional(v.id("discounts")),
   variant: v.optional(
     v.object({
       size: v.string(),

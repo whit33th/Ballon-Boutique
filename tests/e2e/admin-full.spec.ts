@@ -2,6 +2,8 @@ import fs from "fs";
 import { test, expect } from "@playwright/test";
 import { AdminPage } from "./pages/admin.page";
 
+test.describe.configure({ mode: "serial" });
+
 const hasAdminState = fs.existsSync("tests/e2e/.auth/admin.json");
 
 if (hasAdminState) {

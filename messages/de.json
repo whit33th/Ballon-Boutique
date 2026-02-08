@@ -47,6 +47,13 @@
     "language": "Sprache",
     "accountMenu": "Kontomenü"
   },
+  "discountsBanner": {
+    "titleCategory": "{percent}% Rabatt auf {group} in der Kategorie {category}",
+    "titleGroup": "{percent}% Rabatt auf {group}",
+    "titleProduct": "{percent}% Rabatt auf {product}",
+    "titleGeneric": "{percent}% Rabatt",
+    "cta": "Jetzt shoppen"
+  },
   "languages": {
     "de": {
       "region": "Österreich"
@@ -109,6 +116,7 @@
     "browseSets": "Sets durchsuchen",
     "pickSubcollection": "Wählen Sie eine Unterkollektion, um direkt zum Katalog zu springen.",
     "viewAll": "Alle ansehen",
+    "discounts": "Rabatte",
     "bestselling": "Bestseller",
     "products": "Produkte",
     "new": "Neu",
@@ -490,6 +498,7 @@
     "selectPreferredFilters": "Wählen Sie Ihre bevorzugten Filter für Ballons",
     "availability": "Verfügbarkeit",
     "inStock": "Auf Lager",
+    "onSale": "Im Angebot",
     "balloonColor": "Ballonfarbe",
     "priceRange": "Preisspanne",
     "upTo": "Bis zu",
@@ -983,6 +992,7 @@
     "positionsCount": "{count, plural, =0 {keine Positionen} =1 {eine Position} other {# Positionen}}",
     "tabs": {
       "products": "Produkte",
+      "discounts": "Rabatte",
       "orders": "Bestellungen",
       "payments": "Zahlungen",
       "insights": "Analysen"
@@ -1038,6 +1048,7 @@
       "collapse": "Einklappen",
       "name": "Name",
       "price": "Preis (€)",
+      "discount": "Rabatt (%)",
       "group": "Gruppe",
       "selectGroup": "Gruppe auswählen",
       "categories": "Kategorien",
@@ -1074,6 +1085,7 @@
         "descriptionMin10": "Fügen Sie eine detailliertere Beschreibung hinzu",
         "priceRequired": "Preis angeben",
         "priceInvalid": "Ungültiger Preis",
+        "discountInvalid": "Ungültiger Rabatt",
         "sizeLabelRequired": "Größe angeben",
         "sizePriceRequired": "Preis für die Größe angeben",
         "sizePriceInvalid": "Ungültiger Größenpreis",
@@ -1081,6 +1093,53 @@
         "categoriesRequired": "Mindestens eine Kategorie hinzufügen",
         "sizesOnlyForMiniSets": "Größen sind nur für Mini Sets verfügbar"
       }
+    },
+    "discounts": {
+      "title": "Rabatte",
+      "description": "Rabatte für Kategorien, Gruppen und Produkte verwalten.",
+      "defaults": {
+        "name": "Rabatt"
+      },
+      "form": {
+        "name": "Name",
+        "namePlaceholder": "Love -15%",
+        "percentage": "Rabatt (%)",
+        "scope": "Bereich",
+        "product": "Produkt",
+        "productPlaceholder": "Produkt auswählen",
+        "group": "Gruppe",
+        "groupPlaceholder": "Gruppe auswählen",
+        "category": "Kategorie",
+        "categoryPlaceholder": "Kategorie auswählen",
+        "startsAt": "Start",
+        "endsAt": "Ende",
+        "active": "Aktiv"
+      },
+      "actions": {
+        "create": "Rabatt erstellen",
+        "update": "Rabatt aktualisieren",
+        "createLove": "Love -15% anlegen",
+        "cancelEdit": "Bearbeitung abbrechen",
+        "pause": "Pausieren",
+        "activate": "Aktivieren"
+      },
+      "labels": {
+        "percentage": "-{value}%",
+        "scope": "Bereich",
+        "product": "Produkt",
+        "group": "Gruppe",
+        "category": "Kategorie",
+        "window": "Zeitraum:",
+        "windowNone": "Kein Datumslimit",
+        "active": "Aktiv",
+        "paused": "Pausiert"
+      },
+      "scope": {
+        "product": "Produkt",
+        "group": "Gruppe",
+        "category": "Kategorie"
+      },
+      "empty": "Noch keine Rabatte."
     },
     "imageUpload": {
       "title": "Produktfotos",

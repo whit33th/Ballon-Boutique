@@ -6,15 +6,19 @@ export class CartPage extends BasePage {
     await this.page.goto("/cart", { waitUntil: "networkidle", timeout: 30000 });
     await this.page.waitForLoadState("networkidle");
     await this.page.waitForTimeout(2000);
-    
+
     // Cart page might be empty or loading, wait for cart-page testid or empty cart message
     // Wait for either cart-page testid or empty cart heading
     try {
-      await expect(this.page.getByTestId("cart-page")).toBeVisible({ timeout: 10_000 });
+      await expect(this.page.getByTestId("cart-page")).toBeVisible({
+        timeout: 10_000,
+      });
     } catch {
       // Fallback: wait for empty cart heading (Ihr Warenkorb ist leer)
       await expect(
-        this.page.getByRole("heading").filter({ hasText: /warenkorb|cart|empty|leer/i })
+        this.page
+          .getByRole("heading")
+          .filter({ hasText: /warenkorb|cart|empty|leer/i }),
       ).toBeVisible({ timeout: 10_000 });
     }
   }
@@ -42,4 +46,3 @@ export class CartPage extends BasePage {
     await expect(this.page).toHaveURL(/checkout/);
   }
 }
-

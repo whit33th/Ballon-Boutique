@@ -61,6 +61,13 @@
       "region": "Росія"
     }
   },
+  "discountsBanner": {
+    "titleCategory": "Знижка {percent}% на {group} в категорії {category}",
+    "titleGroup": "Знижка {percent}% на {group}",
+    "titleProduct": "Знижка {percent}% на {product}",
+    "titleGeneric": "Знижка {percent}%",
+    "cta": "Переглянути"
+  },
   "userNav": {
     "account": "Обліковий запис",
     "profile": "Профіль",
@@ -109,6 +116,7 @@
     "browseSets": "Переглянути набори",
     "pickSubcollection": "Виберіть підколекцію, щоб перейти безпосередньо до каталогу.",
     "viewAll": "Переглянути всі",
+    "discounts": "Знижки",
     "bestselling": "Бестселери",
     "products": "Товари",
     "new": "Нові",
@@ -490,6 +498,7 @@
     "selectPreferredFilters": "Виберіть ваші улюблені фільтри для кульок",
     "availability": "Доступність",
     "inStock": "В наявності",
+    "onSale": "Зі знижкою",
     "balloonColor": "Колір кульки",
     "priceRange": "Діапазон цін",
     "upTo": "До",
@@ -1007,6 +1016,7 @@
     "positionsCount": "{count, plural, =0 {немає позицій} one {# позиція} few {# позиції} many {# позицій} other {# позицій}}",
     "tabs": {
       "products": "Товари",
+      "discounts": "Знижки",
       "orders": "Замовлення",
       "payments": "Платежі",
       "insights": "Аналітика"
@@ -1062,6 +1072,7 @@
       "collapse": "Згорнути",
       "name": "Назва",
       "price": "Ціна (€)",
+      "discount": "Знижка (%)",
       "group": "Група",
       "selectGroup": "Виберіть групу",
       "categories": "Категорії",
@@ -1098,6 +1109,7 @@
         "descriptionMin10": "Додайте більш детальний опис",
         "priceRequired": "Вкажіть ціну",
         "priceInvalid": "Невірна ціна",
+        "discountInvalid": "Некоректна знижка",
         "sizeLabelRequired": "Вкажіть розмір",
         "sizePriceRequired": "Вкажіть ціну для розміру",
         "sizePriceInvalid": "Невірна ціна",
@@ -1105,6 +1117,53 @@
         "categoriesRequired": "Додайте хоча б одну категорію",
         "sizesOnlyForMiniSets": "Розміри доступні лише для Mini Sets"
       }
+    },
+    "discounts": {
+      "title": "Знижки",
+      "description": "Керуйте знижками для категорій, груп та товарів.",
+      "defaults": {
+        "name": "Знижка"
+      },
+      "form": {
+        "name": "Назва",
+        "namePlaceholder": "Love -15%",
+        "percentage": "Знижка (%)",
+        "scope": "Область",
+        "product": "Товар",
+        "productPlaceholder": "Оберіть товар",
+        "group": "Група",
+        "groupPlaceholder": "Оберіть групу",
+        "category": "Категорія",
+        "categoryPlaceholder": "Оберіть категорію",
+        "startsAt": "Початок",
+        "endsAt": "Кінець",
+        "active": "Активна"
+      },
+      "actions": {
+        "create": "Створити знижку",
+        "update": "Оновити знижку",
+        "createLove": "Створити Love -15%",
+        "cancelEdit": "Скасувати редагування",
+        "pause": "Пауза",
+        "activate": "Активувати"
+      },
+      "labels": {
+        "percentage": "-{value}%",
+        "scope": "Область",
+        "product": "Товар",
+        "group": "Група",
+        "category": "Категорія",
+        "window": "Період:",
+        "windowNone": "Без обмежень",
+        "active": "Активна",
+        "paused": "Пауза"
+      },
+      "scope": {
+        "product": "Товар",
+        "group": "Група",
+        "category": "Категорія"
+      },
+      "empty": "Поки немає знижок."
     },
     "imageUpload": {
       "title": "Фотографії товару",

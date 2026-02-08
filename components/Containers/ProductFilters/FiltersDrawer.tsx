@@ -54,6 +54,7 @@ export function FiltersDrawer() {
     return !!(
       getParam("search") ||
       getParam("available") ||
+      getParam("sale") ||
       getParam("minPrice") ||
       getParam("maxPrice") ||
       getParam("category") ||
@@ -111,26 +112,44 @@ export function FiltersDrawer() {
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
           <div className="space-y-8">
             {/* Available Toggle */}
             <div>
               <h3 className="text-deep mb-3 text-lg font-semibold tracking-wide uppercase">
                 {t("availability")}
               </h3>
-              <Button
-                size="sm"
-                onClick={() =>
-                  updateParam("available", getParam("available") ? "" : "true")
-                }
-                className={`text-deep rounded-xl border-2 px-4 py-4.5 font-medium tracking-wide transition-[background-color,box-shadow] duration-200 ${
-                  getParam("available")
-                    ? "border-secondary bg-secondary/10"
-                    : "border-border/30 hover:border-secondary/50 bg-white/50"
-                }`}
-              >
-                {t("inStock")}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    updateParam(
+                      "available",
+                      getParam("available") ? "" : "true",
+                    )
+                  }
+                  className={`text-deep rounded-xl border-2 px-4 py-4.5 font-medium tracking-wide transition-[background-color,box-shadow] duration-200 ${
+                    getParam("available")
+                      ? "border-secondary bg-secondary/10"
+                      : "border-border/30 hover:border-secondary/50 bg-white/50"
+                  }`}
+                >
+                  {t("inStock")}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    updateParam("sale", getParam("sale") ? "" : "true")
+                  }
+                  className={`text-deep rounded-xl border-2 px-4 py-4.5 font-medium tracking-wide transition-[background-color,box-shadow] duration-200 ${
+                    getParam("sale")
+                      ? "border-secondary bg-secondary/10"
+                      : "border-border/30 hover:border-secondary/50 bg-white/50"
+                  }`}
+                >
+                  {t("onSale")}
+                </Button>
+              </div>
             </div>
 
             {/* Color Filter */}
@@ -138,7 +157,7 @@ export function FiltersDrawer() {
               <h3 className="text-deep mb-3 text-lg font-semibold tracking-wide uppercase">
                 {t("balloonColor")}
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {BALLOON_COLORS.map((color) => (
                   <button
                     type="button"
@@ -149,7 +168,7 @@ export function FiltersDrawer() {
                         getParam("color") === color.name ? "" : color.name,
                       )
                     }
-                    className={`flex items-center gap-2 rounded-full border-2 pl-2 py-2 transition-all ${
+                    className={`flex items-center gap-2 rounded-full border-2 py-2 pl-2 transition-all ${
                       getParam("color") === color.name
                         ? "border-secondary bg-secondary/10"
                         : "border-border/30 hover:border-secondary/50 bg-white/50"

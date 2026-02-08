@@ -3,7 +3,7 @@
 import { buildSrc, Image } from "@imagekit/next";
 import type { Route } from "next";
 import { type ReactNode, useMemo, useState, ViewTransition } from "react";
-import type { Doc } from "@/convex/_generated/dataModel";
+import type { ProductWithImage } from "@/convex/helpers/products";
 import { Link } from "@/i18n/routing";
 import { generateProductSlug } from "@/lib/catalog-utils";
 import {
@@ -13,7 +13,7 @@ import {
 import { balloonColors } from "../ProductGrid";
 
 interface ProductCardProps {
-  product: Doc<"products">;
+  product: ProductWithImage;
   index: number;
   transitionGroups?: string[];
   imageSizes?: string;
@@ -37,27 +37,47 @@ export default function ProductCard({
 
   const displayImage = product.imageUrls[0] ?? null;
 
+  const discountPct = product.discountPct ?? 0;
+  const hasDiscount = typeof discountPct === "number" && discountPct > 0;
+
   const formattedPrice = useMemo(() => {
+    const applyDiscount = (value: number) =>
+      hasDiscount
+        ? Math.round(value * (1 - discountPct / 100) * 100) / 100
+        : value;
+    const format = (value: number) => `${value.toFixed(2)} €`;
     const sizes = (product as { miniSetSizes?: { price: number }[] })
       .miniSetSizes;
     if (!sizes || sizes.length === 0) {
-      return `${product.price.toFixed(2)} €`;
+      return {
+        primary: format(applyDiscount(product.price)),
+        secondary: hasDiscount ? format(product.price) : null,
+      } as const;
     }
 
     const prices = sizes
       .map((s) => s.price)
       .filter((price) => typeof price === "number" && Number.isFinite(price));
     if (prices.length === 0) {
-      return `${product.price.toFixed(2)} €`;
+      return {
+        primary: format(applyDiscount(product.price)),
+        secondary: hasDiscount ? format(product.price) : null,
+      } as const;
     }
 
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     if (min !== max) {
-      return `${min.toFixed(2)}–${max.toFixed(2)} €`;
+      return {
+        primary: `${format(applyDiscount(min))}–${format(applyDiscount(max))}`,
+        secondary: hasDiscount ? `${format(min)}–${format(max)}` : null,
+      } as const;
     }
-    return `${min.toFixed(2)} €`;
-  }, [product]);
+    return {
+      primary: format(applyDiscount(min)),
+      secondary: hasDiscount ? format(min) : null,
+    } as const;
+  }, [product, hasDiscount, discountPct]);
 
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 
@@ -98,6 +118,11 @@ export default function ProductCard({
           className="relative aspect-3/4 w-full"
           style={{ backgroundColor: bgColor }}
         >
+          {hasDiscount ? (
+            <span className="bg-accent text-on-accent absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-semibold shadow-sm">
+              -{discountPct}%
+            </span>
+          ) : null}
           {product.imageUrls[0]
             ? transitionNames.reduceRight<ReactNode>(
                 (child, name) => (
@@ -131,7 +156,16 @@ export default function ProductCard({
           <h3 className="line-clamp-2 text-sm leading-tight wrap-break-word">
             {product.name}
           </h3>
-          <span className="text-sm font-semibold">{formattedPrice}</span>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-sm font-semibold">
+              {formattedPrice.primary}
+            </span>
+            {formattedPrice.secondary ? (
+              <span className="text-xs text-slate-500 line-through">
+                {formattedPrice.secondary}
+              </span>
+            ) : null}
+          </div>
         </div>
       </div>
     </Link>

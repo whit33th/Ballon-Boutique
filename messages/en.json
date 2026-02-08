@@ -61,6 +61,13 @@
       "region": "Russia"
     }
   },
+  "discountsBanner": {
+    "titleCategory": "Save {percent}% on {group} in category {category}",
+    "titleGroup": "Save {percent}% on {group}",
+    "titleProduct": "Save {percent}% on {product}",
+    "titleGeneric": "Save {percent}%",
+    "cta": "Shop now"
+  },
   "userNav": {
     "account": "Account",
     "profile": "Profile",
@@ -109,6 +116,7 @@
     "browseSets": "Browse sets",
     "pickSubcollection": "Pick a subcollection to jump straight into the catalog.",
     "viewAll": "View All",
+    "discounts": "Discounts",
     "bestselling": "Bestselling",
     "products": "Products",
     "new": "New",
@@ -490,6 +498,7 @@
     "selectPreferredFilters": "Select your preferred filters for balloons",
     "availability": "Availability",
     "inStock": "In Stock",
+    "onSale": "On sale",
     "balloonColor": "Balloon Color",
     "priceRange": "Price Range",
     "upTo": "Up to",
@@ -983,6 +992,7 @@
     "positionsCount": "{count, plural, =0 {no positions} =1 {one position} other {# positions}}",
     "tabs": {
       "products": "Products",
+      "discounts": "Discounts",
       "orders": "Orders",
       "payments": "Payments",
       "insights": "Insights"
@@ -1038,6 +1048,7 @@
       "collapse": "Collapse",
       "name": "Name",
       "price": "Price (€)",
+      "discount": "Discount (%)",
       "group": "Group",
       "selectGroup": "Select group",
       "categories": "Categories",
@@ -1074,6 +1085,7 @@
         "descriptionMin10": "Add a more detailed description",
         "priceRequired": "Specify price",
         "priceInvalid": "Invalid price",
+        "discountInvalid": "Invalid discount",
         "sizeLabelRequired": "Specify size",
         "sizePriceRequired": "Specify price for size",
         "sizePriceInvalid": "Invalid size price",
@@ -1081,6 +1093,53 @@
         "categoriesRequired": "Add at least one category",
         "sizesOnlyForMiniSets": "Sizes are available only for Mini Sets"
       }
+    },
+    "discounts": {
+      "title": "Discounts",
+      "description": "Create category, group, or product discounts.",
+      "defaults": {
+        "name": "Discount"
+      },
+      "form": {
+        "name": "Name",
+        "namePlaceholder": "Love -15%",
+        "percentage": "Discount (%)",
+        "scope": "Scope",
+        "product": "Product",
+        "productPlaceholder": "Select product",
+        "group": "Group",
+        "groupPlaceholder": "Select group",
+        "category": "Category",
+        "categoryPlaceholder": "Select category",
+        "startsAt": "Starts",
+        "endsAt": "Ends",
+        "active": "Active"
+      },
+      "actions": {
+        "create": "Create discount",
+        "update": "Update discount",
+        "createLove": "Create Love -15%",
+        "cancelEdit": "Cancel edit",
+        "pause": "Pause",
+        "activate": "Activate"
+      },
+      "labels": {
+        "percentage": "{value}% off",
+        "scope": "Scope",
+        "product": "Product",
+        "group": "Group",
+        "category": "Category",
+        "window": "Period:",
+        "windowNone": "No date limit",
+        "active": "Active",
+        "paused": "Paused"
+      },
+      "scope": {
+        "product": "Product",
+        "group": "Group",
+        "category": "Category"
+      },
+      "empty": "No discounts yet."
     },
     "imageUpload": {
       "title": "Product photos",

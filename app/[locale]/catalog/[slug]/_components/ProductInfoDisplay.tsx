@@ -8,6 +8,7 @@ interface ProductInfoDisplayProps {
   price: number;
   priceRange?: { min: number; max: number };
   inStock: boolean;
+  discountPct?: number;
 }
 
 export async function ProductInfoDisplay({
@@ -17,8 +18,13 @@ export async function ProductInfoDisplay({
   price,
   priceRange,
   inStock,
+  discountPct,
 }: ProductInfoDisplayProps) {
   const t = await getTranslations({ locale, namespace: "product" });
+  const hasDiscount = typeof discountPct === "number" && discountPct > 0;
+  const applyDiscount = (value: number) =>
+    Math.round(value * (1 - (discountPct ?? 0) / 100) * 100) / 100;
+  const formatPrice = (value: number) => `${value.toFixed(2)} €`;
 
   return (
     <div className="space-y-8">
@@ -40,13 +46,41 @@ export async function ProductInfoDisplay({
           <span className="text-deep/50 mb-1 block text-xs tracking-wider uppercase">
             {t("price")}
           </span>
-          <span className="text-deep text-2xl font-bold sm:text-3xl lg:text-4xl 2xl:text-5xl">
-            {priceRange
-              ? priceRange.min === priceRange.max
-                ? `${priceRange.min.toFixed(2)} €`
-                : `${priceRange.min.toFixed(2)}–${priceRange.max.toFixed(2)} €`
-              : `${price.toFixed(2)} €`}
-          </span>
+          <div className="flex flex-wrap items-baseline gap-3">
+            <span className="text-deep text-2xl font-bold sm:text-3xl lg:text-4xl 2xl:text-5xl">
+              {priceRange
+                ? priceRange.min === priceRange.max
+                  ? formatPrice(
+                      hasDiscount
+                        ? applyDiscount(priceRange.min)
+                        : priceRange.min,
+                    )
+                  : `${formatPrice(
+                      hasDiscount
+                        ? applyDiscount(priceRange.min)
+                        : priceRange.min,
+                    )}–${formatPrice(
+                      hasDiscount
+                        ? applyDiscount(priceRange.max)
+                        : priceRange.max,
+                    )}`
+                : formatPrice(hasDiscount ? applyDiscount(price) : price)}
+            </span>
+            {hasDiscount ? (
+              <span className="text-deep/50 text-base font-semibold line-through sm:text-lg">
+                {priceRange
+                  ? priceRange.min === priceRange.max
+                    ? formatPrice(priceRange.min)
+                    : `${formatPrice(priceRange.min)}–${formatPrice(priceRange.max)}`
+                  : formatPrice(price)}
+              </span>
+            ) : null}
+            {hasDiscount ? (
+              <span className="bg-accent/10 text-accent rounded-full px-3 py-1 text-xs font-semibold tracking-wide uppercase">
+                -{discountPct}%
+              </span>
+            ) : null}
+          </div>
         </div>
         <span
           className={`rounded-full px-5 py-2 text-sm font-semibold tracking-wide uppercase ${

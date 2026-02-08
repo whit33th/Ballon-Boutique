@@ -121,6 +121,7 @@ export default async function ProductDetailPage({
                 price={product.price}
                 inStock={product.inStock}
                 priceRange={priceRange}
+                discountPct={product.discountPct}
               />
 
               {/* Client Component - Interactive Add to Cart */}

@@ -4,12 +4,14 @@ export class BasePage {
   constructor(protected readonly page: Page) {}
 
   async goto(path: string = "/") {
-    await this.page.goto(path, { waitUntil: "networkidle" });
+    await this.page.goto(path, { waitUntil: "domcontentloaded" });
     await this.waitForHeader();
   }
 
   async waitForHeader() {
-    await this.page.getByTestId("site-header").waitFor({ state: "visible" });
+    await this.page
+      .getByTestId("site-header")
+      .waitFor({ state: "visible", timeout: 15_000 });
   }
 
   async openCart() {
@@ -22,4 +24,3 @@ export class BasePage {
     await expect(this.page).toHaveURL(/\/auth/);
   }
 }
-

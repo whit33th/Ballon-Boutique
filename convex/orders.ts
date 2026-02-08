@@ -6,6 +6,11 @@ import { mutation, query } from "./_generated/server";
 import { ensureAdmin } from "./helpers/admin";
 import { requireUser } from "./helpers/auth";
 import {
+  applyDiscountToAmount,
+  loadActiveDiscounts,
+  resolveDiscountForProduct,
+} from "./helpers/discounts";
+import {
   assertDeliverySlotIsValidAndAvailable,
   buildDeliverySlotsForDate,
   markDeliverySlotAvailability,
@@ -122,22 +127,13 @@ export const createGuest = mutation({
       });
     }
 
-    if (args.deliveryType === "delivery") {
-      if (!args.pickupDateTime) {
-        throw new Error("Delivery requires a delivery time slot");
-      }
-      await assertDeliverySlotIsValidAndAvailable({
-        db: ctx.db,
-        slotIso: args.pickupDateTime,
-      });
-    }
-
     if (args.items.length === 0) {
       throw new Error("Cart is empty");
     }
 
     type OrderItem = Doc<"orders">["items"][number];
     const orderItems: OrderItem[] = [];
+    const activeDiscounts = await loadActiveDiscounts(ctx);
     let totalAmount = 0;
 
     for (const item of args.items) {
@@ -178,11 +174,20 @@ export const createGuest = mutation({
         throw new Error("Variant size is not supported for this product");
       }
 
+      const discount = resolveDiscountForProduct(product, activeDiscounts);
+      const originalUnitPrice = unitPrice;
+      const discountedUnitPrice = discount
+        ? applyDiscountToAmount(unitPrice, discount.percentage)
+        : unitPrice;
+
       const orderItem = {
         productId: item.productId,
         productName: product.name,
         quantity: item.quantity,
-        price: unitPrice,
+        price: discountedUnitPrice,
+        originalPrice: discount ? originalUnitPrice : undefined,
+        discountPct: discount?.percentage,
+        discountId: discount?._id,
         variant,
         personalization: item.personalization ?? undefined,
         productImageUrl: product.imageUrls?.[0] ?? null,
@@ -190,7 +195,7 @@ export const createGuest = mutation({
 
       orderItems.push(orderItem);
 
-      totalAmount += unitPrice * item.quantity;
+      totalAmount += discountedUnitPrice * item.quantity;
 
       await ctx.db.patch(product._id, {
         soldCount: (product.soldCount ?? 0) + item.quantity,
@@ -332,6 +337,7 @@ export const create = mutation({
 
     type OrderItem = Doc<"orders">["items"][number];
     const orderItems: OrderItem[] = [];
+    const activeDiscounts = await loadActiveDiscounts(ctx);
     let totalAmount = 0;
 
     for (const cartItem of cartItems) {
@@ -376,11 +382,20 @@ export const create = mutation({
         throw new Error("Variant size is not supported for this product");
       }
 
+      const discount = resolveDiscountForProduct(product, activeDiscounts);
+      const originalUnitPrice = unitPrice;
+      const discountedUnitPrice = discount
+        ? applyDiscountToAmount(unitPrice, discount.percentage)
+        : unitPrice;
+
       const orderItem = {
         productId: cartItem.productId,
         productName: product.name,
         quantity: cartItem.quantity,
-        price: unitPrice,
+        price: discountedUnitPrice,
+        originalPrice: discount ? originalUnitPrice : undefined,
+        discountPct: discount?.percentage,
+        discountId: discount?._id,
         variant,
         // Preserve personalization from the cart so order shows color/text/number
         personalization: cartItem.personalization ?? undefined,
@@ -389,7 +404,7 @@ export const create = mutation({
 
       orderItems.push(orderItem);
 
-      totalAmount += unitPrice * cartItem.quantity;
+      totalAmount += discountedUnitPrice * cartItem.quantity;
 
       await ctx.db.patch(product._id, {
         soldCount: (product.soldCount ?? 0) + cartItem.quantity,

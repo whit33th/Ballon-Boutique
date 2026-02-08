@@ -981,9 +981,28 @@ function OrderSummary({
 }: SummaryProps) {
   const t = useTranslations("checkout");
   const tCommon = useTranslations("common");
+  const resolveUnitPrice = (item: ServerCartItem | GuestCartItem) => {
+    if (isServerCartItem(item)) {
+      if (
+        "unitPrice" in item &&
+        typeof item.unitPrice === "number" &&
+        Number.isFinite(item.unitPrice)
+      ) {
+        return item.unitPrice;
+      }
+    }
+
+    const base = item.variant?.unitPrice ?? item.product.price;
+    const discountPct = item.product.discountPct ?? 0;
+    if (item.variant?.unitPrice && discountPct > 0) {
+      return Math.round(base * (1 - discountPct / 100) * 100) / 100;
+    }
+
+    return base;
+  };
   const getItemDetails = (item: ServerCartItem | GuestCartItem) => {
     if (isServerCartItem(item)) {
-      const unitPrice = item.variant?.unitPrice ?? item.product.price;
+      const unitPrice = resolveUnitPrice(item);
       return {
         key: item._id,
         name: item.product.name,
@@ -994,7 +1013,7 @@ function OrderSummary({
       } as const;
     }
 
-    const unitPrice = item.variant?.unitPrice ?? item.product.price;
+    const unitPrice = resolveUnitPrice(item);
     return {
       key: item.productId,
       name: item.product.name,
@@ -1059,26 +1078,43 @@ function OrderSummary({
           })}
         </div>
         <div className="mt-5 space-y-2 text-sm text-gray-700">
-          <div className="flex items-center justify-between" data-testid="checkout-subtotal">
+          <div
+            className="flex items-center justify-between"
+            data-testid="checkout-subtotal"
+          >
             <span>{t("orderSummary.itemsSubtotal")}</span>
-            <span className="font-semibold" data-testid="checkout-subtotal-amount">
+            <span
+              className="font-semibold"
+              data-testid="checkout-subtotal-amount"
+            >
               {formatCurrency(cartOnlyTotal)}
             </span>
           </div>
           {deliveryType === "delivery" && (
-            <div className="flex items-center justify-between" data-testid="checkout-delivery-cost">
+            <div
+              className="flex items-center justify-between"
+              data-testid="checkout-delivery-cost"
+            >
               <span>
                 {t("orderSummary.delivery")}
                 {selectedCourierCity ? ` (${selectedCourierCity.name})` : ""}
               </span>
-              <span className="font-semibold" data-testid="checkout-delivery-cost-amount">
+              <span
+                className="font-semibold"
+                data-testid="checkout-delivery-cost-amount"
+              >
                 {formatCurrency(deliveryCost)}
               </span>
             </div>
           )}
-          <div className="flex items-center justify-between border-t pt-2 text-base font-bold text-gray-900" data-testid="checkout-total">
+          <div
+            className="flex items-center justify-between border-t pt-2 text-base font-bold text-gray-900"
+            data-testid="checkout-total"
+          >
             <span>{t("orderSummary.total")}</span>
-            <span data-testid="checkout-total-amount">{formatCurrency(total)}</span>
+            <span data-testid="checkout-total-amount">
+              {formatCurrency(total)}
+            </span>
           </div>
         </div>
       </div>
@@ -1910,7 +1946,10 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section data-testid="checkout-page" className="container mx-auto min-h-screen px-4 py-6 sm:py-10">
+    <section
+      data-testid="checkout-page"
+      className="container mx-auto min-h-screen px-4 py-6 sm:py-10"
+    >
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-white/20 bg-white/70 p-4 shadow-sm backdrop-blur">
           <button

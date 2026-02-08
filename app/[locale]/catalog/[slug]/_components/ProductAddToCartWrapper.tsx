@@ -47,6 +47,7 @@ export function ProductAddToCartWrapper({
   ) as React.RefObject<HTMLDivElement>;
 
   const hasSizeVariants = (product?.miniSetSizes?.length ?? 0) > 0;
+  const discountPct = product?.discountPct ?? 0;
   const selectedVariant = hasSizeVariants
     ? (product?.miniSetSizes?.find((s) => s.label === selectedSize) ?? null)
     : null;
@@ -178,7 +179,15 @@ export function ProductAddToCartWrapper({
                   </option>
                   {product.miniSetSizes.map((s) => (
                     <option value={s.label} key={s.label}>
-                      {s.label} — €{s.price.toFixed(2)}
+                      {s.label} — €
+                      {discountPct > 0
+                        ? (
+                            Math.round(
+                              s.price * (1 - discountPct / 100) * 100,
+                            ) / 100
+                          ).toFixed(2)
+                        : s.price.toFixed(2)}
+                      {discountPct > 0 ? ` (was €${s.price.toFixed(2)})` : ""}
                     </option>
                   ))}
                 </select>

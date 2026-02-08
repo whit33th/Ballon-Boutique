@@ -4,6 +4,8 @@ import { CatalogPage } from "./pages/catalog.page";
 import { CheckoutPage } from "./pages/checkout.page";
 import { ProductPage } from "./pages/product.page";
 
+test.describe.configure({ mode: "serial" });
+
 test.describe("Checkout flows", () => {
   test("can complete checkout with pickup and cash payment", async ({
     page,

@@ -10,9 +10,11 @@
 
 import type * as auth from "../auth.js";
 import type * as cart from "../cart.js";
+import type * as discounts from "../discounts.js";
 import type * as helpers_admin from "../helpers/admin.js";
 import type * as helpers_auth from "../helpers/auth.js";
 import type * as helpers_deliverySlots from "../helpers/deliverySlots.js";
+import type * as helpers_discounts from "../helpers/discounts.js";
 import type * as helpers_products from "../helpers/products.js";
 import type * as helpers_stripeClient from "../helpers/stripeClient.js";
 import type * as http from "../http.js";
@@ -31,6 +33,7 @@ import type * as stripeWebhook from "../stripeWebhook.js";
 import type * as stripeWebhookHandler from "../stripeWebhookHandler.js";
 import type * as users from "../users.js";
 import type * as validators_address from "../validators/address.js";
+import type * as validators_discount from "../validators/discount.js";
 import type * as validators_order from "../validators/order.js";
 import type * as validators_product from "../validators/product.js";
 
@@ -43,9 +46,11 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   cart: typeof cart;
+  discounts: typeof discounts;
   "helpers/admin": typeof helpers_admin;
   "helpers/auth": typeof helpers_auth;
   "helpers/deliverySlots": typeof helpers_deliverySlots;
+  "helpers/discounts": typeof helpers_discounts;
   "helpers/products": typeof helpers_products;
   "helpers/stripeClient": typeof helpers_stripeClient;
   http: typeof http;
@@ -64,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   stripeWebhookHandler: typeof stripeWebhookHandler;
   users: typeof users;
   "validators/address": typeof validators_address;
+  "validators/discount": typeof validators_discount;
   "validators/order": typeof validators_order;
   "validators/product": typeof validators_product;
 }>;

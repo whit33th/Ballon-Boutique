@@ -99,6 +99,9 @@ const applicationTables = {
         productName: v.string(),
         quantity: v.number(),
         price: v.number(),
+        originalPrice: v.optional(v.number()),
+        discountPct: v.optional(v.number()),
+        discountId: v.optional(v.id("discounts")),
         variant: v.optional(
           v.object({
             size: v.string(),
@@ -191,6 +194,9 @@ const applicationTables = {
         productName: v.string(),
         quantity: v.number(),
         price: v.number(),
+        originalPrice: v.optional(v.number()),
+        discountPct: v.optional(v.number()),
+        discountId: v.optional(v.id("discounts")),
         variant: v.optional(
           v.object({
             size: v.string(),
@@ -227,6 +233,26 @@ const applicationTables = {
     .index("by_payment_intent_id", ["paymentIntentId"])
     .index("by_order", ["orderId"])
     .index("by_user", ["userId"]),
+
+  discounts: defineTable({
+    name: v.string(),
+    percentage: v.number(),
+    scopeType: v.union(
+      v.literal("product"),
+      v.literal("group"),
+      v.literal("category"),
+    ),
+    productId: v.optional(v.id("products")),
+    categoryGroup: v.optional(v.string()),
+    category: v.optional(v.string()),
+    startsAt: v.optional(v.number()),
+    endsAt: v.optional(v.number()),
+    isActive: v.boolean(),
+  })
+    .index("by_scope_type", ["scopeType"])
+    .index("by_product", ["scopeType", "productId"])
+    .index("by_group", ["scopeType", "categoryGroup"])
+    .index("by_category", ["scopeType", "category"]),
 };
 
 export default defineSchema({

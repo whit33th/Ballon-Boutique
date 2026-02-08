@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
-    minimumCacheTTL: 60 * 60 * 24,
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days,
   },
   poweredByHeader: false,
   async headers() {
@@ -57,6 +57,15 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+      {
+        source: "/:path(favicon.ico|.*\\.png)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },

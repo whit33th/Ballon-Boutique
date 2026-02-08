@@ -1,4 +1,5 @@
 export { EmptyProductsState } from "./EmptyProductsState";
+export { DiscountsTab } from "./DiscountsTab";
 export { ImageUpload } from "./ImageUpload";
 export { OrderDetails } from "./OrderDetails";
 export { OrderMetricsCards } from "./OrderMetricsCards";

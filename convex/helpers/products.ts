@@ -6,6 +6,10 @@ type ProductCtx = QueryCtx | MutationCtx;
 export type ProductWithImage = Doc<"products"> & {
   imageUrls: string[];
   primaryImageUrl: string | null;
+  discountPct?: number;
+  discountId?: Id<"discounts">;
+  discountName?: string;
+  discountedPrice?: number;
 };
 
 type LegacyProductCategories = string | string[] | undefined;

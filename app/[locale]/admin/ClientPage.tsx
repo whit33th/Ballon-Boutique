@@ -47,6 +47,7 @@ import { uploadImageKitFile } from "@/lib/imagekitUploadClient";
 import {
   type AdminPaymentListItem,
   createProductFormSchema,
+  DiscountsTab,
   EmptyProductsState,
   OrderDetails,
   OrderMetricsCards,
@@ -85,6 +86,7 @@ const buildProductDefaultValues = (): ProductFormValues => ({
   name: "",
   description: "",
   price: "",
+  discountPct: "",
   miniSetSizes: [],
   categoryGroup: DEFAULT_CATEGORY_GROUP.value,
   categories: [...DEFAULT_CATEGORIES],
@@ -105,7 +107,7 @@ export default function AdminPageClient({
   const user = usePreloadedQuery(preloadedUser);
 
   const [activeTab, setActiveTab] = useState<
-    "products" | "orders" | "payments" | "insights"
+    "products" | "orders" | "payments" | "insights" | "discounts"
   >("products");
   const [formOpen, setFormOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
@@ -198,11 +200,16 @@ export default function AdminPageClient({
   const createProduct = useMutation(api.products.create);
   const updateProduct = useMutation(api.products.update);
   const deleteProduct = useMutation(api.products.remove);
+  const setProductDiscount = useMutation(api.discounts.setProductDiscount);
   const listStripePayments = useAction(api.payments.listStripePayments);
 
   const productsResult = useQuery(api.products.list, {
     order: "createdAt-desc",
     paginationOpts: { numItems: 100, cursor: null },
+  });
+
+  const discountsResult = useQuery(api.discounts.list, {
+    includeInactive: true,
   });
 
   const ordersResult = useQuery(api.orders.listAll, {
@@ -291,6 +298,22 @@ export default function AdminPageClient({
   }, [categoryGroup, form]);
 
   const products = (productsResult?.page ?? []) as ProductCardData[];
+  const productDiscounts = useMemo(() => {
+    const map = new Map<Doc<"products">["_id"], number>();
+    for (const discount of discountsResult ?? []) {
+      if (discount.scopeType !== "product" || !discount.productId) {
+        continue;
+      }
+      if (!discount.isActive) {
+        continue;
+      }
+      const current = map.get(discount.productId) ?? 0;
+      if (discount.percentage > current) {
+        map.set(discount.productId, discount.percentage);
+      }
+    }
+    return map;
+  }, [discountsResult]);
   const ordersLoading = ordersResult === undefined;
   const orders = ordersResult ?? [];
 
@@ -629,6 +652,9 @@ export default function AdminPageClient({
       name: product.name,
       description: product.description,
       price: String(product.price),
+      discountPct: productDiscounts.get(product._id)
+        ? String(productDiscounts.get(product._id))
+        : "",
       miniSetSizes: (product.miniSetSizes ?? []).map((entry) => ({
         label: entry.label,
         price: String(entry.price),
@@ -815,15 +841,31 @@ export default function AdminPageClient({
           : undefined,
       };
 
+      const discountPctRaw = values.discountPct?.replace(",", ".") ?? "";
+      const discountPct = Number(discountPctRaw);
+      const normalizedDiscount =
+        Number.isFinite(discountPct) && discountPct >= 0 ? discountPct : 0;
+
+      let savedProductId: Doc<"products">["_id"] | null = null;
+
       if (isEditing && editingProductId) {
         await updateProduct({
           productId: editingProductId,
           ...payload,
         });
+        savedProductId = editingProductId;
         toast.success(tAdmin("toasts.productUpdated"));
       } else {
-        await createProduct(payload);
+        savedProductId = await createProduct(payload);
         toast.success(tAdmin("toasts.productSaved"));
+      }
+
+      if (savedProductId) {
+        await setProductDiscount({
+          productId: savedProductId,
+          productName: payload.name,
+          percentage: normalizedDiscount,
+        });
       }
 
       form.reset(buildProductDefaultValues());
@@ -922,7 +964,12 @@ export default function AdminPageClient({
           value={activeTab}
           onValueChange={(value) =>
             setActiveTab(
-              value as "products" | "orders" | "payments" | "insights",
+              value as
+                | "products"
+                | "orders"
+                | "payments"
+                | "insights"
+                | "discounts",
             )
           }
           className="space-y-6"
@@ -931,6 +978,9 @@ export default function AdminPageClient({
             <TabsList>
               <TabsTrigger value="products">
                 {tAdmin("tabs.products")}
+              </TabsTrigger>
+              <TabsTrigger value="discounts">
+                {tAdmin("tabs.discounts")}
               </TabsTrigger>
               <TabsTrigger value="orders">{tAdmin("tabs.orders")}</TabsTrigger>
               <TabsTrigger value="payments">
@@ -941,7 +991,9 @@ export default function AdminPageClient({
               </TabsTrigger>
             </TabsList>
 
-            <Button onClick={startCreateFlow}>{tAdmin("addProduct")}</Button>
+            {activeTab === "products" ? (
+              <Button onClick={startCreateFlow}>{tAdmin("addProduct")}</Button>
+            ) : null}
           </div>
 
           <TabsContent value="products">
@@ -1161,6 +1213,10 @@ export default function AdminPageClient({
                 <ProductMetricsCard metrics={productMetrics} />
               </aside>
             </div>
+          </TabsContent>
+
+          <TabsContent value="discounts">
+            <DiscountsTab products={products} />
           </TabsContent>
 
           <TabsContent value="orders">

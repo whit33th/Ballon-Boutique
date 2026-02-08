@@ -5,8 +5,7 @@ export class CatalogPage extends BasePage {
   productCards = this.page.getByTestId("product-card");
 
   async gotoCatalog() {
-    await this.page.goto("/catalog", { waitUntil: "networkidle" });
-    await this.waitForHeader();
+    await this.goto("/catalog");
   }
 
   async openFirstProduct() {
@@ -20,9 +19,11 @@ export class CatalogPage extends BasePage {
 
     if (href) {
       // Navigate directly using href (works better in Firefox)
-      await this.page.goto(href, { waitUntil: "networkidle", timeout: 30000 });
-      await this.page.waitForLoadState("networkidle");
-      await this.page.waitForTimeout(1000);
+      await this.page.goto(href, {
+        waitUntil: "domcontentloaded",
+        timeout: 30_000,
+      });
+      await this.waitForHeader();
     } else {
       // Fallback: click the card
       await firstCard.scrollIntoViewIfNeeded();

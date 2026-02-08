@@ -4,6 +4,11 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { type MutationCtx, mutation, query } from "./_generated/server";
 import { requireUser } from "./helpers/auth";
 import {
+  applyDiscountToAmount,
+  loadActiveDiscounts,
+  resolveDiscountForProduct,
+} from "./helpers/discounts";
+import {
   attachImageToProduct,
   type ProductWithImage,
 } from "./helpers/products";
@@ -31,6 +36,10 @@ type CartItemResponse = {
   personalization?: Personalization;
   variant?: Variant;
   personalizationSignature: string;
+  unitPrice: number;
+  originalUnitPrice?: number;
+  discountPct?: number;
+  discountId?: Id<"discounts">;
   product: ProductWithImage;
 };
 
@@ -54,6 +63,10 @@ const cartItemResponseValidator = v.object({
     }),
   ),
   personalizationSignature: v.string(),
+  unitPrice: v.number(),
+  originalUnitPrice: v.optional(v.number()),
+  discountPct: v.optional(v.number()),
+  discountId: v.optional(v.id("discounts")),
   product: productWithImageValidator,
 });
 
@@ -343,6 +356,7 @@ export const list = query({
     }
 
     const items: CartItemResponse[] = [];
+    const activeDiscounts = await loadActiveDiscounts(ctx);
     const cartQuery = ctx.db
       .query("cartItems")
       .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -358,6 +372,12 @@ export const list = query({
         item.personalization as Personalization | undefined,
       );
       const productWithImage = await attachImageToProduct(ctx, product);
+      const discount = resolveDiscountForProduct(product, activeDiscounts);
+      const originalUnitPrice =
+        (item.variant as Variant | undefined)?.unitPrice ?? product.price;
+      const unitPrice = discount
+        ? applyDiscountToAmount(originalUnitPrice, discount.percentage)
+        : originalUnitPrice;
       items.push({
         ...item,
         personalization: normalizedPersonalization,
@@ -366,6 +386,10 @@ export const list = query({
           (item.variant as Variant | undefined) ?? undefined,
           item.personalizationSignature,
         ),
+        unitPrice,
+        originalUnitPrice: discount ? originalUnitPrice : undefined,
+        discountPct: discount?.percentage,
+        discountId: discount?._id,
         product: productWithImage,
       });
     }
@@ -546,6 +570,8 @@ export const getTotal = query({
     let total = 0;
     let itemCount = 0;
 
+    const activeDiscounts = await loadActiveDiscounts(ctx);
+
     const cartQuery = ctx.db
       .query("cartItems")
       .withIndex("by_user", (q) => q.eq("userId", userId));
@@ -556,8 +582,12 @@ export const getTotal = query({
         continue;
       }
 
-      const unitPrice =
+      const originalUnitPrice =
         (item.variant as Variant | undefined)?.unitPrice ?? product.price;
+      const discount = resolveDiscountForProduct(product, activeDiscounts);
+      const unitPrice = discount
+        ? applyDiscountToAmount(originalUnitPrice, discount.percentage)
+        : originalUnitPrice;
       total += unitPrice * item.quantity;
       itemCount += item.quantity;
     }

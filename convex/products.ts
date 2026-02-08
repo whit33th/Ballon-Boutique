@@ -4,6 +4,11 @@ import type { Doc } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { ensureAdmin } from "./helpers/admin";
 import {
+  applyDiscountToAmount,
+  loadActiveDiscounts,
+  resolveDiscountForProduct,
+} from "./helpers/discounts";
+import {
   attachImageToProduct,
   getProductCategories,
   type ProductWithImage,
@@ -64,6 +69,24 @@ const productPageValidator = v.object({
   isDone: v.boolean(),
   continueCursor: v.string(),
 });
+
+const attachDiscountToProduct = (
+  product: ProductWithImage,
+  discounts: Awaited<ReturnType<typeof loadActiveDiscounts>>,
+): ProductWithImage => {
+  const discount = resolveDiscountForProduct(product, discounts);
+  if (!discount) {
+    return { ...product, discountPct: undefined, discountId: undefined };
+  }
+
+  return {
+    ...product,
+    discountPct: discount.percentage,
+    discountId: discount._id,
+    discountName: discount.name,
+    discountedPrice: applyDiscountToAmount(product.price, discount.percentage),
+  };
+};
 
 /**
  * IMPORTANT: This list must exactly match the colors in constants/colors.ts
@@ -500,6 +523,7 @@ export const getNewProducts = query({
   },
   returns: productPageValidator,
   handler: async (ctx, args) => {
+    const activeDiscounts = await loadActiveDiscounts(ctx);
     // Use creation time ordering (newest first) — leverages underlying index
     const allProducts = await ctx.db.query("products").order("desc").collect();
 
@@ -518,9 +542,12 @@ export const getNewProducts = query({
     const pageWithImages = await Promise.all(
       page.map((product) => attachImageToProduct(ctx, product)),
     );
+    const pageWithPricing = pageWithImages.map((product) =>
+      attachDiscountToProduct(product, activeDiscounts),
+    );
 
     return {
-      page: pageWithImages,
+      page: pageWithPricing,
       isDone: !hasMore,
       continueCursor: hasMore ? endIdx.toString() : "",
     };
@@ -533,6 +560,7 @@ export const list = query({
     available: v.optional(v.boolean()),
     minPrice: v.optional(v.number()),
     maxPrice: v.optional(v.number()),
+    sale: v.optional(v.boolean()),
     category: v.optional(v.string()),
     categoryGroup: v.optional(v.string()),
     color: v.optional(v.string()),
@@ -559,6 +587,7 @@ export const list = query({
   },
   returns: productPageValidator,
   handler: async (ctx, args) => {
+    const activeDiscounts = await loadActiveDiscounts(ctx);
     // Normalize inputs
     const normalizeString = (input?: string | null) => {
       if (!input) return undefined;
@@ -583,6 +612,7 @@ export const list = query({
       normalizeString(args.categoryGroup) ?? categoryNorm?.group;
     const color = normalizeString(args.color);
     const available = args.available;
+    const sale = args.sale === true;
     const minPrice =
       typeof args.minPrice === "number" && Number.isFinite(args.minPrice)
         ? args.minPrice
@@ -669,6 +699,10 @@ export const list = query({
         }
       }
       if (available && !product.inStock) return false;
+      if (sale) {
+        const discount = resolveDiscountForProduct(product, activeDiscounts);
+        if (!discount) return false;
+      }
       if (minPrice !== undefined && product.price < minPrice) return false;
       if (maxPrice !== undefined && product.price > maxPrice) return false;
       if (color) {
@@ -707,9 +741,52 @@ export const list = query({
     const pageWithImages = await Promise.all(
       page.map((product) => attachImageToProduct(ctx, product)),
     );
+    const pageWithPricing = pageWithImages.map((product) =>
+      attachDiscountToProduct(product, activeDiscounts),
+    );
 
     return {
-      page: pageWithImages,
+      page: pageWithPricing,
+      isDone: !hasMore,
+      continueCursor: hasMore ? endIdx.toString() : "",
+    };
+  },
+});
+
+export const listDiscounted = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: productPageValidator,
+  handler: async (ctx, args) => {
+    const activeDiscounts = await loadActiveDiscounts(ctx);
+    const allProducts = await ctx.db.query("products").order("desc").collect();
+
+    const discounted = allProducts.filter((product) => {
+      if (!product.inStock) {
+        return false;
+      }
+      return Boolean(resolveDiscountForProduct(product, activeDiscounts));
+    });
+
+    const cursor = args.paginationOpts.cursor
+      ? Number.parseInt(args.paginationOpts.cursor, 10)
+      : 0;
+    const numItems = args.paginationOpts.numItems;
+    const startIdx = cursor;
+    const endIdx = startIdx + numItems;
+    const page = discounted.slice(startIdx, endIdx);
+    const hasMore = endIdx < discounted.length;
+
+    const pageWithImages = await Promise.all(
+      page.map((product) => attachImageToProduct(ctx, product)),
+    );
+    const pageWithPricing = pageWithImages.map((product) =>
+      attachDiscountToProduct(product, activeDiscounts),
+    );
+
+    return {
+      page: pageWithPricing,
       isDone: !hasMore,
       continueCursor: hasMore ? endIdx.toString() : "",
     };
@@ -720,12 +797,14 @@ export const get = query({
   args: { id: v.id("products") },
   returns: v.union(productWithImageValidator, v.null()),
   handler: async (ctx, args) => {
+    const activeDiscounts = await loadActiveDiscounts(ctx);
     const product = await ctx.db.get(args.id);
     if (!product) {
       return null;
     }
 
-    return attachImageToProduct(ctx, product);
+    const withImage = await attachImageToProduct(ctx, product);
+    return attachDiscountToProduct(withImage, activeDiscounts);
   },
 });
 
@@ -733,12 +812,13 @@ export const getMany = query({
   args: { ids: v.array(v.id("products")) },
   returns: v.array(productWithImageValidator),
   handler: async (ctx, args) => {
+    const activeDiscounts = await loadActiveDiscounts(ctx);
     const results: ProductWithImage[] = [];
     for (const id of args.ids) {
       const product = await ctx.db.get(id);
       if (!product) continue;
       const p = await attachImageToProduct(ctx, product);
-      results.push(p);
+      results.push(attachDiscountToProduct(p, activeDiscounts));
     }
     return results;
   },

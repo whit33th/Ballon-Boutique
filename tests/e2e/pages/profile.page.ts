@@ -12,8 +12,7 @@ export class ProfilePage extends BasePage {
   async expectUserEmail(email: string) {
     // Email might appear multiple times, use first() to avoid strict mode violation
     await expect(
-      this.page.getByText(email, { exact: false }).first()
+      this.page.getByText(email, { exact: false }).first(),
     ).toBeVisible({ timeout: 10_000 });
   }
 }
-

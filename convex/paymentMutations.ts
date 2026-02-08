@@ -8,6 +8,11 @@ import {
   type MutationCtx,
 } from "./_generated/server";
 import { assertDeliverySlotIsValidAndAvailable } from "./helpers/deliverySlots";
+import {
+  applyDiscountToAmount,
+  loadActiveDiscounts,
+  resolveDiscountForProduct,
+} from "./helpers/discounts";
 import { addressValidator } from "./validators/address";
 import { orderItemValidator } from "./validators/order";
 
@@ -576,11 +581,15 @@ async function resolveOrderItems(
     };
   }>,
 ) {
+  const activeDiscounts = await loadActiveDiscounts(ctx);
   const resolved = [] as Array<{
     productId: Id<"products">;
     productName: string;
     quantity: number;
     price: number;
+    originalPrice?: number;
+    discountPct?: number;
+    discountId?: Id<"discounts">;
     variant?: { size: string };
     personalization?: {
       text?: string;
@@ -627,11 +636,20 @@ async function resolveOrderItems(
       throw new Error("Variant size is not supported for this product");
     }
 
+    const discount = resolveDiscountForProduct(product, activeDiscounts);
+    const originalUnitPrice = unitPrice;
+    const discountedUnitPrice = discount
+      ? applyDiscountToAmount(unitPrice, discount.percentage)
+      : unitPrice;
+
     resolved.push({
       productId: item.productId,
       productName: product.name,
       quantity: item.quantity,
-      price: unitPrice,
+      price: discountedUnitPrice,
+      originalPrice: discount ? originalUnitPrice : undefined,
+      discountPct: discount?.percentage,
+      discountId: discount?._id,
       variant,
       personalization: item.personalization,
     });

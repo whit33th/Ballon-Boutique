@@ -79,8 +79,23 @@ export default function CartPage() {
     : { total: guestTotal, itemCount: guestItemCount };
 
   const getUnitPrice = (item: DisplayCartItem): number => {
+    if (
+      "unitPrice" in item &&
+      typeof item.unitPrice === "number" &&
+      Number.isFinite(item.unitPrice)
+    ) {
+      return item.unitPrice;
+    }
+
     const variant = (item as { variant?: Variant }).variant;
-    return variant?.unitPrice ?? item.product.price;
+    const discountPct = item.product.discountPct ?? 0;
+    const base = variant?.unitPrice ?? item.product.price;
+
+    if (variant?.unitPrice && discountPct > 0) {
+      return Math.round(base * (1 - discountPct / 100) * 100) / 100;
+    }
+
+    return base;
   };
 
   const handleQuantityChange = async (

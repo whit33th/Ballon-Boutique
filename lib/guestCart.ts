@@ -5,6 +5,8 @@ export type GuestCartProductSnapshot = {
   productId: string;
   name: string;
   price: number;
+  originalPrice?: number;
+  discountPct?: number;
   primaryImageUrl: string | null;
   inStock: boolean;
 };
@@ -80,7 +82,6 @@ const writeGuestCart = (items: GuestCartItem[]) => {
     return;
   }
 
-  console.log("Writing to guest cart:", items);
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   window.dispatchEvent(new Event(EVENT_NAME));
 };
@@ -89,6 +90,8 @@ type ProductLike = {
   _id: string;
   name: string;
   price: number;
+  discountPct?: number;
+  discountedPrice?: number;
   primaryImageUrl?: string | null;
   inStock: boolean;
 };
@@ -98,7 +101,9 @@ export const snapshotFromProduct = (
 ): GuestCartProductSnapshot => ({
   productId: product._id,
   name: product.name,
-  price: product.price,
+  price: product.discountedPrice ?? product.price,
+  originalPrice: product.discountedPrice ? product.price : undefined,
+  discountPct: product.discountPct,
   primaryImageUrl: product.primaryImageUrl ?? null,
   inStock: product.inStock,
 });
@@ -272,11 +277,15 @@ export const useGuestCart = () => {
   }, []);
 
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce(
-    (sum, item) =>
-      sum + item.quantity * (item.variant?.unitPrice ?? item.product.price),
-    0,
-  );
+  const totalPrice = items.reduce((sum, item) => {
+    const base = item.variant?.unitPrice ?? item.product.price;
+    const discountPct = item.product.discountPct ?? 0;
+    const unitPrice =
+      item.variant?.unitPrice && discountPct > 0
+        ? Math.round(base * (1 - discountPct / 100) * 100) / 100
+        : base;
+    return sum + item.quantity * unitPrice;
+  }, 0);
 
   return {
     items,

@@ -32,4 +32,8 @@ export const productWithImageValidator = v.object({
   ...productDocumentFields,
   imageUrls: v.array(v.string()),
   primaryImageUrl: v.union(v.string(), v.null()),
+  discountPct: v.optional(v.number()),
+  discountId: v.optional(v.id("discounts")),
+  discountName: v.optional(v.string()),
+  discountedPrice: v.optional(v.number()),
 });

@@ -56,6 +56,16 @@ export function createProductFormSchema(t: (key: string) => string) {
           const numeric = Number(raw.replace(",", "."));
           return !Number.isNaN(numeric) && numeric >= 0;
         }, t("validation.priceInvalid")),
+      discountPct: z
+        .string()
+        .optional()
+        .refine((raw) => {
+          if (!raw || raw.trim().length === 0) {
+            return true;
+          }
+          const numeric = Number(raw.replace(",", "."));
+          return !Number.isNaN(numeric) && numeric >= 0 && numeric <= 100;
+        }, t("validation.discountInvalid")),
       miniSetSizes: z
         .array(
           z.object({
@@ -114,6 +124,16 @@ export const productFormSchema = z
         const numeric = Number(raw.replace(",", "."));
         return !Number.isNaN(numeric) && numeric >= 0;
       }, "Некорректная цена"),
+    discountPct: z
+      .string()
+      .optional()
+      .refine((raw) => {
+        if (!raw || raw.trim().length === 0) {
+          return true;
+        }
+        const numeric = Number(raw.replace(",", "."));
+        return !Number.isNaN(numeric) && numeric >= 0 && numeric <= 100;
+      }, "Некорректная скидка"),
     miniSetSizes: z
       .array(
         z.object({
@@ -345,6 +365,30 @@ export function ProductForm({
                         : `${formatCurrency(miniSetPriceRange.min)}–${formatCurrency(miniSetPriceRange.max)}`}
                     </p>
                   ) : null}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="discountPct"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>{t("discount")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className="px-2.5"
+                      type="number"
+                      inputMode="decimal"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      placeholder="15"
+                      aria-invalid={fieldState.invalid}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
